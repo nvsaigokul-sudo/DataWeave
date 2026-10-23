@@ -89,4 +89,5 @@ tasks.register<JavaExec>("runHeadlessSmoke") {
     description = "Headless smoke: Spring Boot + SQLite + optional embedded PG."
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("com.dataweave.app.HeadlessSmokeKt")
+    systemProperty("dataweave.test.mode", "true")
 }

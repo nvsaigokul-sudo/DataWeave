@@ -11,6 +11,7 @@ fun main() {
     try {
         DesktopSession.start(
             "--dataweave.metadata.jdbc-url=jdbc:sqlite:${sqlite}",
+            "--dataweave.test.mode=true",
         ).use { session ->
             val facade = session.facade()
             val project = facade.createProject("Smoke", "Headless")
