@@ -42,6 +42,22 @@ compose.desktop {
             packageVersion = pkgVersion
             description = "Offline-first PostgreSQL data workbench"
             vendor = "DataWeave"
+            // jlink modules for Spring/SQL + jdk.accessibility (Windows Access Bridge / Skiko AWT).
+            // Without jdk.accessibility, jpackage shows "Failed to launch JVM" when
+            // %USERPROFILE%\.accessibility.properties enables assistive technologies.
+            modules(
+                "java.compiler",
+                "java.instrument",
+                "java.management",
+                "java.net.http",
+                "java.prefs",
+                "java.scripting",
+                "java.security.jgss",
+                "java.sql.rowset",
+                "jdk.jfr",
+                "jdk.unsupported",
+                "jdk.accessibility",
+            )
             val os = OperatingSystem.current()
             if (os.isMacOsX) {
                 macOS {

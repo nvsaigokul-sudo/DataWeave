@@ -8,6 +8,10 @@ import com.dataweave.app.ui.AppShell
 import com.dataweave.backend.DesktopSession
 
 fun main(args: Array<String>) {
+    if (args.contains("--headless-smoke")) {
+        runHeadlessSmoke()
+        return
+    }
     val session = DesktopSession.start(*buildSpringArgs(args))
     Runtime.getRuntime().addShutdownHook(Thread { session.close() })
 

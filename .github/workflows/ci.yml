@@ -49,6 +49,46 @@ jobs:
         shell: bash
         run: ./gradlew :desktop:packageMsi :desktop:packageExe --no-daemon
 
+      - name: Windows packaged app launch smoke
+        if: runner.os == 'Windows'
+        shell: pwsh
+        timeout-minutes: 10
+        run: |
+          $ErrorActionPreference = 'Stop'
+          # Reproduce Access Bridge setups that trigger missing jdk.accessibility at AWT init.
+          $accessProps = Join-Path $env:USERPROFILE '.accessibility.properties'
+          Set-Content -Path $accessProps -Value 'assistive_technologies=com.sun.java.accessibility.AccessBridge' -Encoding Ascii
+
+          $msi = Get-ChildItem -Path desktop/build/compose/binaries -Recurse -Filter '*.msi' | Select-Object -First 1
+          if (-not $msi) { throw 'MSI not found under desktop/build/compose/binaries' }
+          Write-Host "Installing $($msi.FullName)"
+          $log = Join-Path $env:RUNNER_TEMP 'dataweave-msi-install.log'
+          $proc = Start-Process msiexec.exe -ArgumentList @('/i', $msi.FullName, '/qn', '/norestart', '/L*v', $log) -Wait -PassThru
+          if ($proc.ExitCode -ne 0) {
+            Get-Content $log -Tail 80
+            throw "msiexec failed with exit code $($proc.ExitCode)"
+          }
+
+          $installRoot = Join-Path ${env:ProgramFiles} 'DataWeave'
+          $exe = Join-Path $installRoot 'DataWeave.exe'
+          $jvmDll = Join-Path $installRoot 'runtime/bin/server/jvm.dll'
+          $cfg = Join-Path $installRoot 'app/DataWeave.cfg'
+          foreach ($path in @($exe, $jvmDll, $cfg)) {
+            if (-not (Test-Path $path)) { throw "Missing expected install artifact: $path" }
+          }
+
+          $outFile = Join-Path $env:RUNNER_TEMP 'dataweave-smoke.out'
+          $errFile = Join-Path $env:RUNNER_TEMP 'dataweave-smoke.err'
+          $p = Start-Process -FilePath $exe -ArgumentList '--headless-smoke' -RedirectStandardOutput $outFile -RedirectStandardError $errFile -PassThru -NoNewWindow -Wait
+          $stdout = Get-Content $outFile -Raw -ErrorAction SilentlyContinue
+          $stderr = Get-Content $errFile -Raw -ErrorAction SilentlyContinue
+          Write-Host "exit=$($p.ExitCode)"
+          if ($stdout) { Write-Host $stdout }
+          if ($stderr) { Write-Host $stderr }
+          if ($stdout -match 'Failed to launch JVM') { throw 'Packaged exe reported Failed to launch JVM' }
+          if ($p.ExitCode -ne 0) { throw "DataWeave.exe --headless-smoke exited $($p.ExitCode)" }
+          if ($stdout -notmatch 'HEADLESS_SMOKE_OK') { throw 'Expected HEADLESS_SMOKE_OK in stdout' }
+
       - name: Package (macOS)
         if: runner.os == 'macOS'
         shell: bash

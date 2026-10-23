@@ -4,7 +4,7 @@ import com.dataweave.backend.DesktopSession
 import com.dataweave.backend.domain.SslMode
 import java.nio.file.Files
 
-fun main() {
+fun runHeadlessSmoke() {
     val embedded = DevEmbeddedPostgres.start()
     val sqlite = Files.createTempFile("dataweave-smoke-", ".db")
     sqlite.toFile().deleteOnExit()
@@ -36,4 +36,8 @@ fun main() {
     } finally {
         embedded.close()
     }
+}
+
+fun main() {
+    runHeadlessSmoke()
 }
