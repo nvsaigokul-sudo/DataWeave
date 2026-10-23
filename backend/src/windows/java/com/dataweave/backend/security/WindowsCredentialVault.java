@@ -10,11 +10,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 @Component
 @Primary
+@ConditionalOnProperty(name = "dataweave.test.mode", havingValue = "false", matchIfMissing = true)
 public class WindowsCredentialVault implements CredentialVault {
 
     private static final String PREFIX = "DataWeave/";
