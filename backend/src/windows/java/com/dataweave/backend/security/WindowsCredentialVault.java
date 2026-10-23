@@ -3,7 +3,7 @@ package com.dataweave.backend.security;
 import com.sun.jna.Memory;
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
-import com.sun.jna.platform.win32.Advapi32;
+import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinBase;
 import com.sun.jna.ptr.PointerByReference;
 import java.nio.charset.StandardCharsets;
@@ -34,15 +34,15 @@ public class WindowsCredentialVault implements CredentialVault {
         credential.Persist = CRED_PERSIST_LOCAL_MACHINE;
         credential.UserName = "dataweave";
         credential.write();
-        if (!Advapi32.INSTANCE.CredWriteW(credential, 0)) {
-            throw new IllegalStateException("CredWrite failed with code " + com.sun.jna.platform.win32.Kernel32.INSTANCE.GetLastError());
+        if (!WindowsCredAdvapi32.INSTANCE.CredWriteW(credential, 0)) {
+            throw new IllegalStateException("CredWrite failed with code " + Kernel32.INSTANCE.GetLastError());
         }
     }
 
     @Override
     public Optional<char[]> load(String key) {
         PointerByReference pref = new PointerByReference();
-        if (!Advapi32.INSTANCE.CredReadW(PREFIX + key, CRED_TYPE_GENERIC, 0, pref)) {
+        if (!WindowsCredAdvapi32.INSTANCE.CredReadW(PREFIX + key, CRED_TYPE_GENERIC, 0, pref)) {
             return Optional.empty();
         }
         CREDENTIAL cred = new CREDENTIAL(pref.getValue());
@@ -51,13 +51,13 @@ public class WindowsCredentialVault implements CredentialVault {
             byte[] blob = cred.CredentialBlob.getByteArray(0, cred.CredentialBlobSize);
             return Optional.of(new String(blob, StandardCharsets.UTF_16LE).toCharArray());
         } finally {
-            Advapi32.INSTANCE.CredFree(pref.getValue());
+            WindowsCredAdvapi32.INSTANCE.CredFree(pref.getValue());
         }
     }
 
     @Override
     public void delete(String key) {
-        Advapi32.INSTANCE.CredDeleteW(PREFIX + key, CRED_TYPE_GENERIC, 0);
+        WindowsCredAdvapi32.INSTANCE.CredDeleteW(PREFIX + key, CRED_TYPE_GENERIC, 0);
     }
 
     public static class CREDENTIAL extends Structure {
