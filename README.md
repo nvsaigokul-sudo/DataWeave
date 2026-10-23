@@ -13,14 +13,14 @@
 
 **Latest release:** [github.com/nvsaigokul-sudo/DataWeave/releases/latest](https://github.com/nvsaigokul-sudo/DataWeave/releases/latest)
 
-| Your OS | Download |
+| Your OS | Download (v0.2.1) |
 |---------|----------|
-| **Windows** | **[DataWeave-Setup.msi](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/DataWeave-Setup.msi)** (Git LFS in [downloads/](downloads/README.md); SHA256 in [downloads/SHA256SUMS.txt](downloads/SHA256SUMS.txt)) |
-| **Linux (x64)** | `DataWeave-*.AppImage` or `dataweave_*_amd64.deb` |
-| **macOS Apple Silicon** | `.dmg` or `.pkg` from the **macos-arm64** build |
-| **macOS Intel** | `.dmg` or `.pkg` from the **macos-x64** build |
+| **Windows** | [`.msi` installer](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/windows-DataWeave-1.2.1.msi) · [`.exe`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/windows-DataWeave-1.2.1.exe) |
+| **Linux (x64)** | [`.deb`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/linux-dataweave_1.2.1_amd64.deb) (AppImage when present on the [release page](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.1)) |
+| **macOS Apple Silicon** | [`.dmg`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/macos-arm64-DataWeave-1.2.1.dmg) · [`.pkg`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/macos-arm64-DataWeave-1.2.1.pkg) |
+| **macOS Intel** | Build on an Intel Mac: `./gradlew :desktop:packageDmg :desktop:packagePkg` (GitHub `macos-13` job omitted due to runner queue) |
 
-Verify Windows MSI with [downloads/SHA256SUMS.txt](downloads/SHA256SUMS.txt); other platforms use **`SHA256SUMS.txt`** on the release page. Hub: [downloads/README.md](downloads/README.md).
+Verify with [`SHA256SUMS.txt`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/SHA256SUMS.txt) on the release. Legacy LFS mirror: [downloads/](downloads/README.md).
 
 | Step | Action |
 |------|--------|
@@ -31,7 +31,7 @@ Verify Windows MSI with [downloads/SHA256SUMS.txt](downloads/SHA256SUMS.txt); ot
 
 Full instructions: **[docs/INSTALL.md](docs/INSTALL.md)** · Troubleshooting: [docs/PLATFORMS.md](docs/PLATFORMS.md)
 
-Supported: **Windows 10/11**, **Linux (x64)**, **macOS 12+** (separate Apple Silicon and Intel installers). Each bundle includes a **private Java runtime** — no separate JDK install.
+Supported: **Windows 10/11**, **Linux (x64)**, **macOS 12+** (Apple Silicon installers on Releases; Intel via local build). Installer file versions show **1.2.1** (jpackage mapping from app **0.2.1**). Each bundle includes a **private Java runtime** — no separate JDK install.
 
 ---
 
