@@ -22,8 +22,7 @@ jobs:
             artifact: windows
           - os: macos-14
             artifact: macos-arm64
-          - os: macos-13
-            artifact: macos-x64
+          # macos-13 (Intel) omitted: runner queue often blocks publish; build locally with packageDmg/packagePkg on Intel Mac.
 
     steps:
       - uses: actions/checkout@v4
