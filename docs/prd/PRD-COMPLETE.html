@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>DataWeave PRD</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">DataWeave PRD</h1>
+</header>
+<h1 id="dataweave-product-requirements-document">DataWeave Product
+Requirements Document</h1>
+<p>Canonical index: docs/prd/sections/</p>
+<h2 id="section-01-executive-summary">Section 01: Executive Summary</h2>
+<p>DataWeave is an offline-first Windows desktop workbench for
+importing, transforming, and exporting structured data. Local PostgreSQL
+stores project metadata, pipeline definitions, and execution history.
+Session 1 delivers the product foundation, documentation pack,
+technology decision, and a vertical slice: project workspaces persisted
+in PostgreSQL with a Compose Desktop shell.</p>
+<h2 id="section-02-document-control">Section 02: Document Control</h2>
+<p>Owner: DataWeave product team. Status: Draft 0.1. Audience:
+engineering, QA, security review. Canonical PRD path:
+docs/prd/PRD-COMPLETE.md and docs/prd/sections/.</p>
+<h2 id="section-03-product-vision">Section 03: Product Vision</h2>
+<p>Empower analysts and data engineers to work confidently on sensitive
+datasets without continuous cloud connectivity, while retaining optional
+sync when online.</p>
+<h2 id="section-04-problem-statement">Section 04: Problem Statement</h2>
+<p>Teams need repeatable data pipelines but cannot always depend on SaaS
+ETL platforms. Existing desktop tools are either cloud-tethered, weak on
+performance at scale, or lack a durable local catalog.</p>
+<h2 id="section-05-goals-and-non-goals">Section 05: Goals and
+Non-Goals</h2>
+<p>Goals: offline-first UX, PostgreSQL as system of record,
+high-performance preview grid (future), Windows desktop packaging.
+Non-goals (v0.1): multi-user server, real-time collaboration, cloud
+execution cluster, MuleSoft DataWeave language compatibility.</p>
+<h2 id="section-06-personas">Section 06: Personas</h2>
+<p>Primary: Data Analyst (Excel/CSV heavy). Secondary: Integration
+Engineer (JDBC sources). Tertiary: IT Admin (install, backup,
+updates).</p>
+<h2 id="section-07-jobs-to-be-done">Section 07: Jobs to Be Done</h2>
+<p>Register sources, map fields, validate samples, run transforms,
+export results, resume work offline, optionally publish when
+connected.</p>
+<h2 id="section-08-product-principles">Section 08: Product
+Principles</h2>
+<p>Local-first authority, explicit sync, measurable performance budgets,
+no fabricated benchmarks, least-privilege DB access, testable vertical
+slices.</p>
+<h2 id="section-09-scope-overview">Section 09: Scope Overview</h2>
+<p>v0.1: projects, PostgreSQL metadata, app shell, docs/ADRs. v0.2: CSV
+ingest + preview grid. v0.3: pipeline graph + execution engine.</p>
+<h2 id="section-10-fr-workspace">Section 10: FR: Workspace</h2>
+<p>Users create named projects with descriptions. Projects list sorted
+by recent activity. Delete project (with confirmation in future
+slice).</p>
+<h2 id="section-11-fr-connections">Section 11: FR: Connections</h2>
+<p>Define connection profiles (folder, JDBC) stored encrypted locally
+(future). v0.1 placeholder navigation only.</p>
+<h2 id="section-12-fr-pipelines">Section 12: FR: Pipelines</h2>
+<p>Directed acyclic transform graphs with typed nodes (source, map,
+filter, sink). Persisted as JSON in PostgreSQL (future).</p>
+<h2 id="section-13-fr-preview-grid">Section 13: FR: Preview &amp;
+Grid</h2>
+<p>Virtualized grid for sample rows with column stats. Budget: initial
+10k-row sample under interactive thresholds (TBD measurement).</p>
+<h2 id="section-14-fr-export">Section 14: FR: Export</h2>
+<p>Export to CSV/Parquet/SQL script with deterministic ordering.
+Background job with cancel (future).</p>
+<h2 id="section-15-fr-optional-sync">Section 15: FR: Optional Sync</h2>
+<p>When online, push/pull project bundles to optional remote registry.
+Never required for core workflows.</p>
+<h2 id="section-16-non-functional-requirements">Section 16:
+Non-Functional Requirements</h2>
+<p>Availability offline, durability via PostgreSQL, Windows 10/11 x64,
+installer via MSI, auto-update channel (future).</p>
+<h2 id="section-17-offline-first-behavior">Section 17: Offline-First
+Behavior</h2>
+<p>All create/read/update paths for v0.1 projects operate without
+network. Sync modules fail closed when offline.</p>
+<h2 id="section-18-performance-requirements">Section 18: Performance
+Requirements</h2>
+<p>See docs/performance-budget.md. No numeric SLA claimed until measured
+on reference hardware.</p>
+<h2 id="section-19-security-requirements">Section 19: Security
+Requirements</h2>
+<p>See docs/security.md. Secrets never in git. OS credential store for
+production connection strings (future).</p>
+<h2 id="section-20-privacy-compliance">Section 20: Privacy &amp;
+Compliance</h2>
+<p>Data remains on customer machines by default. Telemetry opt-in only
+(future). Support GDPR export/delete at project level (future).</p>
+<h2 id="section-21-platform-compatibility">Section 21: Platform &amp;
+Compatibility</h2>
+<p>Primary target: Windows 10/11 x64 desktop. Dev builds run on
+Linux/macOS via Compose Desktop. PostgreSQL 14+.</p>
+<h2 id="section-22-data-model-overview">Section 22: Data Model
+Overview</h2>
+<p>projects table (v1 migration). Future: sources, pipelines, runs,
+artifacts, connection_vault.</p>
+<h2 id="section-23-integration-requirements">Section 23: Integration
+Requirements</h2>
+<p>JDBC drivers bundled selectively. File imports: CSV first. Optional
+S3/Azure sync adapters (defer).</p>
+<h2 id="section-24-ux-requirements">Section 24: UX Requirements</h2>
+<p>Calm sidebar navigation, empty states, inline errors, keyboard focus
+on primary actions.</p>
+<h2 id="section-25-accessibility">Section 25: Accessibility</h2>
+<p>Target WCAG 2.1 AA for core flows: contrast, focus order, screen
+reader labels on primary controls (incremental).</p>
+<h2 id="section-26-localization">Section 26: Localization</h2>
+<p>English-only v0.1. Externalize strings for future locales.</p>
+<h2 id="section-27-observability">Section 27: Observability</h2>
+<p>Structured logs locally, diagnostic bundle export (future). No cloud
+logging by default.</p>
+<h2 id="section-28-migration-upgrade">Section 28: Migration &amp;
+Upgrade</h2>
+<p>Flyway versioned migrations on startup. Backup guidance before
+upgrade in RELEASE.md.</p>
+<h2 id="section-29-support-documentation">Section 29: Support &amp;
+Documentation</h2>
+<p>DEVELOPMENT.md for contributors, user guide (future), in-app link to
+docs folder.</p>
+<h2 id="section-30-success-metrics">Section 30: Success Metrics</h2>
+<p>Time-to-first-project, preview latency (measured), crash-free
+sessions, install success rate on Windows reference VMs.</p>
+<h2 id="section-31-release-criteria">Section 31: Release Criteria</h2>
+<p>See docs/RELEASE.md. All blocking tests green, MSI smoke on Windows
+agent, migration forward-only verified.</p>
+<h2 id="section-32-test-strategy-reference">Section 32: Test Strategy
+Reference</h2>
+<p>See docs/test-strategy.md. Unit + embedded PostgreSQL integration +
+headless smoke + manual GUI checklist on Windows.</p>
+<h2 id="section-33-traceability-reference">Section 33: Traceability
+Reference</h2>
+<p>See docs/traceability-matrix.md mapping FR IDs to tests and
+migrations.</p>
+<h2 id="section-34-dependencies-assumptions">Section 34: Dependencies
+&amp; Assumptions</h2>
+<p>Assumes local PostgreSQL instance or embedded dev mode. JVM 21+.
+Customers provide Windows admin for MSI install.</p>
+<h2 id="section-35-constraints">Section 35: Constraints</h2>
+<p>Offline-first, PostgreSQL, no secrets in repo, no fabricated
+performance numbers.</p>
+<h2 id="section-36-risks">Section 36: Risks</h2>
+<p>See docs/risks-and-backlog.md.</p>
+<h2 id="section-37-open-questions">Section 37: Open Questions</h2>
+<p>Bundled PostgreSQL vs customer-managed? Per-project DB vs shared
+catalog DB? Licensing for optional JDBC drivers.</p>
+<h2 id="section-38-glossary">Section 38: Glossary</h2>
+<p>Project: top-level workspace. Pipeline: transform DAG. Slice:
+shippable vertical increment.</p>
+<h2 id="section-39-appendices">Section 39: Appendices</h2>
+<p>Appendix A: reference hardware for future benchmarks (Windows 11,
+16GB RAM, NVMe). Appendix B: sample CSV fixtures (future).</p>
+<h2 id="section-40-approval">Section 40: Approval</h2>
+<p>Pending product owner sign-off.</p>
+<h2 id="section-41-revision-history">Section 41: Revision History</h2>
+<p>2026-10-23: Session 1 initial PRD pack and v0.1 slice.</p>
+</body>
+</html>
