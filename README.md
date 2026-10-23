@@ -1,23 +1,37 @@
 # DataWeave
 
+[![CI](https://github.com/nvsaigokul-sudo/DataWeave/actions/workflows/ci.yml/badge.svg)](https://github.com/nvsaigokul-sudo/DataWeave/actions/workflows/ci.yml)
+[![Release](https://github.com/nvsaigokul-sudo/DataWeave/actions/workflows/release.yml/badge.svg)](https://github.com/nvsaigokul-sudo/DataWeave/actions/workflows/release.yml)
+
 **DataWeave** is a standalone, installable **desktop application** for exploring and working with **PostgreSQL** databases — offline-first, with no mandatory cloud account or hosted backend.
 
 ---
 
-## Download and install (end users)
+## Download DataWeave (end users)
 
-**You do not need to clone this repository or run Gradle.**
+**You do not need to clone this repository, install Java, or run Gradle.**
+
+**Latest release:** [github.com/nvsaigokul-sudo/DataWeave/releases/latest](https://github.com/nvsaigokul-sudo/DataWeave/releases/latest)
+
+| Your OS | Download on the release page |
+|---------|------------------------------|
+| **Windows** | `DataWeave-*.msi` (recommended) or `DataWeave-*.exe` |
+| **Linux (x64)** | `DataWeave-*.AppImage` or `dataweave_*_amd64.deb` |
+| **macOS Apple Silicon** | `.dmg` or `.pkg` from the **macos-arm64** build |
+| **macOS Intel** | `.dmg` or `.pkg` from the **macos-x64** build |
+
+Verify files with **`SHA256SUMS.txt`** on the same release. Short link hub: [downloads/README.md](downloads/README.md).
 
 | Step | Action |
 |------|--------|
-| 1 | Go to **[GitHub Releases](https://github.com/nvsaigokul-sudo/DataWeave/releases)** |
-| 2 | Download the installer for Windows, Linux, or macOS |
+| 1 | Open **[Releases → Latest](https://github.com/nvsaigokul-sudo/DataWeave/releases/latest)** |
+| 2 | Download the installer for your operating system |
 | 3 | Install and launch **DataWeave** like any desktop app |
-| 4 | Add your PostgreSQL connection in the **Connections** tab and browse your data |
+| 4 | In **Connections**, add PostgreSQL host, port, database, and credentials |
 
-Full instructions: **[docs/INSTALL.md](docs/INSTALL.md)**
+Full instructions: **[docs/INSTALL.md](docs/INSTALL.md)** · Troubleshooting: [docs/PLATFORMS.md](docs/PLATFORMS.md)
 
-Supported: **Windows 10/11**, **Linux (x64)**, **macOS** (Apple Silicon and Intel builds via CI). Each installer bundles a **private Java runtime** — you do not install JDK separately.
+Supported: **Windows 10/11**, **Linux (x64)**, **macOS 12+** (separate Apple Silicon and Intel installers). Each bundle includes a **private Java runtime** — no separate JDK install.
 
 ---
 

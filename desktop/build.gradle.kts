@@ -1,5 +1,15 @@
 import org.gradle.internal.os.OperatingSystem
 
+/** jpackage/macOS require MAJOR version >= 1 (0.2.0 is invalid). */
+fun jpackageVersion(raw: String): String {
+    val version = raw.removeSuffix("-SNAPSHOT")
+    val parts = version.split(".")
+    val major = parts.firstOrNull()?.toIntOrNull() ?: 1
+    if (major >= 1) return version
+    val rest = parts.drop(1).joinToString(".").ifEmpty { "0" }
+    return "1.$rest"
+}
+
 plugins {
     kotlin("jvm")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -28,10 +38,25 @@ compose.desktop {
         mainClass = "com.dataweave.app.DataWeaveAppKt"
         nativeDistributions {
             packageName = "DataWeave"
-            packageVersion = project.version.toString().removeSuffix("-SNAPSHOT")
+            val pkgVersion = jpackageVersion(project.version.toString())
+            packageVersion = pkgVersion
             description = "Offline-first PostgreSQL data workbench"
             vendor = "DataWeave"
             val os = OperatingSystem.current()
+            if (os.isMacOsX) {
+                macOS {
+                    dmgPackageVersion = pkgVersion
+                    pkgPackageVersion = pkgVersion
+                }
+            }
+            if (os.isWindows) {
+                windows {
+                    exePackageVersion = pkgVersion
+                    msiPackageVersion = pkgVersion
+                    menuGroup = "DataWeave"
+                    upgradeUuid = "18189999-4338-4F3C-8424-4A0B2E720508"
+                }
+            }
             targetFormats(
                 *when {
                     os.isWindows -> arrayOf(

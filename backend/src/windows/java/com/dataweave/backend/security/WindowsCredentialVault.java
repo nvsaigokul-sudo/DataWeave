@@ -1,10 +1,14 @@
 package com.dataweave.backend.security;
 
 import com.sun.jna.Memory;
+import com.sun.jna.Pointer;
+import com.sun.jna.Structure;
 import com.sun.jna.platform.win32.Advapi32;
-import com.sun.jna.platform.win32.WinCred;
+import com.sun.jna.platform.win32.WinBase;
 import com.sun.jna.ptr.PointerByReference;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
@@ -14,36 +18,83 @@ import org.springframework.stereotype.Component;
 public class WindowsCredentialVault implements CredentialVault {
 
     private static final String PREFIX = "DataWeave/";
+    private static final int CRED_TYPE_GENERIC = 1;
+    private static final int CRED_PERSIST_LOCAL_MACHINE = 2;
 
     @Override
     public void store(String key, char[] secret) {
-        WinCred.CREDENTIAL credential = new WinCred.CREDENTIAL();
-        credential.Type = WinCred.CRED_TYPE_GENERIC;
-        credential.TargetName = PREFIX + key;
         byte[] blob = new String(secret).getBytes(StandardCharsets.UTF_16LE);
-        credential.CredentialBlob = new Memory(blob.length);
-        credential.CredentialBlob.write(0, blob, 0, blob.length);
+        Memory blobMemory = new Memory(blob.length);
+        blobMemory.write(0, blob, 0, blob.length);
+        CREDENTIAL credential = new CREDENTIAL();
+        credential.Type = CRED_TYPE_GENERIC;
+        credential.TargetName = PREFIX + key;
+        credential.CredentialBlob = blobMemory;
         credential.CredentialBlobSize = blob.length;
-        credential.Persist = WinCred.CRED_PERSIST_LOCAL_MACHINE;
+        credential.Persist = CRED_PERSIST_LOCAL_MACHINE;
+        credential.UserName = "dataweave";
+        credential.write();
         if (!Advapi32.INSTANCE.CredWriteW(credential, 0)) {
-            throw new IllegalStateException("CredWrite failed");
+            throw new IllegalStateException("CredWrite failed with code " + com.sun.jna.platform.win32.Kernel32.INSTANCE.GetLastError());
         }
     }
 
     @Override
     public Optional<char[]> load(String key) {
         PointerByReference pref = new PointerByReference();
-        if (!Advapi32.INSTANCE.CredReadW(PREFIX + key, WinCred.CRED_TYPE_GENERIC, 0, pref)) {
+        if (!Advapi32.INSTANCE.CredReadW(PREFIX + key, CRED_TYPE_GENERIC, 0, pref)) {
             return Optional.empty();
         }
-        WinCred.CREDENTIAL cred = new WinCred.CREDENTIAL(pref.getValue());
+        CREDENTIAL cred = new CREDENTIAL(pref.getValue());
         cred.read();
-        byte[] blob = cred.CredentialBlob.getByteArray(0, cred.CredentialBlobSize);
-        return Optional.of(new String(blob, StandardCharsets.UTF_16LE).toCharArray());
+        try {
+            byte[] blob = cred.CredentialBlob.getByteArray(0, cred.CredentialBlobSize);
+            return Optional.of(new String(blob, StandardCharsets.UTF_16LE).toCharArray());
+        } finally {
+            Advapi32.INSTANCE.CredFree(pref.getValue());
+        }
     }
 
     @Override
     public void delete(String key) {
-        Advapi32.INSTANCE.CredDeleteW(PREFIX + key, WinCred.CRED_TYPE_GENERIC);
+        Advapi32.INSTANCE.CredDeleteW(PREFIX + key, CRED_TYPE_GENERIC, 0);
+    }
+
+    public static class CREDENTIAL extends Structure {
+        public int Flags;
+        public int Type;
+        public String TargetName;
+        public String Comment;
+        public WinBase.FILETIME LastWritten;
+        public int CredentialBlobSize;
+        public Pointer CredentialBlob;
+        public int Persist;
+        public int AttributeCount;
+        public Pointer Attributes;
+        public String TargetAlias;
+        public String UserName;
+
+        public CREDENTIAL() {}
+
+        public CREDENTIAL(Pointer memory) {
+            super(memory);
+        }
+
+        @Override
+        protected List<String> getFieldOrder() {
+            return Arrays.asList(
+                    "Flags",
+                    "Type",
+                    "TargetName",
+                    "Comment",
+                    "LastWritten",
+                    "CredentialBlobSize",
+                    "CredentialBlob",
+                    "Persist",
+                    "AttributeCount",
+                    "Attributes",
+                    "TargetAlias",
+                    "UserName");
+        }
     }
 }
