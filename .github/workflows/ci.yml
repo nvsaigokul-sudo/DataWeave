@@ -47,7 +47,17 @@ jobs:
       - name: Package (Windows)
         if: runner.os == 'Windows'
         shell: bash
-        run: ./gradlew :desktop:packageMsi :desktop:packageExe --no-daemon
+        run: |
+          set -e
+          for attempt in 1 2 3; do
+            echo "Windows package attempt $attempt"
+            if ./gradlew :desktop:packageMsi :desktop:packageExe --no-daemon; then
+              exit 0
+            fi
+            echo "Package failed; retrying in 30s..."
+            sleep 30
+          done
+          exit 1
 
       - name: Windows packaged app launch smoke
         if: runner.os == 'Windows'
