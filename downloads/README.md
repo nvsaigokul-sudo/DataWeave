@@ -6,7 +6,7 @@ The Windows **MSI** is stored with **Git LFS** (~167 MB; exceeds GitHub’s 100 
 
 | File | SHA256 |
 |------|--------|
-| [DataWeave-Setup.msi](DataWeave-Setup.msi) | `eea8bcee1b0848ae9d4a7b960ecc997d4c6498442289c55b5857910119f610ac` |
+| [DataWeave-Setup.msi](DataWeave-Setup.msi) | `b613ec64d2c30abe613ac2ec821cc0c4443c70c539023b481b33118666dd886e` |
 
 **Direct download (browser):**
 
@@ -16,12 +16,12 @@ https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloa
 
 ```bash
 sha256sum DataWeave-Setup.msi
-# expect: eea8bcee1b0848ae9d4a7b960ecc997d4c6498442289c55b5857910119f610ac
+# expect: b613ec64d2c30abe613ac2ec821cc0c4443c70c539023b481b33118666dd886e
 ```
 
 See also [SHA256SUMS.txt](SHA256SUMS.txt).
 
-Built from CI run [39995020267](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/39995020267) (`:desktop:packageMsi`). Bundled JRE includes `jdk.accessibility` and `jdk.localedata`. CI installs the MSI on `windows-latest` and runs `--diagnose`, `--headless-smoke`, and `--gui-smoke` (Compose/Skiko; Access Bridge enabled in the test profile).
+Built from CI run [39996985661](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/39996985661) (`:desktop:packageMsi`, commit `2ac8c22`). Bundled JRE includes **`java.desktop`** and **`jdk.accessibility`**. CI installs the MSI on `windows-latest` and runs `--diagnose`, `--headless-smoke`, `--gui-smoke`, and a **normal GUI launch** (no args, process alive 15s). Replaces older installers (e.g. `130eb799…`) that omitted `java.desktop` from the explicit jlink module list.
 
 ## All platforms (releases)
 
