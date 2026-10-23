@@ -13,9 +13,9 @@
 
 **Latest release:** [github.com/nvsaigokul-sudo/DataWeave/releases/latest](https://github.com/nvsaigokul-sudo/DataWeave/releases/latest)
 
-| Your OS | Download (v0.2.1) |
+| Your OS | Download |
 |---------|----------|
-| **Windows** | [`.msi` installer](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/windows-DataWeave-1.2.1.msi) · [`.exe`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/windows-DataWeave-1.2.1.exe) |
+| **Windows** | **[DataWeave-Setup.msi](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/DataWeave-Setup.msi)** (Git LFS; SHA256 in [downloads/SHA256SUMS.txt](downloads/SHA256SUMS.txt)) — CI-tested build with `java.desktop` + GUI smoke. Alternate: [v0.2.1 release `.msi`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/windows-DataWeave-1.2.1.msi) / [`.exe`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/windows-DataWeave-1.2.1.exe) |
 | **Linux (x64)** | [`.deb`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/linux-dataweave_1.2.1_amd64.deb) (AppImage when present on the [release page](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.1)) |
 | **macOS Apple Silicon** | [`.dmg`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/macos-arm64-DataWeave-1.2.1.dmg) · [`.pkg`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/macos-arm64-DataWeave-1.2.1.pkg) |
 | **macOS Intel** | Build on an Intel Mac: `./gradlew :desktop:packageDmg :desktop:packagePkg` (GitHub `macos-13` job omitted due to runner queue) |

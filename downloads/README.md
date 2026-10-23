@@ -25,7 +25,7 @@ Built from CI run [39996985661](https://github.com/nvsaigokul-sudo/DataWeave/act
 
 ## All platforms (releases)
 
-**[Download from GitHub Releases](https://github.com/nvsaigokul-sudo/DataWeave/releases/latest)** — Linux, macOS, and future tagged builds.
+**[Download from GitHub Releases](https://github.com/nvsaigokul-sudo/DataWeave/releases/latest)** — Linux, macOS, and tagged bundles ([v0.2.1](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.1)). The release **Windows** `.msi` is a separate build from this LFS file (different SHA256); prefer **this page’s MSI** if you hit “Failed to launch JVM” on an older or release-only install.
 
 | Operating system | What to download |
 |------------------|------------------|
