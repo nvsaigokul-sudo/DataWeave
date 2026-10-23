@@ -8,11 +8,13 @@
 .EXAMPLE
   .\DataWeave-Windows-Diagnostics.ps1
   .\DataWeave-Windows-Diagnostics.ps1 -InstallRoot "C:\Program Files\DataWeave"
+  .\DataWeave-Windows-Diagnostics.ps1 -RunPackagedDiagnose -RunSmokeTests
 #>
 [CmdletBinding()]
 param(
     [string]$InstallRoot = "",
-    [switch]$RunPackagedDiagnose
+    [switch]$RunPackagedDiagnose,
+    [switch]$RunSmokeTests
 )
 
 $ErrorActionPreference = 'Continue'
@@ -44,6 +46,39 @@ function Read-ReleaseModules([string]$ReleasePath) {
     return $null
 }
 
+function Invoke-ExeSmoke {
+    param(
+        [string]$Exe,
+        [string]$Root,
+        [string[]]$Arguments,
+        [string]$Label,
+        [int]$GuiWaitSeconds = 0
+    )
+    Write-Section "Smoke: $Label"
+    if (-not (Test-Path $Exe)) {
+        Write-Output "smoke.$Label=skipped reason=exe missing"
+        return
+    }
+    if ($GuiWaitSeconds -gt 0) {
+        $p = Start-Process -FilePath $Exe -WorkingDirectory $Root -ArgumentList $Arguments -PassThru
+        Start-Sleep -Seconds $GuiWaitSeconds
+        Write-Output "smoke.$Label.pid=$($p.Id) hasExited=$($p.HasExited) exitCode=$($p.ExitCode)"
+        if (-not $p.HasExited) {
+            Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+        }
+        return
+    }
+    $outFile = Join-Path $env:TEMP "dataweave-diag-$Label.out"
+    $errFile = Join-Path $env:TEMP "dataweave-diag-$Label.err"
+    $p = Start-Process -FilePath $Exe -WorkingDirectory $Root -ArgumentList $Arguments `
+        -RedirectStandardOutput $outFile -RedirectStandardError $errFile -PassThru -NoNewWindow -Wait
+    $stdout = Get-Content $outFile -Raw -ErrorAction SilentlyContinue
+    $stderr = Get-Content $errFile -Raw -ErrorAction SilentlyContinue
+    Write-Output "smoke.$Label.exit=$($p.ExitCode)"
+    if ($stdout) { Write-Output "smoke.$Label.stdout=$stdout" }
+    if ($stderr) { Write-Output "smoke.$Label.stderr=$stderr" }
+}
+
 Write-Output "=== DataWeave launch diagnostics ==="
 Write-Output "timestamp=$(Get-Date -Format o)"
 Write-Output "hostname=$env:COMPUTERNAME"
@@ -51,6 +86,32 @@ Write-Output "user=$env:USERNAME"
 Write-Output "arch=$([Environment]::Is64BitOperatingSystem)"
 Write-Output "process.arch=$([Environment]::Is64BitProcess)"
 Write-Output "os=$([Environment]::OSVersion.VersionString)"
+
+Write-Section "Environment (launch-relevant)"
+Write-Output "env.JAVA_HOME=$env:JAVA_HOME"
+Write-Output "env.JRE_HOME=$env:JRE_HOME"
+Write-Output "env._JAVA_OPTIONS=$env:_JAVA_OPTIONS"
+Write-Output "env.JAVA_TOOL_OPTIONS=$env:JAVA_TOOL_OPTIONS"
+Write-Output "env.DATAWEAVE=$env:DATAWEAVE"
+$pathPreview = if ($env:PATH) { $env:PATH.Substring(0, [Math]::Min(500, $env:PATH.Length)) } else { "" }
+Write-Output "env.PATH.preview=$pathPreview"
+
+Write-Section "Registry (uninstall / install location hints)"
+$regPaths = @(
+    'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
+    'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*',
+    'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*'
+)
+foreach ($pattern in $regPaths) {
+    Get-ItemProperty $pattern -ErrorAction SilentlyContinue |
+        Where-Object { $_.DisplayName -match 'DataWeave' } |
+        ForEach-Object {
+            Write-Output "registry.displayName=$($_.DisplayName)"
+            Write-Output "registry.installLocation=$($_.InstallLocation)"
+            Write-Output "registry.displayVersion=$($_.DisplayVersion)"
+            Write-Output "registry.uninstallString=$($_.UninstallString)"
+        }
+}
 
 Write-Section "Candidate install roots"
 $candidates = @(
@@ -97,6 +158,8 @@ if ($found.Count -eq 0) {
         Write-Output "install.skiko.dll.exists=$(Test-Path $skiko)"
 
         if (Test-Path $cfg) {
+            $cfgLines = Get-Content $cfg -ErrorAction SilentlyContinue
+            Write-Output "install.cfg.lineCount=$($cfgLines.Count)"
             $skikoLine = Select-String -Path $cfg -Pattern 'skiko.library.path' -SimpleMatch | Select-Object -First 1
             $mainLine = Select-String -Path $cfg -Pattern 'app.mainclass' -SimpleMatch | Select-Object -First 1
             Write-Output "install.cfg.skiko.library.path=$($skikoLine.Line)"
@@ -105,7 +168,9 @@ if ($found.Count -eq 0) {
 
         $modules = Read-ReleaseModules $release
         Write-Output "install.runtime.modules=$modules"
-        Write-Output "install.runtime.has_jdk.accessibility=$([bool]($modules -match 'jdk.accessibility'))"
+        Write-Output "install.runtime.has_java.desktop=$([bool]($modules -match 'java\.desktop'))"
+        Write-Output "install.runtime.has_jdk.accessibility=$([bool]($modules -match 'jdk\.accessibility'))"
+        Write-Output "install.runtime.has_jdk.crypto.ec=$([bool]($modules -match 'jdk\.crypto\.ec'))"
 
         Write-Section "Shortcut working directories"
         $shellLinks = @(
@@ -126,6 +191,13 @@ if ($found.Count -eq 0) {
         if ($RunPackagedDiagnose -and (Test-Path $exe)) {
             Write-Section "Packaged --diagnose ($root)"
             & $exe --diagnose 2>&1 | ForEach-Object { Write-Output $_ }
+        }
+
+        if ($RunSmokeTests -and (Test-Path $exe)) {
+            Invoke-ExeSmoke -Exe $exe -Root $root -Arguments @('--headless-smoke') -Label 'headless-smoke'
+            Invoke-ExeSmoke -Exe $exe -Root $root -Arguments @('--gui-smoke') -Label 'gui-smoke'
+            Invoke-ExeSmoke -Exe $exe -Root $root -Arguments @() -Label 'gui-normal-10s' -GuiWaitSeconds 10
+            Invoke-ExeSmoke -Exe $exe -Root $env:USERPROFILE -Arguments @() -Label 'gui-normal-bad-cwd-10s' -GuiWaitSeconds 10
         }
     }
 }
@@ -163,7 +235,8 @@ if (Test-Path $vcDll) {
 }
 $sysVC = @(
     (Join-Path $env:SystemRoot 'System32\vcruntime140.dll'),
-    (Join-Path $env:SystemRoot 'System32\msvcp140.dll')
+    (Join-Path $env:SystemRoot 'System32\msvcp140.dll'),
+    (Join-Path $env:SystemRoot 'System32\vcruntime140_1.dll')
 )
 foreach ($p in $sysVC) {
     Write-Output "system.vc.path=$p exists=$(Test-Path $p)"

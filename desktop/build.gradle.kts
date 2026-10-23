@@ -43,9 +43,9 @@ compose.desktop {
             description = "Offline-first PostgreSQL data workbench"
             vendor = "DataWeave"
             val os = OperatingSystem.current()
-            // jlink modules for Spring/SQL + jdk.accessibility (Windows Access Bridge / Skiko AWT).
-            // Without jdk.accessibility, jpackage shows "Failed to launch JVM" when
-            // %USERPROFILE%\.accessibility.properties enables assistive technologies.
+            // Explicit jlink set: Gradle suggestRuntimeModules omits java.desktop (Compose/Skiko need it).
+            // jdk.accessibility: Access Bridge / %USERPROFILE%\.accessibility.properties on Windows.
+            // jdk.crypto.ec: Spring TLS when users connect with SSL.
             modules(
                 "java.compiler",
                 "java.desktop",
@@ -57,6 +57,7 @@ compose.desktop {
                 "java.scripting",
                 "java.security.jgss",
                 "java.sql.rowset",
+                "jdk.crypto.ec",
                 "jdk.jfr",
                 "jdk.localedata",
                 "jdk.unsupported",

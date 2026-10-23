@@ -123,7 +123,9 @@ object LaunchDiagnostics {
             val javaVersion = releaseText.lineSequence().firstOrNull { it.startsWith("JAVA_VERSION=") }?.substringAfter('=')?.trim('"')
             line("install.runtime.modules", modules)
             line("install.runtime.java_version", javaVersion)
+            line("install.runtime.has_java.desktop", modules?.contains("java.desktop") == true)
             line("install.runtime.has_jdk.accessibility", modules?.contains("jdk.accessibility") == true)
+            line("install.runtime.has_jdk.crypto.ec", modules?.contains("jdk.crypto.ec") == true)
         }
         val skikoDll = appDir.resolve("skiko-windows-x64.dll")
         if (System.getProperty("os.name").lowercase().contains("win")) {

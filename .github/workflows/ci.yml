@@ -77,6 +77,43 @@ jobs:
             if (-not (Test-Path $path)) { throw "Missing expected install artifact: $path" }
           }
 
+          $release = Join-Path $installRoot 'runtime/release'
+          $releaseText = Get-Content $release -Raw
+          if ($releaseText -notmatch 'java\.desktop') { throw 'Bundled runtime missing java.desktop (Compose/Skiko GUI)' }
+          if ($releaseText -notmatch 'jdk\.accessibility') { throw 'Bundled runtime missing jdk.accessibility (Access Bridge)' }
+
+          function Assert-LaunchLogsHealthy {
+            param([string]$Label)
+            $errLog = Join-Path $env:LOCALAPPDATA 'DataWeave/launch-error.log'
+            if (Test-Path $errLog) {
+              Write-Host "[$Label] launch-error.log tail:"
+              Get-Content $errLog -Tail 40 | Write-Host
+              throw "[$Label] launch-error.log present after start attempt"
+            }
+          }
+
+          function Test-NormalGuiAlive {
+            param(
+              [string]$Label,
+              [string]$WorkingDirectory = $installRoot,
+              [int]$Seconds = 15
+            )
+            Write-Host "[$Label] Starting DataWeave.exe with no args (cwd=$WorkingDirectory), wait ${Seconds}s"
+            $p = Start-Process -FilePath $exe -WorkingDirectory $WorkingDirectory -PassThru
+            Start-Sleep -Seconds $Seconds
+            if ($p.HasExited) {
+              Assert-LaunchLogsHealthy -Label $Label
+              throw "[$Label] Normal GUI launch exited within ${Seconds}s (exit=$($p.ExitCode))"
+            }
+            Write-Host "[$Label] Process still alive after ${Seconds}s (pid=$($p.Id))"
+            $launchLog = Join-Path $env:LOCALAPPDATA 'DataWeave/launch.log'
+            if (Test-Path $launchLog) {
+              Write-Host "[$Label] launch.log tail:"
+              Get-Content $launchLog -Tail 15 | Write-Host
+            }
+            Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+          }
+
           function Invoke-DataWeaveSmoke {
             param(
               [string[]]$Arguments,
@@ -109,9 +146,25 @@ jobs:
           Invoke-DataWeaveSmoke -Arguments @('--gui-smoke') -Label 'gui-smoke-bad-cwd' -ExpectedPattern 'GUI_SMOKE_OK' `
             -WorkingDirectory $env:USERPROFILE
 
+          # Normal Start Menu path: no smoke flags, full Spring + Compose AppShell (not pixel-tested on GHA).
+          Test-NormalGuiAlive -Label 'gui-normal-install-root' -WorkingDirectory $installRoot
+          Test-NormalGuiAlive -Label 'gui-normal-bad-cwd' -WorkingDirectory $env:USERPROFILE
+
+          $startMenuLnk = Join-Path $env:ProgramData 'Microsoft\Windows\Start Menu\Programs/DataWeave/DataWeave.lnk'
+          if (Test-Path $startMenuLnk) {
+            $wsh = New-Object -ComObject WScript.Shell
+            $sc = $wsh.CreateShortcut($startMenuLnk)
+            Write-Host "Start Menu shortcut target=$($sc.TargetPath) workingDirectory=$($sc.WorkingDirectory)"
+            if ($sc.WorkingDirectory) {
+              Test-NormalGuiAlive -Label 'gui-normal-start-menu-cwd' -WorkingDirectory $sc.WorkingDirectory
+            }
+          } else {
+            Write-Host 'Start Menu shortcut not found; skipping shortcut CWD launch test'
+          }
+
           $diagScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/diagnostics/DataWeave-Windows-Diagnostics.ps1'
           if (-not (Test-Path $diagScript)) { throw "Missing diagnostics script: $diagScript" }
-          & $diagScript -InstallRoot $installRoot -RunPackagedDiagnose
+          & $diagScript -InstallRoot $installRoot -RunPackagedDiagnose -RunSmokeTests
 
       - name: Package (macOS)
         if: runner.os == 'macOS'

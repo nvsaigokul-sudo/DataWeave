@@ -10,7 +10,7 @@ DataWeave targets **Windows 10/11**, **Linux (x64)**, and **macOS (Intel and App
 | Linux | `:desktop:packageAppImage` (default target); `:desktop:packageDeb` if `fakeroot`/`dpkg` installed | AppImage |
 | macOS | `:desktop:packageDmg`, `:desktop:packagePkg` | DMG, PKG |
 
-CI (`.github/workflows/ci.yml`) runs `test`, `runHeadlessSmoke`, platform packaging, and on **windows-latest** a silent MSI install plus packaged `DataWeave.exe --diagnose`, `--headless-smoke`, and `--gui-smoke` (Compose/Skiko window; Access Bridge enabled in the job profile to catch missing `jdk.accessibility`).
+CI (`.github/workflows/ci.yml`) runs `test`, `runHeadlessSmoke`, platform packaging, and on **windows-latest** a silent MSI install plus packaged `DataWeave.exe --diagnose`, `--headless-smoke`, `--gui-smoke`, and a **normal GUI launch** (no args, alive 15s). Access Bridge is enabled in the job profile to catch missing `jdk.accessibility`. Bundled `runtime/release` must list `java.desktop` and `jdk.accessibility`.
 
 ## Local data paths
 
