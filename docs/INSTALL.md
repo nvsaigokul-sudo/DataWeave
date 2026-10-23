@@ -40,3 +40,7 @@ Workspace projects and saved connection profiles work offline. Querying remote P
 ## Security note
 
 Release binaries are **not code-signed/notarized** unless stated on a specific release. Download only from the official GitHub Releases page.
+
+## Troubleshooting (Windows)
+
+**“Failed to launch JVM” immediately after install** — Older installers omitted the `jdk.accessibility` module from the bundled JRE. When Windows has Java Access Bridge enabled (`%USERPROFILE%\.accessibility.properties`), AWT cannot load assistive technology classes and the launcher shows this generic error. Download the latest [DataWeave-Setup.msi](../downloads/DataWeave-Setup.msi) from `main` (see [downloads/README.md](../downloads/README.md) for SHA256) or a current GitHub Release build that includes `jdk.accessibility` in `runtime/release`.

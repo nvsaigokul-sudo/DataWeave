@@ -6,7 +6,7 @@ The Windows **MSI** is stored with **Git LFS** (~167 MB; exceeds GitHub’s 100 
 
 | File | SHA256 |
 |------|--------|
-| [DataWeave-Setup.msi](DataWeave-Setup.msi) | `a9c8ab77e653c6f202f58ebd877c526e5c220a712eb97f045b5457923d0f06fb` |
+| [DataWeave-Setup.msi](DataWeave-Setup.msi) | `130eb799f14bc40d23acb399b5d2d86d6a685765fb8298a42374bdaceddc731c` |
 
 **Direct download (browser):**
 
@@ -16,12 +16,12 @@ https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloa
 
 ```bash
 sha256sum DataWeave-Setup.msi
-# expect: a9c8ab77e653c6f202f58ebd877c526e5c220a712eb97f045b5457923d0f06fb
+# expect: 130eb799f14bc40d23acb399b5d2d86d6a685765fb8298a42374bdaceddc731c
 ```
 
 See also [SHA256SUMS.txt](SHA256SUMS.txt).
 
-Built from CI run [39987420479](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/39987420479) (`:desktop:packageMsi`). Verified on the build agent as **PE/MSI** (Composite Document / Windows Installer); interactive install on Windows was **not** run from the Linux cloud VM.
+Built from CI run [39990144696](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/39990144696) (`:desktop:packageMsi`). Includes `jdk.accessibility` in the bundled JRE (fixes **Failed to launch JVM** when Java Access Bridge is enabled). CI installs the MSI on `windows-latest` and runs `DataWeave.exe --headless-smoke` (with Access Bridge enabled in the test profile).
 
 ## All platforms (releases)
 
