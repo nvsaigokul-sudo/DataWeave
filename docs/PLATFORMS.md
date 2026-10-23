@@ -10,7 +10,7 @@ DataWeave targets **Windows 10/11**, **Linux (x64)**, and **macOS (Intel and App
 | Linux | `:desktop:packageAppImage` (default target); `:desktop:packageDeb` if `fakeroot`/`dpkg` installed | AppImage |
 | macOS | `:desktop:packageDmg`, `:desktop:packagePkg` | DMG, PKG |
 
-CI (`.github/workflows/ci.yml`) runs `test`, `runHeadlessSmoke`, platform packaging, and on **windows-latest** a silent MSI install plus packaged `DataWeave.exe --headless-smoke` (Java Access Bridge enabled in the job to catch missing `jdk.accessibility`).
+CI (`.github/workflows/ci.yml`) runs `test`, `runHeadlessSmoke`, platform packaging, and on **windows-latest** a silent MSI install plus packaged `DataWeave.exe --diagnose`, `--headless-smoke`, and `--gui-smoke` (Compose/Skiko window; Access Bridge enabled in the job profile to catch missing `jdk.accessibility`).
 
 ## Local data paths
 
@@ -45,7 +45,7 @@ Compose Desktop requires `-XstartOnFirstThread` on macOS; the Gradle `desktop` m
 | Platform | Automated CI | Manual GUI (agent 2026-10-23) |
 |----------|--------------|-------------------------------|
 | Linux x64 | Expected via GitHub Actions | **Verified** locally in cloud VM (`test`, `runHeadlessSmoke`) |
-| Windows | `test`, `runHeadlessSmoke`, MSI install + `DataWeave.exe --headless-smoke` on `windows-latest` | **Verified** via CI run [39990144696](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/39990144696) |
+| Windows | `test`, `runHeadlessSmoke`, MSI install + `--diagnose` / `--headless-smoke` / `--gui-smoke` on `windows-latest` | GUI path verified only when CI `--gui-smoke` passes (see latest CI run on `main`) |
 | macOS (ARM) | Expected via GitHub Actions | **Not verified** in agent VM |
 
 See [CROSS_PLATFORM_VERIFICATION.md](./CROSS_PLATFORM_VERIFICATION.md) for manual checklists.
