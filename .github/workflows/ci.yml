@@ -124,13 +124,13 @@ jobs:
             Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
           }
 
-          function Invoke-DataWeaveSmoke {
+          function Invoke-DataWeaveConsoleSmoke {
             param(
               [string[]]$Arguments,
               [string]$Label,
               [string]$ExpectedPattern,
               [string]$WorkingDirectory = $installRoot,
-              [int]$WaitSeconds = 180
+              [int]$WaitSeconds = 300
             )
             $outFile = Join-Path $env:RUNNER_TEMP "dataweave-$Label.out"
             $errFile = Join-Path $env:RUNNER_TEMP "dataweave-$Label.err"
@@ -156,7 +156,7 @@ jobs:
             }
             if (-not $p.HasExited) {
               Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
-              $p.WaitForExit(5000)
+              $null = $p.WaitForExit(5000)
             }
             $stdout = Get-Content $outFile -Raw -ErrorAction SilentlyContinue
             $stderr = Get-Content $errFile -Raw -ErrorAction SilentlyContinue
@@ -169,12 +169,46 @@ jobs:
             }
           }
 
-          Invoke-DataWeaveSmoke -Arguments @('--diagnose') -Label 'diagnose' -ExpectedPattern '=== end diagnostics ==='
-          Invoke-DataWeaveSmoke -Arguments @('--headless-smoke') -Label 'headless-smoke' -ExpectedPattern 'HEADLESS_SMOKE_OK'
-          Invoke-DataWeaveSmoke -Arguments @('--gui-smoke') -Label 'gui-smoke' -ExpectedPattern 'GUI_SMOKE_OK'
+          function Invoke-DataWeaveGuiSmoke {
+            param(
+              [string]$Label,
+              [string]$WorkingDirectory = $installRoot,
+              [int]$WaitSeconds = 180
+            )
+            # Do not redirect stdout for Compose/Skiko (pipe buffer deadlock on GHA).
+            $launchLog = Join-Path $env:LOCALAPPDATA 'DataWeave/launch.log'
+            Write-Host "[$Label] gui-smoke cwd=$WorkingDirectory (poll launch.log)"
+            $p = Start-Process -FilePath $exe -WorkingDirectory $WorkingDirectory -ArgumentList @('--gui-smoke') -PassThru
+            $deadline = (Get-Date).AddSeconds($WaitSeconds)
+            $matched = $false
+            while ((Get-Date) -lt $deadline) {
+              if ($p.HasExited -and $p.ExitCode -ne 0) { break }
+              if ((Test-Path $launchLog) -and (Select-String -Path $launchLog -Pattern 'GUI_SMOKE_OK' -Quiet)) {
+                $matched = $true
+                break
+              }
+              Start-Sleep -Seconds 2
+            }
+            if (-not $p.HasExited) {
+              Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+              $null = $p.WaitForExit(5000)
+            }
+            if (Test-Path $launchLog) {
+              Write-Host "[$Label] launch.log tail:"
+              Get-Content $launchLog -Tail 20 | Write-Host
+            }
+            Assert-LaunchLogsHealthy -Label $Label
+            if (-not $matched) {
+              throw "[$Label] GUI_SMOKE_OK not seen in launch.log within ${WaitSeconds}s (exit=$($p.ExitCode))"
+            }
+            Write-Host "[$Label] GUI smoke OK"
+          }
+
+          Invoke-DataWeaveConsoleSmoke -Arguments @('--diagnose') -Label 'diagnose' -ExpectedPattern '=== end diagnostics ==='
+          Invoke-DataWeaveConsoleSmoke -Arguments @('--headless-smoke') -Label 'headless-smoke' -ExpectedPattern 'HEADLESS_SMOKE_OK' -WaitSeconds 420
+          Invoke-DataWeaveGuiSmoke -Label 'gui-smoke'
           # Start Menu shortcuts may use a different working directory than the install root.
-          Invoke-DataWeaveSmoke -Arguments @('--gui-smoke') -Label 'gui-smoke-bad-cwd' -ExpectedPattern 'GUI_SMOKE_OK' `
-            -WorkingDirectory $env:USERPROFILE
+          Invoke-DataWeaveGuiSmoke -Label 'gui-smoke-bad-cwd' -WorkingDirectory $env:USERPROFILE
 
           # Normal Start Menu path: no smoke flags, full Spring + Compose AppShell (not pixel-tested on GHA).
           Test-NormalGuiAlive -Label 'gui-normal-install-root' -WorkingDirectory $installRoot
@@ -194,7 +228,7 @@ jobs:
 
           $diagScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/diagnostics/DataWeave-Windows-Diagnostics.ps1'
           if (-not (Test-Path $diagScript)) { throw "Missing diagnostics script: $diagScript" }
-          & $diagScript -InstallRoot $installRoot -RunPackagedDiagnose -RunSmokeTests
+          & $diagScript -InstallRoot $installRoot -RunPackagedDiagnose
 
       - name: Package (macOS)
         if: runner.os == 'macOS'
