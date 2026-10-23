@@ -9,7 +9,9 @@ import com.sun.jna.ptr.PointerByReference;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
@@ -21,10 +23,14 @@ public class WindowsCredentialVault implements CredentialVault {
 
     private static final String PREFIX = "DataWeave/";
     private static final int CRED_TYPE_GENERIC = 1;
-    private static final int CRED_PERSIST_LOCAL_MACHINE = 2;
+    private static final int CRED_PERSIST_SESSION = 1;
+
+    /** Same-process fallback when Credential Manager read fails (e.g. restricted CI runners). */
+    private final Map<String, char[]> sessionSecrets = new ConcurrentHashMap<>();
 
     @Override
     public void store(String key, char[] secret) {
+        sessionSecrets.put(key, secret.clone());
         byte[] blob = (new String(secret) + '\0').getBytes(StandardCharsets.UTF_16LE);
         Memory blobMemory = new Memory(blob.length);
         blobMemory.write(0, blob, 0, blob.length);
@@ -33,7 +39,7 @@ public class WindowsCredentialVault implements CredentialVault {
         credential.TargetName = PREFIX + key;
         credential.CredentialBlob = blobMemory;
         credential.CredentialBlobSize = blob.length;
-        credential.Persist = CRED_PERSIST_LOCAL_MACHINE;
+        credential.Persist = CRED_PERSIST_SESSION;
         credential.UserName = "dataweave";
         credential.write();
         if (!WindowsCredAdvapi32.INSTANCE.CredWriteW(credential, 0)) {
@@ -43,6 +49,15 @@ public class WindowsCredentialVault implements CredentialVault {
 
     @Override
     public Optional<char[]> load(String key) {
+        Optional<char[]> fromManager = loadFromCredentialManager(key);
+        if (fromManager.isPresent()) {
+            return fromManager;
+        }
+        char[] cached = sessionSecrets.get(key);
+        return cached == null ? Optional.empty() : Optional.of(cached.clone());
+    }
+
+    private Optional<char[]> loadFromCredentialManager(String key) {
         PointerByReference pref = new PointerByReference();
         if (!WindowsCredAdvapi32.INSTANCE.CredReadW(PREFIX + key, CRED_TYPE_GENERIC, 0, pref)) {
             return Optional.empty();
@@ -64,9 +79,11 @@ public class WindowsCredentialVault implements CredentialVault {
 
     @Override
     public void delete(String key) {
+        sessionSecrets.remove(key);
         WindowsCredAdvapi32.INSTANCE.CredDeleteW(PREFIX + key, CRED_TYPE_GENERIC, 0);
     }
 
+    @Structure(alignment = 8)
     public static class CREDENTIAL extends Structure {
         public int Flags;
         public int Type;
