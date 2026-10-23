@@ -1,7 +1,7 @@
 package com.dataweave.backend.config;
 
+import com.dataweave.backend.platform.PlatformInfo;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -19,9 +19,9 @@ public class DataSourceConfig {
             @Value("${dataweave.metadata.jdbc-url:}") String configuredUrl) throws Exception {
         String url = configuredUrl;
         if (url == null || url.isBlank()) {
-            Path dir = Path.of(System.getProperty("user.home"), ".dataweave");
+            var dir = PlatformInfo.dataWeaveHome();
             Files.createDirectories(dir);
-            url = "jdbc:sqlite:" + dir.resolve("metadata.db");
+            url = "jdbc:sqlite:" + dir.resolve("metadata.db").toAbsolutePath();
         }
         SQLiteDataSource ds = new SQLiteDataSource();
         ds.setUrl(url);

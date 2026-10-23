@@ -1,3 +1,5 @@
+import org.gradle.internal.os.OperatingSystem
+
 plugins {
     kotlin("jvm")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -25,12 +27,34 @@ compose.desktop {
     application {
         mainClass = "com.dataweave.app.DataWeaveAppKt"
         nativeDistributions {
-            targetFormats(org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi)
             packageName = "DataWeave"
             packageVersion = "0.2.0"
             description = "Offline-first PostgreSQL data workbench"
             vendor = "DataWeave"
+            val os = OperatingSystem.current()
+            targetFormats(
+                *when {
+                    os.isWindows -> arrayOf(
+                        org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi,
+                        org.jetbrains.compose.desktop.application.dsl.TargetFormat.Exe,
+                    )
+                    os.isMacOsX -> arrayOf(
+                        org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg,
+                        org.jetbrains.compose.desktop.application.dsl.TargetFormat.Pkg,
+                    )
+                    os.isLinux -> arrayOf(
+                        org.jetbrains.compose.desktop.application.dsl.TargetFormat.AppImage,
+                    )
+                    else -> arrayOf(org.jetbrains.compose.desktop.application.dsl.TargetFormat.AppImage)
+                },
+            )
         }
+    }
+}
+
+tasks.withType<JavaExec>().configureEach {
+    if (OperatingSystem.current().isMacOsX) {
+        jvmArgs("-XstartOnFirstThread")
     }
 }
 

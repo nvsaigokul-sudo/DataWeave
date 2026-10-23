@@ -2,7 +2,7 @@
 
 ## Context
 
-Offline-first **Windows 11** desktop for PostgreSQL exploration and dataset construction. **SQLite** holds local app metadata; **PostgreSQL** (user-provided) holds business data.
+Offline-first **cross-platform desktop** (Windows, Linux, macOS) for PostgreSQL exploration and dataset construction. **SQLite** holds local app metadata; **PostgreSQL** (user-provided) holds business data.
 
 ## Process model
 
@@ -58,8 +58,8 @@ Diagnostics: `ApplicationFacade.cacheDiagnostics()` (hits/misses/evictions/size 
 
 ## Credentials
 
-- Passwords stored via `CredentialVault` — **Windows Credential Manager** when built on Windows (`src/windows/java`).
-- Linux CI / non-Windows dev: in-memory vault with explicit WARN log (not for production secrets on shared hosts).
+- Passwords stored via `CredentialVault` — OS-specific implementations in `src/windows`, `src/macos`, `src/linux` java source sets (see [PLATFORMS.md](./PLATFORMS.md)).
+- Fallback in-memory vault with WARN when no OS integration is available.
 
 ## Local metadata path
 

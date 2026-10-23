@@ -13,7 +13,8 @@ import org.springframework.stereotype.Component;
  * {@code WindowsCredentialVault} (under {@code src/windows/java}) is compiled and marked {@code @Primary}.
  */
 @Component
-@ConditionalOnMissingBean(name = "windowsCredentialVault")
+@ConditionalOnMissingBean(
+        name = {"windowsCredentialVault", "macOsKeychainCredentialVault", "linuxSecretCredentialVault"})
 public class PlatformCredentialVault implements CredentialVault {
 
     private static final Logger log = LoggerFactory.getLogger(PlatformCredentialVault.class);

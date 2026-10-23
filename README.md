@@ -1,6 +1,6 @@
 # DataWeave
 
-Offline-first Windows desktop workbench for local data integration. PostgreSQL holds project and pipeline metadata; transforms run on the desktop without requiring cloud connectivity.
+Offline-first **cross-platform desktop** workbench (Windows, Linux, macOS) for PostgreSQL exploration. Local SQLite holds app metadata; transforms and queries run on the desktop without requiring cloud connectivity.
 
 ## Current stack
 
@@ -31,7 +31,7 @@ Configure a saved connection in the UI (Connections tab). PostgreSQL is **not** 
 ./gradlew test runHeadlessSmoke
 ```
 
-Windows checklist: [docs/WINDOWS_VERIFICATION.md](docs/WINDOWS_VERIFICATION.md)
+Platform guides: [docs/PLATFORMS.md](docs/PLATFORMS.md), [docs/CROSS_PLATFORM_VERIFICATION.md](docs/CROSS_PLATFORM_VERIFICATION.md)
 
 ## Documentation
 

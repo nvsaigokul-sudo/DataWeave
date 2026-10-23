@@ -6,8 +6,10 @@ plugins {
     id("io.spring.dependency-management")
 }
 
-if (OperatingSystem.current().isWindows) {
-    sourceSets["main"].java.srcDir("src/windows/java")
+when {
+    OperatingSystem.current().isWindows -> sourceSets["main"].java.srcDir("src/windows/java")
+    OperatingSystem.current().isMacOsX -> sourceSets["main"].java.srcDir("src/macos/java")
+    OperatingSystem.current().isLinux -> sourceSets["main"].java.srcDir("src/linux/java")
 }
 
 dependencies {

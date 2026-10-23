@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test:
+    name: Build & test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-14]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Gradle test
+        run: ./gradlew test --no-daemon
+
+      - name: Headless smoke
+        run: ./gradlew :desktop:runHeadlessSmoke --no-daemon
+
+      - name: Package (Linux AppImage)
+        if: runner.os == 'Linux'
+        run: ./gradlew :desktop:packageAppImage --no-daemon
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        run: ./gradlew :desktop:packageMsi --no-daemon
+
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        run: ./gradlew :desktop:packageDmg --no-daemon

@@ -56,7 +56,9 @@ fun ConnectionsScreen(
 
     Column(modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("PostgreSQL connections")
-        Text("Passwords are stored in the platform credential vault (Windows Credential Manager on Windows 11).")
+        Text(
+            "Passwords are stored in the OS credential vault (Windows Credential Manager, macOS Keychain, or Linux Secret Service when available).",
+        )
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(name, { name = it }, label = { Text("Name") }, modifier = Modifier.fillMaxWidth())
