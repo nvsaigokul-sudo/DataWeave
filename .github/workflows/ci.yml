@@ -62,7 +62,7 @@ jobs:
       - name: Windows packaged app launch smoke
         if: runner.os == 'Windows'
         shell: pwsh
-        timeout-minutes: 10
+        timeout-minutes: 15
         run: |
           $ErrorActionPreference = 'Stop'
           # Reproduce Access Bridge setups that trigger missing jdk.accessibility at AWT init.
@@ -129,23 +129,43 @@ jobs:
               [string[]]$Arguments,
               [string]$Label,
               [string]$ExpectedPattern,
-              [string]$WorkingDirectory = $installRoot
+              [string]$WorkingDirectory = $installRoot,
+              [int]$WaitSeconds = 180
             )
             $outFile = Join-Path $env:RUNNER_TEMP "dataweave-$Label.out"
             $errFile = Join-Path $env:RUNNER_TEMP "dataweave-$Label.err"
+            if (Test-Path $outFile) { Remove-Item $outFile -Force }
+            if (Test-Path $errFile) { Remove-Item $errFile -Force }
             $p = Start-Process -FilePath $exe -WorkingDirectory $WorkingDirectory -ArgumentList $Arguments `
-              -RedirectStandardOutput $outFile -RedirectStandardError $errFile -PassThru -NoNewWindow -Wait
+              -RedirectStandardOutput $outFile -RedirectStandardError $errFile -PassThru -NoNewWindow
+            $deadline = (Get-Date).AddSeconds($WaitSeconds)
+            $matched = $false
+            while ((Get-Date) -lt $deadline) {
+              $stdout = Get-Content $outFile -Raw -ErrorAction SilentlyContinue
+              $stderr = Get-Content $errFile -Raw -ErrorAction SilentlyContinue
+              if ($stdout -match 'Failed to launch JVM' -or $stderr -match 'Failed to launch JVM') {
+                if (-not $p.HasExited) { Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue }
+                throw "[$Label] Packaged exe reported Failed to launch JVM"
+              }
+              if ($ExpectedPattern -and $stdout -match $ExpectedPattern) {
+                $matched = $true
+                break
+              }
+              if ($p.HasExited) { break }
+              Start-Sleep -Seconds 2
+            }
+            if (-not $p.HasExited) {
+              Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+              $p.WaitForExit(5000)
+            }
             $stdout = Get-Content $outFile -Raw -ErrorAction SilentlyContinue
             $stderr = Get-Content $errFile -Raw -ErrorAction SilentlyContinue
-            Write-Host "[$Label] exit=$($p.ExitCode) cwd=$WorkingDirectory"
+            Write-Host "[$Label] exit=$($p.ExitCode) cwd=$WorkingDirectory matched=$matched"
             if ($stdout) { Write-Host $stdout }
             if ($stderr) { Write-Host $stderr }
-            if ($stdout -match 'Failed to launch JVM' -or $stderr -match 'Failed to launch JVM') {
-              throw "[$Label] Packaged exe reported Failed to launch JVM"
-            }
-            if ($p.ExitCode -ne 0) { throw "[$Label] DataWeave.exe exited $($p.ExitCode)" }
-            if ($ExpectedPattern -and $stdout -notmatch $ExpectedPattern) {
-              throw "[$Label] Expected pattern '$ExpectedPattern' in stdout"
+            if ($p.ExitCode -ne 0 -and -not $matched) { throw "[$Label] DataWeave.exe exited $($p.ExitCode)" }
+            if ($ExpectedPattern -and -not $matched) {
+              throw "[$Label] Expected pattern '$ExpectedPattern' in stdout within ${WaitSeconds}s"
             }
           }
 

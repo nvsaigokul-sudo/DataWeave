@@ -15,12 +15,19 @@ import kotlinx.coroutines.delay
 
 /** Packaged-app smoke: Spring + Compose window (AWT/Skiko), without user interaction. */
 fun runGuiSmoke() {
+    System.setProperty("skiko.renderApi", "SOFTWARE")
+    System.setProperty("java.awt.headless", "false")
+    java.util.Timer(true).schedule(
+        object : java.util.TimerTask() {
+            override fun run() {
+                System.err.println("GUI_SMOKE_TIMEOUT")
+                Runtime.getRuntime().halt(2)
+            }
+        },
+        120_000L,
+    )
     LaunchDiagnostics.appendLaunchLog("gui-smoke: starting DesktopSession")
-    val session =
-        DesktopSession.start(
-            "--dataweave.test.mode=true",
-        )
-    Runtime.getRuntime().addShutdownHook(Thread { session.close() })
+    DesktopSession.start("--dataweave.test.mode=true").use { session ->
     LaunchDiagnostics.appendLaunchLog("gui-smoke: opening Compose window")
     application {
         Window(
@@ -33,14 +40,15 @@ fun runGuiSmoke() {
         ) {
             LaunchedEffect(Unit) {
                 println("GUI_SMOKE_OK")
+                System.out.flush()
                 LaunchDiagnostics.appendLaunchLog("gui-smoke: GUI_SMOKE_OK")
-                delay(1500)
-                session.close()
+                delay(500)
                 exitApplication()
             }
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("GUI smoke")
             }
         }
+    }
     }
 }
