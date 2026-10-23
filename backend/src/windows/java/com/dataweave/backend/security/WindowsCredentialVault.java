@@ -83,7 +83,6 @@ public class WindowsCredentialVault implements CredentialVault {
         WindowsCredAdvapi32.INSTANCE.CredDeleteW(PREFIX + key, CRED_TYPE_GENERIC, 0);
     }
 
-    @Structure(alignment = 8)
     public static class CREDENTIAL extends Structure {
         public int Flags;
         public int Type;
