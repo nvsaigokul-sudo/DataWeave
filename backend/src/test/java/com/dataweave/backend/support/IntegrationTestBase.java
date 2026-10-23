@@ -20,6 +20,7 @@ public abstract class IntegrationTestBase {
             sqliteFile = Files.createTempFile("dataweave-test", ".db");
         }
         registry.add("dataweave.metadata.jdbc-url", () -> "jdbc:sqlite:" + sqliteFile);
+        registry.add("dataweave.test.mode", () -> "true");
     }
 
     @BeforeAll

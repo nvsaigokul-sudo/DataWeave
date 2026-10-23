@@ -25,7 +25,7 @@ public class WindowsCredentialVault implements CredentialVault {
 
     @Override
     public void store(String key, char[] secret) {
-        byte[] blob = new String(secret).getBytes(StandardCharsets.UTF_16LE);
+        byte[] blob = (new String(secret) + '\0').getBytes(StandardCharsets.UTF_16LE);
         Memory blobMemory = new Memory(blob.length);
         blobMemory.write(0, blob, 0, blob.length);
         CREDENTIAL credential = new CREDENTIAL();
@@ -51,7 +51,12 @@ public class WindowsCredentialVault implements CredentialVault {
         cred.read();
         try {
             byte[] blob = cred.CredentialBlob.getByteArray(0, cred.CredentialBlobSize);
-            return Optional.of(new String(blob, StandardCharsets.UTF_16LE).toCharArray());
+            String decoded = new String(blob, StandardCharsets.UTF_16LE);
+            int end = decoded.indexOf('\0');
+            if (end >= 0) {
+                decoded = decoded.substring(0, end);
+            }
+            return Optional.of(decoded.toCharArray());
         } finally {
             WindowsCredAdvapi32.INSTANCE.CredFree(pref.getValue());
         }
