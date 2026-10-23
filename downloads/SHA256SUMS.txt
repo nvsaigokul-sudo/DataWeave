@@ -1,0 +1,4 @@
+# DataWeave Windows installer (built on GitHub Actions windows-latest)
+# CI: https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/39987420479
+# Commit: 4b4b84a — Gradle :desktop:packageMsi :desktop:packageExe
+a9c8ab77e653c6f202f58ebd877c526e5c220a712eb97f045b5457923d0f06fb  DataWeave-Setup.msi

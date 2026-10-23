@@ -13,14 +13,14 @@
 
 **Latest release:** [github.com/nvsaigokul-sudo/DataWeave/releases/latest](https://github.com/nvsaigokul-sudo/DataWeave/releases/latest)
 
-| Your OS | Download on the release page |
-|---------|------------------------------|
-| **Windows** | `DataWeave-*.msi` (recommended) or `DataWeave-*.exe` |
+| Your OS | Download |
+|---------|----------|
+| **Windows** | **[DataWeave-Setup.msi](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/DataWeave-Setup.msi)** (Git LFS in [downloads/](downloads/README.md); SHA256 in [downloads/SHA256SUMS.txt](downloads/SHA256SUMS.txt)) |
 | **Linux (x64)** | `DataWeave-*.AppImage` or `dataweave_*_amd64.deb` |
 | **macOS Apple Silicon** | `.dmg` or `.pkg` from the **macos-arm64** build |
 | **macOS Intel** | `.dmg` or `.pkg` from the **macos-x64** build |
 
-Verify files with **`SHA256SUMS.txt`** on the same release. Short link hub: [downloads/README.md](downloads/README.md).
+Verify Windows MSI with [downloads/SHA256SUMS.txt](downloads/SHA256SUMS.txt); other platforms use **`SHA256SUMS.txt`** on the release page. Hub: [downloads/README.md](downloads/README.md).
 
 | Step | Action |
 |------|--------|
@@ -64,6 +64,8 @@ Package for current OS:
 ```bash
 ./gradlew :desktop:packageDistributionForCurrentOS
 ```
+
+Windows (on a Windows host or CI): `:desktop:packageMsi` and `:desktop:packageExe`. Linux: `:desktop:packageDeb`, `:desktop:packageAppImage`. macOS: `:desktop:packageDmg`, `:desktop:packagePkg`.
 
 Artifacts under `desktop/build/compose/binaries/`.
 
