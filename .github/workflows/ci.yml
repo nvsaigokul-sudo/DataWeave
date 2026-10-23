@@ -30,13 +30,18 @@ jobs:
       - name: Headless smoke
         run: ./gradlew :desktop:runHeadlessSmoke --no-daemon
 
-      - name: Package (Linux AppImage)
+      - name: Install Linux packaging deps
         if: runner.os == 'Linux'
-        run: ./gradlew :desktop:packageAppImage --no-daemon
+        run: sudo apt-get update && sudo apt-get install -y fakeroot
+
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        run: ./gradlew :desktop:packageAppImage :desktop:packageDeb --no-daemon
 
       - name: Package (Windows)
         if: runner.os == 'Windows'
-        run: ./gradlew :desktop:packageMsi --no-daemon
+        shell: bash
+        run: ./gradlew :desktop:packageMsi :desktop:packageExe --no-daemon
 
       - name: Package (macOS)
         if: runner.os == 'macOS'

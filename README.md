@@ -1,51 +1,64 @@
 # DataWeave
 
-Offline-first **cross-platform desktop** workbench (Windows, Linux, macOS) for PostgreSQL exploration. Local SQLite holds app metadata; transforms and queries run on the desktop without requiring cloud connectivity.
+**DataWeave** is a standalone, installable **desktop application** for exploring and working with **PostgreSQL** databases — offline-first, with no mandatory cloud account or hosted backend.
 
-## Current stack
+---
 
-- **Desktop:** Kotlin + Compose Desktop (`desktop/`)
-- **Backend:** Java 21 + embedded Spring Boot (`backend/`, no HTTP server)
-- **Local metadata:** SQLite + Flyway (`~/.dataweave/metadata.db`)
-- **Data source:** user PostgreSQL connections (HikariCP + JDBC)
-- **Cache:** Caffeine (metadata, data pages, previews, read-only SELECT)
+## Download and install (end users)
 
-## Vertical slices shipped
+**You do not need to clone this repository or run Gradle.**
 
-- Workspace projects (SQLite)
-- Saved PostgreSQL connections + credential vault
-- Schema/table browser with metadata cache refresh
-- Paginated table grid (async fetch, stale-request guard)
+| Step | Action |
+|------|--------|
+| 1 | Go to **[GitHub Releases](https://github.com/nvsaigokul-sudo/DataWeave/releases)** |
+| 2 | Download the installer for Windows, Linux, or macOS |
+| 3 | Install and launch **DataWeave** like any desktop app |
+| 4 | Add your PostgreSQL connection in the **Connections** tab and browse your data |
 
-## Run locally
+Full instructions: **[docs/INSTALL.md](docs/INSTALL.md)**
 
-```bash
-./gradlew :desktop:run --args="--dev"
-```
+Supported: **Windows 10/11**, **Linux (x64)**, **macOS** (Apple Silicon and Intel builds via CI). Each installer bundles a **private Java runtime** — you do not install JDK separately.
 
-Configure a saved connection in the UI (Connections tab). PostgreSQL is **not** required to launch the app.
+---
 
-## Test
+## What the application does
 
-```bash
-./gradlew test runHeadlessSmoke
-```
+- **Compose Desktop UI** + **embedded Spring Boot** (single process — no separate server to start)
+- Save **real PostgreSQL** connections (host, port, SSL, credentials in OS keychain/credential manager)
+- Browse schemas/tables and view **paginated** table data from your database
+- Local **SQLite** metadata at `~/.dataweave/` (not your business data warehouse)
 
-Platform guides: [docs/PLATFORMS.md](docs/PLATFORMS.md), [docs/CROSS_PLATFORM_VERIFICATION.md](docs/CROSS_PLATFORM_VERIFICATION.md)
+No fake demo databases, Docker, or browser UI.
 
-## Documentation
+---
 
-- [Architecture](docs/ARCHITECTURE.md)
-- [Implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md)
-- [PRD (complete)](docs/prd/PRD-COMPLETE.md)
-- [Development guide](docs/DEVELOPMENT.md)
+## For developers (source build)
 
-## Git remotes
-
-After clone, add GitHub:
+Requirements: **JDK 21**, Git.
 
 ```bash
-git remote add github https://github.com/nvsaigokul-sudo/DataWeave.git
+git clone https://github.com/nvsaigokul-sudo/DataWeave.git
+cd DataWeave
+./gradlew test :desktop:runHeadlessSmoke
+./gradlew :desktop:run
 ```
 
-Cursor cloud environments may retain a separate `origin` for agent pushes.
+Optional dev embedded PostgreSQL: `./gradlew :desktop:run --args="--dev"` (development only).
+
+Package for current OS:
+
+```bash
+./gradlew :desktop:packageDistributionForCurrentOS
+```
+
+Artifacts under `desktop/build/compose/binaries/`.
+
+Release automation: [.github/workflows/release.yml](.github/workflows/release.yml) (tag `v*`).
+
+Documentation: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [docs/PLATFORMS.md](docs/PLATFORMS.md) · [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
+
+---
+
+## License / signing
+
+Installers distributed via GitHub Releases include SHA256 checksums. **Code signing and Apple notarization** are documented per release; default open builds are unsigned unless noted.

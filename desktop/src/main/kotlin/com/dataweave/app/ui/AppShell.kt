@@ -45,7 +45,7 @@ fun AppShell(facade: ApplicationFacade) {
                 ) {
                     Text("DataWeave", style = MaterialTheme.typography.titleLarge)
                     Text(
-                        "Local-first PostgreSQL workbench",
+                        "Desktop app — connect to your PostgreSQL to browse data.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 4.dp, bottom = 24.dp),

@@ -28,7 +28,7 @@ compose.desktop {
         mainClass = "com.dataweave.app.DataWeaveAppKt"
         nativeDistributions {
             packageName = "DataWeave"
-            packageVersion = "0.2.0"
+            packageVersion = project.version.toString().removeSuffix("-SNAPSHOT")
             description = "Offline-first PostgreSQL data workbench"
             vendor = "DataWeave"
             val os = OperatingSystem.current()
@@ -44,6 +44,7 @@ compose.desktop {
                     )
                     os.isLinux -> arrayOf(
                         org.jetbrains.compose.desktop.application.dsl.TargetFormat.AppImage,
+                        org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb,
                     )
                     else -> arrayOf(org.jetbrains.compose.desktop.application.dsl.TargetFormat.AppImage)
                 },

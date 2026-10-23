@@ -1,26 +1,46 @@
-# Release process (draft)
+# Release process
 
 ## Versioning
 
-SemVer starting at `0.1.0-SNAPSHOT` until first Windows MSI.
+SemVer tags on `main`, e.g. `v0.2.0`. Project version: `0.2.0-SNAPSHOT` in Gradle until tagged.
+
+## Automated release
+
+Push a tag:
+
+```bash
+git tag v0.2.0
+git push github v0.2.0
+```
+
+Or run **Release** workflow manually (`workflow_dispatch`) from GitHub Actions.
+
+Workflow [.github/workflows/release.yml](../.github/workflows/release.yml):
+
+1. Tests + headless smoke on each runner
+2. Native packages per OS (jpackage via Compose Desktop, **includes bundled JRE**)
+3. Upload artifacts + `SHA256SUMS.txt` to GitHub Release
+
+| Runner | Artifacts |
+|--------|-----------|
+| ubuntu-latest | AppImage, `.deb`, portable `tar.gz` of app dir |
+| windows-latest | `.msi`, `.exe` |
+| macos-14 | `.dmg`, `.pkg` (Apple Silicon) |
+| macos-13 | `.dmg`, `.pkg` (Intel) |
+
+## Signing / notarization (honest status)
+
+- **Default:** binaries are **not** Authenticode-signed, **not** Apple-notarized.
+- Document any signed release explicitly in release notes.
+- Users should verify `SHA256SUMS.txt` from the release page.
 
 ## Pre-release checklist
 
-- [ ] `./gradlew test runHeadlessSmoke` green
-- [ ] Flyway migration applied on clean PostgreSQL
-- [ ] Traceability matrix updated
-- [ ] KNOWN_LIMITATIONS.md reviewed
-- [ ] No secrets in working tree
-- [ ] Windows MSI smoke (when agent available)
+- [ ] `./gradlew test :desktop:runHeadlessSmoke` green on `main`
+- [ ] No secrets or credentials in git
+- [ ] Tag matches Gradle `packageVersion` (see `desktop/build.gradle.kts`)
+- [ ] All matrix jobs green before publishing (workflow fails if an artifact is missing)
 
-## Build MSI (local)
+## Binaries in git
 
-```bash
-./gradlew packageMsi
-```
-
-Artifact under `app/build/compose/binaries`.
-
-## Rollback
-
-Restore previous MSI and run Flyway repair only under operator guidance — forward-only migrations preferred.
+Do **not** commit installers to the repository. Use GitHub Releases only.
