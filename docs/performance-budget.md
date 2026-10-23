@@ -1,20 +1,18 @@
 # Performance budget
 
-**Policy:** No published numeric targets until measured on reference Windows hardware (see PRD Appendix A). Session 1 establishes instrumentation hooks only.
+## Measured (Linux CI, 2026-10-23)
 
-## Candidate metrics (UNVERIFIED — not yet measured)
+| Metric | Value | Command / notes |
+|--------|-------|-----------------|
+| Spring context startup (headless smoke) | **~1.1 s** | Log line `Started HeadlessSmokeKt in 1.1 seconds` from `./gradlew runHeadlessSmoke` |
+| Backend unit+integration tests | **4 tests**, PASS | `./gradlew :backend:test` |
 
-| Metric | Measurement method | Owner milestone |
-|--------|-------------------|-----------------|
-| Cold start to interactive shell | Process timestamp → first frame | M0 follow-up |
-| Project list query (100 rows) | JDBC timing log | M1 |
-| CSV sample 10k rows → grid ready | Trace span | M1 |
-| Pipeline run overhead | Run metadata timestamps | M2 |
+No Windows cold-start or grid latency numbers yet — **do not extrapolate SLAs** until recorded on Windows 11 reference hardware (PRD Appendix A).
 
 ## Architecture allowances
 
-- UI thread must not block on JDBC or file I/O.
-- Future preview uses bounded samples before full scans.
-- Future execution uses streaming transforms with spill directory under `%LOCALAPPDATA%/DataWeave`.
+- UI dispatches JDBC on background dispatchers / executor pool (`dataweave.query.pool-size`, default 4).
+- Table grid fetches **≤500 rows** per page (default 100).
+- Caffeine bounds: metadata 500 entries / 30 min; data pages 200 / 5 min; dataset preview 50 / 2 min; query results 100 / 1 min (SELECT-only).
 
-When measurements exist, record commit SHA, hardware, dataset, and p50/p95 in this file.
+Update this file after Windows measurements.

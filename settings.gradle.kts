@@ -16,4 +16,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "dataweave"
-include("app")
+include("backend", "desktop")

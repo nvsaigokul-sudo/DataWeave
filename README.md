@@ -2,32 +2,36 @@
 
 Offline-first Windows desktop workbench for local data integration. PostgreSQL holds project and pipeline metadata; transforms run on the desktop without requiring cloud connectivity.
 
-## Session 1 deliverable
+## Current stack
 
-- Product documentation pack under `docs/` (PRD with 41 sections, architecture, ADRs, test/release/security docs)
-- Kotlin + Compose Desktop application shell
-- Vertical slice: **create and list projects** persisted via Flyway + PostgreSQL
+- **Desktop:** Kotlin + Compose Desktop (`desktop/`)
+- **Backend:** Java 21 + embedded Spring Boot (`backend/`, no HTTP server)
+- **Local metadata:** SQLite + Flyway (`~/.dataweave/metadata.db`)
+- **Data source:** user PostgreSQL connections (HikariCP + JDBC)
+- **Cache:** Caffeine (metadata, data pages, previews, read-only SELECT)
+
+## Vertical slices shipped
+
+- Workspace projects (SQLite)
+- Saved PostgreSQL connections + credential vault
+- Schema/table browser with metadata cache refresh
+- Paginated table grid (async fetch, stale-request guard)
 
 ## Run locally
 
 ```bash
-./gradlew run --args="--dev"
+./gradlew :desktop:run --args="--dev"
 ```
 
-Or point at an existing database:
-
-```bash
-export DATAWEAVE_JDBC_URL=jdbc:postgresql://127.0.0.1:5432/dataweave
-export DATAWEAVE_DB_USER=dataweave
-export DATAWEAVE_DB_PASSWORD=
-./gradlew run
-```
+Configure a saved connection in the UI (Connections tab). PostgreSQL is **not** required to launch the app.
 
 ## Test
 
 ```bash
 ./gradlew test runHeadlessSmoke
 ```
+
+Windows checklist: [docs/WINDOWS_VERIFICATION.md](docs/WINDOWS_VERIFICATION.md)
 
 ## Documentation
 

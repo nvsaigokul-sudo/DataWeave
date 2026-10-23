@@ -2,62 +2,69 @@
 
 ## Context
 
-DataWeave is an offline-first **Windows desktop** application. **PostgreSQL** is the authoritative store for catalog metadata (projects, and later pipelines, runs, and connection profiles). User data files remain on disk; the database holds pointers, schemas, and operational history.
+Offline-first **Windows 11** desktop for PostgreSQL exploration and dataset construction. **SQLite** holds local app metadata; **PostgreSQL** (user-provided) holds business data.
 
-## Logical view
+## Process model
+
+Single desktop JVM:
 
 ```mermaid
 flowchart TB
-  subgraph desktop [Windows Desktop Process]
-    UI[Compose Desktop UI]
-    APP[Application Services]
-    PERSIST[Repositories + Flyway]
-    POOL[HikariCP Pool]
+  subgraph jvm [Desktop JVM]
+    UI[Compose Desktop Kotlin]
+    FACADE[ApplicationFacade]
+    SPRING[Spring Boot context WebApplicationType.NONE]
+    CACHE[Caffeine caches]
+    META[(SQLite metadata)]
+    POOLS[Hikari PG pools]
   end
-  PG[(PostgreSQL)]
-  FILES[Local Files / JDBC Sources]
+  PG[(User PostgreSQL)]
 
-  UI --> APP
-  APP --> PERSIST
-  PERSIST --> POOL
-  POOL --> PG
-  APP --> FILES
+  UI --> FACADE
+  FACADE --> SPRING
+  SPRING --> CACHE
+  SPRING --> META
+  SPRING --> POOLS
+  POOLS --> PG
+  CACHE --> POOLS
 ```
 
-## Layers
+**No HTTP server** is started for UI communication. Compose calls Spring beans directly via `DesktopSession`.
 
-| Layer | Responsibility | Session 1 modules |
-|-------|----------------|-------------------|
-| UI | Navigation, forms, future virtualized grid | `com.dataweave.app.ui` |
-| Application | Validation, use cases | `ProjectService` |
-| Persistence | SQL, migrations | `ProjectRepository`, Flyway `V1__init.sql` |
-| Infrastructure | Pooling, embedded dev DB | HikariCP, optional embedded Postgres |
+## Modules
 
-## Performance architecture (planned)
+| Module | Role |
+|--------|------|
+| `backend` | Java 21, Spring Boot, JDBC, Flyway (SQLite), caching, PostgreSQL access |
+| `desktop` | Kotlin Compose UI, embeds backend |
 
-- **UI thread**: Compose state only; all I/O on `Dispatchers.IO`.
-- **Preview grid (future)**: windowed reads, columnar cache, cancelable sampling jobs.
-- **Execution (future)**: bounded worker pool, spill-to-disk for large transforms, PostgreSQL for run metadata only (not bulk fact storage).
-- **Measurements**: startup, project list query, sample load — recorded before tightening budgets in `docs/performance-budget.md`.
+## Data flow (table browse)
 
-## Offline-first rules
+1. UI requests page → `ApplicationFacade.fetchTablePage`
+2. `TableDataService` checks request generation (stale guard) → `TableDataCacheGateway`
+3. On miss: JDBC **SELECT … LIMIT/OFFSET** (or keyset order when PK exists) via Hikari
+4. Rows returned asynchronously to Compose state on `Dispatchers.IO`
 
-1. No network call on critical path for v0.1 features.
-2. Migrations run locally at startup; app refuses to run if schema version incompatible.
-3. Sync (future) is asynchronous and never blocks local saves.
+## Caches
 
-## Repository layout
+| Cache | Purpose | Invalidation |
+|-------|---------|--------------|
+| `metadata` | Schemas, tables, columns | `refreshSchema()` bumps version; connection delete |
+| `dataPages` | Recent table pages | Schema version in key; connection invalidation |
+| `datasetPreview` | Column-filtered previews | Preview scope generation + schema version |
+| `queryResults` | Read-only SELECT (max 500 rows) | Schema version; not used for writes |
 
-```
-app/src/main/kotlin/com/dataweave/
-  app/          # Entry, runtime config, UI root
-  domain/       # Pure models
-  persistence/  # JDBC + Flyway bootstrap
-  service/      # Use cases
-app/src/main/resources/db/migration/
-docs/           # PRD, ADRs, release process
-```
+Diagnostics: `ApplicationFacade.cacheDiagnostics()` (hits/misses/evictions/size — no row data).
 
-## Deployment target
+## Credentials
 
-Primary artifact: **MSI** (Compose `nativeDistributions`). Development builds run on Linux/macOS/Windows with JVM 21.
+- Passwords stored via `CredentialVault` — **Windows Credential Manager** when built on Windows (`src/windows/java`).
+- Linux CI / non-Windows dev: in-memory vault with explicit WARN log (not for production secrets on shared hosts).
+
+## Local metadata path
+
+Default: `~/.dataweave/metadata.db` (override with `dataweave.metadata.jdbc-url`).
+
+## Roadmap alignment
+
+Implemented slice: connections, metadata browse, paginated grid. Dataset builder, SQL console, exports, editing — **planned** (see `docs/IMPLEMENTATION_ROADMAP.md`).

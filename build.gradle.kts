@@ -2,11 +2,13 @@ plugins {
     kotlin("jvm") version "2.0.21" apply false
     id("org.jetbrains.kotlin.plugin.compose") version "2.0.21" apply false
     id("org.jetbrains.compose") version "1.7.1" apply false
+    id("org.springframework.boot") version "3.4.1" apply false
+    id("io.spring.dependency-management") version "1.1.7" apply false
 }
 
 allprojects {
     group = "com.dataweave"
-    version = "0.1.0-SNAPSHOT"
+    version = "0.2.0-SNAPSHOT"
 }
 
 subprojects {
@@ -18,5 +20,9 @@ subprojects {
     }
     tasks.withType<Test>().configureEach {
         useJUnitPlatform()
+    }
+    tasks.withType<JavaCompile>().configureEach {
+        sourceCompatibility = "21"
+        targetCompatibility = "21"
     }
 }
