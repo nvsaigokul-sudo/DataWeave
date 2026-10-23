@@ -77,17 +77,41 @@ jobs:
             if (-not (Test-Path $path)) { throw "Missing expected install artifact: $path" }
           }
 
-          $outFile = Join-Path $env:RUNNER_TEMP 'dataweave-smoke.out'
-          $errFile = Join-Path $env:RUNNER_TEMP 'dataweave-smoke.err'
-          $p = Start-Process -FilePath $exe -ArgumentList '--headless-smoke' -RedirectStandardOutput $outFile -RedirectStandardError $errFile -PassThru -NoNewWindow -Wait
-          $stdout = Get-Content $outFile -Raw -ErrorAction SilentlyContinue
-          $stderr = Get-Content $errFile -Raw -ErrorAction SilentlyContinue
-          Write-Host "exit=$($p.ExitCode)"
-          if ($stdout) { Write-Host $stdout }
-          if ($stderr) { Write-Host $stderr }
-          if ($stdout -match 'Failed to launch JVM') { throw 'Packaged exe reported Failed to launch JVM' }
-          if ($p.ExitCode -ne 0) { throw "DataWeave.exe --headless-smoke exited $($p.ExitCode)" }
-          if ($stdout -notmatch 'HEADLESS_SMOKE_OK') { throw 'Expected HEADLESS_SMOKE_OK in stdout' }
+          function Invoke-DataWeaveSmoke {
+            param(
+              [string[]]$Arguments,
+              [string]$Label,
+              [string]$ExpectedPattern,
+              [string]$WorkingDirectory = $installRoot
+            )
+            $outFile = Join-Path $env:RUNNER_TEMP "dataweave-$Label.out"
+            $errFile = Join-Path $env:RUNNER_TEMP "dataweave-$Label.err"
+            $p = Start-Process -FilePath $exe -WorkingDirectory $WorkingDirectory -ArgumentList $Arguments `
+              -RedirectStandardOutput $outFile -RedirectStandardError $errFile -PassThru -NoNewWindow -Wait
+            $stdout = Get-Content $outFile -Raw -ErrorAction SilentlyContinue
+            $stderr = Get-Content $errFile -Raw -ErrorAction SilentlyContinue
+            Write-Host "[$Label] exit=$($p.ExitCode) cwd=$WorkingDirectory"
+            if ($stdout) { Write-Host $stdout }
+            if ($stderr) { Write-Host $stderr }
+            if ($stdout -match 'Failed to launch JVM' -or $stderr -match 'Failed to launch JVM') {
+              throw "[$Label] Packaged exe reported Failed to launch JVM"
+            }
+            if ($p.ExitCode -ne 0) { throw "[$Label] DataWeave.exe exited $($p.ExitCode)" }
+            if ($ExpectedPattern -and $stdout -notmatch $ExpectedPattern) {
+              throw "[$Label] Expected pattern '$ExpectedPattern' in stdout"
+            }
+          }
+
+          Invoke-DataWeaveSmoke -Arguments @('--diagnose') -Label 'diagnose' -ExpectedPattern '=== end diagnostics ==='
+          Invoke-DataWeaveSmoke -Arguments @('--headless-smoke') -Label 'headless-smoke' -ExpectedPattern 'HEADLESS_SMOKE_OK'
+          Invoke-DataWeaveSmoke -Arguments @('--gui-smoke') -Label 'gui-smoke' -ExpectedPattern 'GUI_SMOKE_OK'
+          # Start Menu shortcuts may use a different working directory than the install root.
+          Invoke-DataWeaveSmoke -Arguments @('--gui-smoke') -Label 'gui-smoke-bad-cwd' -ExpectedPattern 'GUI_SMOKE_OK' `
+            -WorkingDirectory $env:USERPROFILE
+
+          $diagScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/diagnostics/DataWeave-Windows-Diagnostics.ps1'
+          if (-not (Test-Path $diagScript)) { throw "Missing diagnostics script: $diagScript" }
+          & $diagScript -InstallRoot $installRoot -RunPackagedDiagnose
 
       - name: Package (macOS)
         if: runner.os == 'macOS'

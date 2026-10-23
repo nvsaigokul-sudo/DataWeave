@@ -42,12 +42,15 @@ compose.desktop {
             packageVersion = pkgVersion
             description = "Offline-first PostgreSQL data workbench"
             vendor = "DataWeave"
+            val os = OperatingSystem.current()
             // jlink modules for Spring/SQL + jdk.accessibility (Windows Access Bridge / Skiko AWT).
             // Without jdk.accessibility, jpackage shows "Failed to launch JVM" when
             // %USERPROFILE%\.accessibility.properties enables assistive technologies.
             modules(
                 "java.compiler",
+                "java.desktop",
                 "java.instrument",
+                "java.logging",
                 "java.management",
                 "java.net.http",
                 "java.prefs",
@@ -55,10 +58,10 @@ compose.desktop {
                 "java.security.jgss",
                 "java.sql.rowset",
                 "jdk.jfr",
+                "jdk.localedata",
                 "jdk.unsupported",
                 "jdk.accessibility",
             )
-            val os = OperatingSystem.current()
             if (os.isMacOsX) {
                 macOS {
                     dmgPackageVersion = pkgVersion
@@ -71,6 +74,8 @@ compose.desktop {
                     msiPackageVersion = pkgVersion
                     menuGroup = "DataWeave"
                     upgradeUuid = "18189999-4338-4F3C-8424-4A0B2E720508"
+                    menu = true
+                    shortcut = true
                 }
             }
             targetFormats(

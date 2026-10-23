@@ -43,4 +43,20 @@ Release binaries are **not code-signed/notarized** unless stated on a specific r
 
 ## Troubleshooting (Windows)
 
-**“Failed to launch JVM” immediately after install** — Older installers omitted the `jdk.accessibility` module from the bundled JRE. When Windows has Java Access Bridge enabled (`%USERPROFILE%\.accessibility.properties`), AWT cannot load assistive technology classes and the launcher shows this generic error. Download the latest [DataWeave-Setup.msi](../downloads/DataWeave-Setup.msi) from `main` (see [downloads/README.md](../downloads/README.md) for SHA256) or a current GitHub Release build that includes `jdk.accessibility` in `runtime/release`.
+**“Failed to launch JVM”** — The native launcher shows this message for both a broken bundled JRE and for **uncaught Java/Compose startup errors** (Skiko/AWT/Spring). Collect diagnostics before reinstalling:
+
+1. From PowerShell (repo script or copy from `scripts/diagnostics/DataWeave-Windows-Diagnostics.ps1`):
+
+   ```powershell
+   .\scripts\diagnostics\DataWeave-Windows-Diagnostics.ps1 -RunPackagedDiagnose
+   ```
+
+2. Or from an installed copy:
+
+   ```powershell
+   & "C:\Program Files\DataWeave\DataWeave.exe" --diagnose
+   ```
+
+3. Check `%LOCALAPPDATA%\DataWeave\launch-error.log` after a failed start (written by recent builds).
+
+**Older installers** omitted `jdk.accessibility`; with Java Access Bridge enabled (`%USERPROFILE%\.accessibility.properties`) AWT could fail at startup. Current builds list `jdk.accessibility` in `runtime/release`. Download the latest [DataWeave-Setup.msi](../downloads/DataWeave-Setup.msi) (see [downloads/README.md](../downloads/README.md) for SHA256) and remove stale Start Menu shortcuts pointing at an old install path.
