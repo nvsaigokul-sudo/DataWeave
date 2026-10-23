@@ -1,4 +1,4 @@
 # DataWeave Windows installer (built on GitHub Actions windows-latest)
-# CI: https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/39990144696
-# Commit: 4ecdba2 — jdk.accessibility jlink module + installed MSI launch smoke
-130eb799f14bc40d23acb399b5d2d86d6a685765fb8298a42374bdaceddc731c  DataWeave-Setup.msi
+# CI: https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/39995020267
+# Commit: cea12d6 — GUI smoke CI, diagnostics, launch error logging
+eea8bcee1b0848ae9d4a7b960ecc997d4c6498442289c55b5857910119f610ac  DataWeave-Setup.msi
