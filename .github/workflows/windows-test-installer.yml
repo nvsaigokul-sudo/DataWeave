@@ -8,6 +8,7 @@ on:
     branches:
       - cursor/release-v0.2.5-prep-d9c8
       - cursor/dataweave-product-v0.3.0-d9c8
+      - main
 
 permissions:
   contents: read
@@ -18,8 +19,8 @@ jobs:
     runs-on: windows-latest
     env:
       # When set, :desktop:packageMsi/:packageExe fail unless build.gradle.kts version matches.
-      GRADLE_REQUIRE_VERSION_PREFIX: ${{ github.ref_name == 'cursor/dataweave-product-v0.3.0-d9c8' && '0.3.0' || '' }}
-      DATAWEAVE_EXPECT_JPACKAGE_VERSION: ${{ github.ref_name == 'cursor/dataweave-product-v0.3.0-d9c8' && '1.3.0' || '' }}
+      GRADLE_REQUIRE_VERSION_PREFIX: ${{ (github.ref_name == 'cursor/dataweave-product-v0.3.0-d9c8' || github.ref_name == 'main') && '0.3.0' || '' }}
+      DATAWEAVE_EXPECT_JPACKAGE_VERSION: ${{ (github.ref_name == 'cursor/dataweave-product-v0.3.0-d9c8' || github.ref_name == 'main') && '1.3.0' || '' }}
     steps:
       - uses: actions/checkout@v4
 
