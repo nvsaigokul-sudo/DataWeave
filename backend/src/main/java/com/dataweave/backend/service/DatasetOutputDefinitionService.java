@@ -28,6 +28,18 @@ public class DatasetOutputDefinitionService {
             String table,
             List<String> outputColumns)
             throws Exception {
+        return save(idOrNull, projectId, connectionId, schema, table, outputColumns, null);
+    }
+
+    public DatasetOutputDefinition save(
+            UUID idOrNull,
+            UUID projectId,
+            UUID connectionId,
+            String schema,
+            String table,
+            List<String> outputColumns,
+            String definitionJson)
+            throws Exception {
         UUID id = idOrNull == null ? UUID.randomUUID() : idOrNull;
         DatasetOutputDefinition def =
                 new DatasetOutputDefinition(
@@ -37,6 +49,7 @@ public class DatasetOutputDefinitionService {
                         schema,
                         table,
                         List.copyOf(outputColumns),
+                        definitionJson,
                         Instant.now());
         repository.upsert(def);
         return def;
@@ -44,5 +57,21 @@ public class DatasetOutputDefinitionService {
 
     public void delete(UUID id) {
         repository.delete(id);
+    }
+
+    public DatasetOutputDefinition get(UUID id) {
+        return repository.findById(id).orElseThrow(() -> new IllegalArgumentException("Dataset not found: " + id));
+    }
+
+    public DatasetOutputDefinition duplicate(UUID id) throws Exception {
+        DatasetOutputDefinition source = get(id);
+        return save(
+                null,
+                source.projectId(),
+                source.connectionId(),
+                source.sourceSchema(),
+                source.sourceTable(),
+                source.outputColumns(),
+                source.definitionJson());
     }
 }

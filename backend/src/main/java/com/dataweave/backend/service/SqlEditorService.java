@@ -22,6 +22,13 @@ public class SqlEditorService {
     }
 
     public DataPage executeSelect(UUID connectionId, String sql) throws Exception {
+        String normalized = sql == null ? "" : sql.trim();
+        if (!normalized.toLowerCase().startsWith("select")) {
+            throw new IllegalArgumentException("Only read-only SELECT statements are allowed");
+        }
+        if (normalized.contains(";")) {
+            throw new IllegalArgumentException("Multi-statement SQL is not allowed");
+        }
         long start = System.nanoTime();
         Optional<String> error = Optional.empty();
         List<Map<String, Object>> rows = List.of();

@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -26,6 +27,31 @@ public class WorkspaceProjectRepository {
                 FROM workspace_projects ORDER BY updated_at DESC
                 """,
                 mapper());
+    }
+
+    public Optional<WorkspaceProject> findById(UUID id) {
+        var rows =
+                jdbc.query(
+                        """
+                        SELECT id, name, description, created_at, updated_at
+                        FROM workspace_projects WHERE id = ?
+                        """,
+                        mapper(),
+                        id.toString());
+        return rows.isEmpty() ? Optional.empty() : Optional.of(rows.getFirst());
+    }
+
+    public void update(UUID id, String name, String description, Instant updatedAt) {
+        jdbc.update(
+                "UPDATE workspace_projects SET name = ?, description = ?, updated_at = ? WHERE id = ?",
+                name,
+                description,
+                updatedAt.toString(),
+                id.toString());
+    }
+
+    public void delete(UUID id) {
+        jdbc.update("DELETE FROM workspace_projects WHERE id = ?", id.toString());
     }
 
     public void insert(WorkspaceProject project) {

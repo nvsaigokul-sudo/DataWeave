@@ -22,4 +22,15 @@ class WorkspaceProjectServiceTest extends IntegrationTestBase {
     void rejectsBlankName() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> projects.create("  ", ""));
     }
+
+    @Test
+    void renameDuplicateAndDelete() {
+        var created = projects.create("Original", "notes");
+        var renamed = projects.update(created.id(), "Renamed", "updated");
+        Assertions.assertEquals("Renamed", renamed.name());
+        var copy = projects.duplicate(created.id());
+        Assertions.assertTrue(copy.name().contains("copy"));
+        projects.delete(created.id());
+        Assertions.assertTrue(projects.list().stream().noneMatch(p -> p.id().equals(created.id())));
+    }
 }

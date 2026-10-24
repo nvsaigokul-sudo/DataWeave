@@ -1,10 +1,10 @@
 package com.dataweave.backend.service;
 
 import com.dataweave.backend.domain.DataPage;
+import com.dataweave.backend.domain.JoinType;
 import com.dataweave.backend.domain.TableRef;
 import com.dataweave.backend.sql.SqlIdentifiers;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -29,11 +29,30 @@ public class JoinPreviewService {
             String rightKey,
             List<String> selectedColumns,
             long offset,
-            int limit) throws Exception {
+            int limit)
+            throws Exception {
+        return previewJoin(
+                connectionId, left, right, leftKey, rightKey, JoinType.INNER, selectedColumns, offset, limit);
+    }
+
+    public DataPage previewJoin(
+            UUID connectionId,
+            TableRef left,
+            TableRef right,
+            String leftKey,
+            String rightKey,
+            JoinType joinType,
+            List<String> selectedColumns,
+            long offset,
+            int limit)
+            throws Exception {
         validateTable(left);
         validateTable(right);
         validateColumn(leftKey);
         validateColumn(rightKey);
+        if (joinType == null) {
+            throw new IllegalArgumentException("Join type required");
+        }
         int cappedLimit = Math.min(Math.max(limit, 1), MAX_ROWS);
         long cappedOffset = Math.max(offset, 0);
         String lAlias = "l";
@@ -47,7 +66,9 @@ public class JoinPreviewService {
                         + SqlIdentifiers.quote(left.name())
                         + " "
                         + lAlias
-                        + " INNER JOIN "
+                        + " "
+                        + joinType.sqlKeyword()
+                        + " "
                         + SqlIdentifiers.quote(right.schema())
                         + "."
                         + SqlIdentifiers.quote(right.name())
@@ -79,7 +100,8 @@ public class JoinPreviewService {
                 cappedLimit,
                 null,
                 false,
-                "Inner join on "
+                joinType.name()
+                        + " join on "
                         + left.schema()
                         + "."
                         + left.name()

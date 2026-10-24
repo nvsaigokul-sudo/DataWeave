@@ -5,24 +5,50 @@ import java.nio.file.Path
 import java.util.Properties
 
 object UserPreferences {
-    private val configDir: Path =
-        Path.of(System.getProperty("user.home"), ".config", "dataweave").also { Files.createDirectories(it) }
-    private val file: Path = configDir.resolve("preferences.properties")
-
-    fun loadDarkTheme(): Boolean {
-        if (!Files.exists(file)) return false
-        return Properties().apply { Files.newInputStream(file).use { load(it) } }.getProperty("darkTheme", "false") == "true"
+    private fun preferencesFile(): Path {
+        val dir = Path.of(System.getProperty("user.home"), ".config", "dataweave")
+        Files.createDirectories(dir)
+        return dir.resolve("preferences.properties")
     }
 
-    fun saveDarkTheme(enabled: Boolean) {
+    fun loadThemeMode(): ThemeMode {
+        val file = preferencesFile()
+        if (!Files.exists(file)) return ThemeMode.SYSTEM
         val props = loadProps()
-        props.setProperty("darkTheme", enabled.toString())
+        val stored = props.getProperty("themeMode")
+        if (stored != null) return ThemeMode.fromStored(stored)
+        return if (props.getProperty("darkTheme", "false") == "true") ThemeMode.DARK else ThemeMode.LIGHT
+    }
+
+    fun saveThemeMode(mode: ThemeMode) {
+        val props = loadProps()
+        props.setProperty("themeMode", mode.name)
+        props.remove("darkTheme")
         store(props)
     }
 
+    @Deprecated("Use loadThemeMode", ReplaceWith("loadThemeMode()"))
+    fun loadDarkTheme(): Boolean = loadThemeMode() == ThemeMode.DARK
+
+    @Deprecated("Use saveThemeMode", ReplaceWith("saveThemeMode(if (enabled) ThemeMode.DARK else ThemeMode.LIGHT)"))
+    fun saveDarkTheme(enabled: Boolean) {
+        saveThemeMode(if (enabled) ThemeMode.DARK else ThemeMode.LIGHT)
+    }
+
     fun loadLastConnectionId(): String? {
-        if (!Files.exists(file)) return null
+        if (!Files.exists(preferencesFile())) return null
         return loadProps().getProperty("lastConnectionId")?.takeIf { it.isNotBlank() }
+    }
+
+    fun loadDataTabs(): String? {
+        if (!Files.exists(preferencesFile())) return null
+        return loadProps().getProperty("dataTabs")?.takeIf { it.isNotBlank() }
+    }
+
+    fun saveDataTabs(json: String?) {
+        val props = loadProps()
+        if (json.isNullOrBlank()) props.remove("dataTabs") else props.setProperty("dataTabs", json)
+        store(props)
     }
 
     fun saveLastConnectionId(id: String?) {
@@ -35,14 +61,16 @@ object UserPreferences {
         store(props)
     }
 
-    private fun loadProps(): Properties =
-        if (Files.exists(file)) {
+    private fun loadProps(): Properties {
+        val file = preferencesFile()
+        return if (Files.exists(file)) {
             Properties().apply { Files.newInputStream(file).use { load(it) } }
         } else {
             Properties()
         }
+    }
 
     private fun store(props: Properties) {
-        Files.newOutputStream(file).use { props.store(it, "DataWeave user preferences") }
+        Files.newOutputStream(preferencesFile()).use { props.store(it, "DataWeave user preferences") }
     }
 }

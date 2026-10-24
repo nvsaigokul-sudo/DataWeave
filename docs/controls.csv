@@ -1,0 +1,65 @@
+control_id,screen,control_type,label,purpose,preconditions,handler,test_ref,status
+NAV-HOME,Shell,Tab,Home,Open welcome hub,None,WorkspaceSection.Welcome,manual,NOT TESTED
+NAV-CONN,Shell,Tab,Connections,Open connection editor,None,WorkspaceSection.Connections,manual,NOT TESTED
+NAV-DATA,Shell,Tab,Data,Open data grid,None,WorkspaceSection.Browse,manual,NOT TESTED
+NAV-SQL,Shell,Tab,SQL,Open SQL editor,None,WorkspaceSection.Sql,manual,NOT TESTED
+NAV-DS,Shell,Tab,Datasets,Open dataset builder,None,WorkspaceSection.Datasets,manual,NOT TESTED
+NAV-PROJ,Shell,Tab,Projects,Open projects,None,WorkspaceSection.Projects,manual,NOT TESTED
+SET-OPEN,Shell,Button,Settings,Theme Light/Dark/System,None,SettingsDialog,UserPreferencesTest.themeModeRoundTrip,PASS
+CONN-SAVE,Connections,Button,Save profile,Persist connection profile,Valid fields,facade.saveConnection,ConnectionLifecycleIntegrationTest,PASS
+CONN-TEST,Connections,Button,Test,Validate PG reachability,Profile saved,facade.testConnection,ConnectionLifecycleIntegrationTest,PASS
+CONN-CONNECT,Connections,Button,Connect,Open pool + metadata,Credentials available,facade.connect,ConnectionLifecycleIntegrationTest,PASS
+CONN-DISC,Connections,Button,Disconnect,Close pool,Connected,facade.disconnect,ConnectionLifecycleIntegrationTest,PASS
+CONN-CRED-RECOVERY,Connections,Panel,Credential recovery,Re-enter password when vault empty,Missing cred,CredentialRecoveryPanel,MissingCredentialIntegrationTest,PASS
+EXPL-TABLE,Explorer,Tree item,Table,Select table for Data,Connected,facade.listTables,MetadataExplorerIntegrationTest,PASS
+EXPL-VIEW,Explorer,Tree item,View,Open view in Data,Connected,facade.listViews,MetadataExplorerIntegrationTest,PARTIAL
+EXPL-RETRY,Explorer,Button,Retry metadata,Reload failed branch,Error state,facade.refreshSchema,MetadataExplorerIntegrationTest,PASS
+EXPL-PK,Explorer,Tree section,Primary keys,Expand PK column list,Table expanded,facade.getTablePrimaryKey,ExplorerTableMetadataIntegrationTest,PARTIAL
+EXPL-IDX,Explorer,Tree section,Indexes,Expand index list,Table expanded,facade.listTableIndexes,ExplorerTableMetadataIntegrationTest,PARTIAL
+EXPL-FK,Explorer,Tree section,Foreign keys,Expand FK list,Table expanded,facade.listForeignKeysForTable,ForeignKeyMetadataIntegrationTest,PARTIAL
+EXPL-COLS,Explorer,Tree section,Columns,Expand column list,Table expanded,facade.listColumns,MetadataExplorerIntegrationTest,PARTIAL
+GRID-PAGE,Data,Button,Next/Previous,Server paging,Table open,facade.fetchTablePage,PaginationAndTypesIntegrationTest,PASS
+GRID-FILTER,Data,Field,Search all columns,Server ILIKE OR,Table open,facade.fetchTablePage,PaginationAndTypesIntegrationTest,PASS
+GRID-COL-FILTER,Data,Field,Column filter,Single-column ILIKE,Column chosen,facade.fetchTablePage,TableBrowseColumnFilterIntegrationTest,PASS
+GRID-EXPORT,Data,Button,Export CSV,Stream table to file,Table open,facade.exportTableToCsv,TableExportServiceTest,PASS
+GRID-CANCEL,Data,Button,Cancel,Cancel in-flight page load,Loading,loadJob.cancel,manual,PARTIAL
+GRID-KEYBOARD,Data,Keyboard,Arrow/Home/End/Page,Move selection and paging,Grid focused,GridSelectionLogic+SpreadsheetDataGrid,GridSelectionLogicTest,PARTIAL
+GRID-COL-REORDER,Data,Menu,Move column left/right,Reorder visible columns,Grid open,GridSelectionLogic.reorderColumn,GridSelectionLogicTest,PASS
+GRID-COL-COPY,Data,Menu,Copy column (page),TSV column values,Page loaded,GridSelectionLogic.formatColumnValues,GridSelectionLogicTest,PASS
+GRID-ROWNUM,Data,Gutter,#,Row index display,Paged data,UI only,manual,NOT TESTED
+DATA-TABS,Data,Tab row,Table tabs,Multi-tab + restore prefs,Tables opened,UserPreferences.dataTabs,manual,NOT TESTED
+DATA-COL-RESIZE,Data,Drag,Column resize,Adjust column width,Grid open,SpreadsheetDataGrid,manual,NOT TESTED
+SQL-RUN,SQL,Button,Run,Execute SELECT,Connected read-only,facade.runSqlEditorQuery,SqlEditorServiceTest.recordsHistoryOnSuccess,PASS
+SQL-REJECT-WRITE,SQL,Button,Run blocked,Reject INSERT/UPDATE,Any,facade.runSqlEditorQuery,SqlEditorServiceTest.rejectsNonSelectStatements,PASS
+SQL-CANCEL,SQL,Button,Cancel,Cancel running query,Running,runJob.cancel,manual,PARTIAL
+SQL-CLEAR,SQL,Button,Clear,Reset editor,None,UI state,manual,NOT TESTED
+DS-CANVAS,Datasets,Canvas,Source tables,Movable table cards,Tables added,VisualDatasetBuilderScreen,manual,NOT TESTED
+DS-JOIN-KEYS,Datasets,Fields,Join keys,Edit left/right join columns,Join exists,VisualDatasetBuilderScreen,manual,NOT TESTED
+DS-PREVIEW,Datasets,Button,Preview,Execute graph preview,Graph valid,facade.previewDatasetGraph,DatasetGraphPreviewIntegrationTest,PASS
+DS-SAVE,Datasets,Button,Save,Persist definition_json,Project selected,facade.saveDatasetDefinition,DatasetGraphPreviewIntegrationTest,PARTIAL
+DS-REOPEN,Datasets,Button,Reopen,Restore graph from JSON,Saved def,facade.deserializeDatasetGraph,manual,NOT TESTED
+DS-FK-SUGGEST,Datasets,Button,FK suggestion,Explicit join from metadata,Connected,facade.listForeignKeys,ForeignKeyMetadataIntegrationTest,PASS
+PROJ-CREATE,Projects,Button,Create project,New SQLite project,Name non-blank,facade.createProject,WorkspaceProjectServiceTest,PASS
+PROJ-RENAME,Projects,Button,Rename,Update project metadata,Project exists,facade.updateProject,WorkspaceProjectServiceTest,PASS
+PROJ-DUP,Projects,Button,Duplicate,Copy project shell,Project exists,facade.duplicateProject,WorkspaceProjectServiceTest,PASS
+PROJ-DEL,Projects,Button,Delete,Remove project with confirm,Project exists,facade.deleteProject,WorkspaceProjectServiceTest,PASS
+PROJ-LINK-DS,Projects,Button,Link dataset,Add dataset ref to project,Saved dataset in project,facade.addDatasetProjectItem,ProjectDatasetLinkIntegrationTest,PASS
+PROJ-UNLINK,Projects,Button,Remove link,Delete project_items row,Link exists,facade.removeProjectItem,ProjectDatasetLinkIntegrationTest,PARTIAL
+PROJ-SHOW-ITEMS,Projects,Button,Show items,Load linked items list,Project exists,facade.listProjectItems,ProjectDatasetLinkIntegrationTest,PARTIAL
+PROJ-OPEN-DS,Projects,Button,Open in Datasets,Navigate and restore graph,Linked dataset,facade.getDatasetDefinition+WorkspaceContext,ProjectDatasetNavigationIntegrationTest,PARTIAL
+DS-VALIDATE,Datasets,Preview gate,Graph validation,Block invalid preview,Graph edited,facade.validateDatasetGraph,DatasetGraphValidatorTest,PASS
+DS-DRAG-TABLE,Datasets,Drag,Table to canvas,Long-press sidebar table,Connected,VisualDatasetBuilderScreen,manual,NOT TESTED
+DS-JOIN-EDGE,Datasets,Canvas,Join edge lines,Visual link between aliases,Joins on canvas,DatasetJoinEdgeLayout,DatasetJoinEdgeLayoutTest,PASS
+DS-JOIN-KEYS-PICK,Datasets,Buttons,Join key pickers,Choose column keys from metadata,Tables on canvas,columnsForAlias,manual,NOT TESTED
+DS-PREVIEW-KEEP,Datasets,Preview,Invalid preview retained,Keep last preview on failure,Had valid preview,VisualDatasetBuilderScreen,manual,PARTIAL
+PROJ-QUERY-LINK,Projects,Button,Link query,Add SQL history ref,History exists,facade.addQueryProjectItem,ProjectItemFeaturesIntegrationTest,PASS
+PROJ-OPEN-SQL,Projects,Button,Open in SQL,Load linked query text,Query link,WorkspaceContext.pendingSqlEditor,manual,NOT TESTED
+PROJ-REORDER,Projects,Button,Item up/down,Reorder project_items,sort_order,facade.reorderProjectItems,ProjectItemFeaturesIntegrationTest,PASS
+PROJ-UNSAVED,Projects,Dialog,Unsaved dataset,Confirm discard before open,Editor dirty,ProjectWorkspace,manual,NOT TESTED
+GRID-CTRL-SHIFT-C,Data,Keyboard,Ctrl+Shift+C,Copy selection CSV,Selection active,GridSelectionLogic.formatSelectionCsv,GridSelectionLogicTest,PASS
+DS-JOIN-TYPES,Datasets,Buttons,Join type per edge,INNER/LEFT/RIGHT/FULL,Join row,VisualDatasetBuilderScreen,DatasetGraphSqlGeneratorTest,PASS
+GRID-SHIFT-SEL,Data,Keyboard,Shift+arrows,Rectangular selection,Grid focused,GridSelectionLogic.arrowKey,GridSelectionLogicTest,PASS
+GRID-CTRL-C,Data,Keyboard,Ctrl+C,Copy selection TSV,Selection active,GridSelectionLogic.formatSelectionTsv,GridSelectionLogicTest,PARTIAL
+WIN-MSI-BUILD,Release,CI,packageMsi/packageExe,Windows installers,windows-latest,.github/workflows/windows-test-installer.yml,manual,BLOCKED
+WIN-MSI-SMOKE,Release,Script,windows-packaged-smoke.ps1,Install MSI + 15s GUI alive,CI Windows job,scripts/ci/windows-packaged-smoke.ps1,manual,NOT TESTED
+WIN-OWNER-CHECK,Release,Manual,Owner acceptance,Full product checklist,Packaged MSI,docs/WINDOWS_RELEASE_ACCEPTANCE.md,manual,NOT TESTED

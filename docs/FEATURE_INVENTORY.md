@@ -42,6 +42,8 @@ Legend: **PASS** = wired and covered by automated test or code review; **FIX** =
 | Delete | Confirm + remove profile | FIX (confirmation dialog) |
 | Advanced SSL / timeout | Expand optional fields | PASS |
 | Start help (Windows) | Show service start instructions | FIX (was no-op button) |
+| Explorer credential recovery | Inline password + Save/Test/Connect when vault empty | FIX (v0.2.9) |
+| Edit connection (explorer) | Open Connections with profile loaded | FIX |
 
 ## Database Explorer tree
 

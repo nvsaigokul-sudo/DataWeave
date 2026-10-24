@@ -12,13 +12,20 @@ import com.dataweave.backend.domain.SslMode;
 import com.dataweave.backend.domain.TableBrowseOptions;
 import com.dataweave.backend.domain.TableExportResult;
 import com.dataweave.backend.domain.TableRef;
+import com.dataweave.backend.domain.ProjectItem;
 import com.dataweave.backend.domain.WorkspaceProject;
 import com.dataweave.backend.postgres.PostgresConnectionManager;
 import com.dataweave.backend.service.CatalogMetadataService;
 import com.dataweave.backend.service.ConnectionProfileService;
 import com.dataweave.backend.service.ConnectionSessionService;
 import com.dataweave.backend.domain.DatasetOutputDefinition;
+import com.dataweave.backend.domain.ForeignKeyRef;
+import com.dataweave.backend.domain.JoinType;
+import com.dataweave.backend.domain.TableIndexMeta;
+import com.dataweave.backend.domain.TablePrimaryKeyMeta;
 import com.dataweave.backend.service.CsvIngestService;
+import com.dataweave.backend.domain.DatasetGraphDefinition;
+import com.dataweave.backend.service.DatasetGraphService;
 import com.dataweave.backend.service.DatasetOutputDefinitionService;
 import com.dataweave.backend.service.DatasetPreviewService;
 import com.dataweave.backend.service.JoinPreviewService;
@@ -26,6 +33,7 @@ import com.dataweave.backend.service.ReadOnlyQueryService;
 import com.dataweave.backend.service.SqlEditorService;
 import com.dataweave.backend.service.TableDataService;
 import com.dataweave.backend.service.TableExportService;
+import com.dataweave.backend.service.ProjectItemService;
 import com.dataweave.backend.service.WorkspaceProjectService;
 import java.nio.file.Path;
 import java.util.List;
@@ -38,6 +46,7 @@ import org.springframework.stereotype.Component;
 public class ApplicationFacade {
 
     private final WorkspaceProjectService workspaceProjectService;
+    private final ProjectItemService projectItemService;
     private final ConnectionProfileService connectionProfileService;
     private final ConnectionSessionService connectionSessionService;
     private final CatalogMetadataService catalogMetadataService;
@@ -47,6 +56,7 @@ public class ApplicationFacade {
     private final SqlEditorService sqlEditorService;
     private final CsvIngestService csvIngestService;
     private final DatasetOutputDefinitionService datasetOutputDefinitionService;
+    private final DatasetGraphService datasetGraphService;
     private final JoinPreviewService joinPreviewService;
     private final TableExportService tableExportService;
     private final CacheDiagnosticsService cacheDiagnosticsService;
@@ -55,6 +65,7 @@ public class ApplicationFacade {
 
     public ApplicationFacade(
             WorkspaceProjectService workspaceProjectService,
+            ProjectItemService projectItemService,
             ConnectionProfileService connectionProfileService,
             ConnectionSessionService connectionSessionService,
             CatalogMetadataService catalogMetadataService,
@@ -64,12 +75,14 @@ public class ApplicationFacade {
             SqlEditorService sqlEditorService,
             CsvIngestService csvIngestService,
             DatasetOutputDefinitionService datasetOutputDefinitionService,
+            DatasetGraphService datasetGraphService,
             JoinPreviewService joinPreviewService,
             TableExportService tableExportService,
             CacheDiagnosticsService cacheDiagnosticsService,
             CacheInvalidationService cacheInvalidationService,
             PostgresConnectionManager postgresConnectionManager) {
         this.workspaceProjectService = workspaceProjectService;
+        this.projectItemService = projectItemService;
         this.connectionProfileService = connectionProfileService;
         this.connectionSessionService = connectionSessionService;
         this.catalogMetadataService = catalogMetadataService;
@@ -79,6 +92,7 @@ public class ApplicationFacade {
         this.sqlEditorService = sqlEditorService;
         this.csvIngestService = csvIngestService;
         this.datasetOutputDefinitionService = datasetOutputDefinitionService;
+        this.datasetGraphService = datasetGraphService;
         this.joinPreviewService = joinPreviewService;
         this.tableExportService = tableExportService;
         this.cacheDiagnosticsService = cacheDiagnosticsService;
@@ -92,6 +106,45 @@ public class ApplicationFacade {
 
     public WorkspaceProject createProject(String name, String description) {
         return workspaceProjectService.create(name, description);
+    }
+
+    public WorkspaceProject updateProject(UUID id, String name, String description) {
+        return workspaceProjectService.update(id, name, description);
+    }
+
+    public WorkspaceProject duplicateProject(UUID id) {
+        return workspaceProjectService.duplicate(id);
+    }
+
+    public void deleteProject(UUID id) {
+        workspaceProjectService.delete(id);
+    }
+
+    public List<ProjectItem> listProjectItems(UUID projectId) {
+        return projectItemService.listForProject(projectId);
+    }
+
+    public ProjectItem addDatasetProjectItem(UUID projectId, UUID datasetDefinitionId, String label) {
+        return projectItemService.addDatasetReference(projectId, datasetDefinitionId, label);
+    }
+
+    public void removeProjectItem(UUID itemId) {
+        projectItemService.removeItem(itemId);
+    }
+
+    public ProjectItem addQueryProjectItem(UUID projectId, UUID historyEntryId, String label) {
+        return projectItemService.addQueryReference(projectId, historyEntryId, label);
+    }
+
+    public void reorderProjectItems(UUID projectId, List<UUID> itemIdsInOrder) {
+        projectItemService.reorderItems(projectId, itemIdsInOrder);
+    }
+
+    public SqlQueryHistoryEntry getSqlHistoryEntry(UUID id) {
+        return sqlEditorService.history(500).stream()
+                .filter(e -> e.id().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Query history entry not found: " + id));
     }
 
     public List<ConnectionProfile> listConnections() {
@@ -186,6 +239,10 @@ public class ApplicationFacade {
         return catalogMetadataService.listTables(connectionId, schema);
     }
 
+    public List<TableRef> listViews(UUID connectionId, String schema) throws Exception {
+        return catalogMetadataService.listViews(connectionId, schema);
+    }
+
     public List<com.dataweave.backend.domain.ColumnMeta> listColumns(UUID connectionId, String schema, String table)
             throws Exception {
         return catalogMetadataService.listColumns(connectionId, schema, table);
@@ -250,6 +307,48 @@ public class ApplicationFacade {
         return datasetOutputDefinitionService.save(idOrNull, projectId, connectionId, schema, table, outputColumns);
     }
 
+    public DatasetOutputDefinition saveDatasetDefinition(
+            UUID idOrNull,
+            UUID projectId,
+            UUID connectionId,
+            String schema,
+            String table,
+            List<String> outputColumns,
+            String definitionJson)
+            throws Exception {
+        return datasetOutputDefinitionService.save(
+                idOrNull, projectId, connectionId, schema, table, outputColumns, definitionJson);
+    }
+
+    public List<ForeignKeyRef> listForeignKeys(UUID connectionId, String schema) throws Exception {
+        return catalogMetadataService.listForeignKeys(connectionId, schema);
+    }
+
+    public List<ForeignKeyRef> listForeignKeysForTable(UUID connectionId, String schema, String table)
+            throws Exception {
+        return catalogMetadataService.listForeignKeysForTable(connectionId, schema, table);
+    }
+
+    public TablePrimaryKeyMeta getTablePrimaryKey(UUID connectionId, String schema, String table) throws Exception {
+        return catalogMetadataService.getPrimaryKey(connectionId, schema, table);
+    }
+
+    public List<TableIndexMeta> listTableIndexes(UUID connectionId, String schema, String table) throws Exception {
+        return catalogMetadataService.listIndexes(connectionId, schema, table);
+    }
+
+    public DatasetOutputDefinition getDatasetDefinition(UUID id) {
+        return datasetOutputDefinitionService.get(id);
+    }
+
+    public DatasetOutputDefinition duplicateDatasetDefinition(UUID id) throws Exception {
+        return datasetOutputDefinitionService.duplicate(id);
+    }
+
+    public String generateDatasetGraphSql(DatasetGraphDefinition graph, int limit, long offset) throws Exception {
+        return datasetGraphService.generateSql(graph, limit, offset);
+    }
+
     public void deleteDatasetDefinition(UUID id) {
         datasetOutputDefinitionService.delete(id);
     }
@@ -270,6 +369,38 @@ public class ApplicationFacade {
             throws Exception {
         return joinPreviewService.previewInnerJoin(
                 connectionId, left, right, leftKey, rightKey, selectedColumns, offset, limit);
+    }
+
+    public DataPage previewJoin(
+            UUID connectionId,
+            TableRef left,
+            TableRef right,
+            String leftKey,
+            String rightKey,
+            JoinType joinType,
+            List<String> selectedColumns,
+            long offset,
+            int limit)
+            throws Exception {
+        return joinPreviewService.previewJoin(
+                connectionId, left, right, leftKey, rightKey, joinType, selectedColumns, offset, limit);
+    }
+
+    public DataPage previewDatasetGraph(UUID connectionId, DatasetGraphDefinition graph, long offset, int limit)
+            throws Exception {
+        return datasetGraphService.preview(connectionId, graph, offset, limit);
+    }
+
+    public String serializeDatasetGraph(DatasetGraphDefinition graph) throws Exception {
+        return datasetGraphService.serialize(graph);
+    }
+
+    public DatasetGraphDefinition deserializeDatasetGraph(String json) throws Exception {
+        return datasetGraphService.deserialize(json);
+    }
+
+    public List<String> validateDatasetGraph(DatasetGraphDefinition graph) {
+        return datasetGraphService.validateGraph(graph);
     }
 
     public TableExportResult exportTableToCsv(

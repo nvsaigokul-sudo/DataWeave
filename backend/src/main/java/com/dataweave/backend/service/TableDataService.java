@@ -121,7 +121,8 @@ public class TableDataService {
             int param = 1;
             if (browse.hasFilter()) {
                 String pattern = "%" + browse.filterText().trim().replace("%", "\\%").replace("_", "\\_") + "%";
-                for (int i = 0; i < columns.size(); i++) {
+                int binds = browse.hasColumnFilter() ? 1 : columns.size();
+                for (int i = 0; i < binds; i++) {
                     ps.setString(param++, pattern);
                 }
             }
@@ -229,10 +230,19 @@ public class TableDataService {
         if (text.isEmpty()) {
             return "";
         }
-        String pattern = "%" + text.replace("%", "\\%").replace("_", "\\_") + "%";
         List<String> parts = new ArrayList<>();
-        for (ColumnMeta col : columns) {
+        if (browse.hasColumnFilter()) {
+            String target = browse.filterColumn().trim();
+            ColumnMeta col =
+                    columns.stream()
+                            .filter(c -> c.name().equalsIgnoreCase(target))
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalArgumentException("Unknown filter column: " + target));
             parts.add("CAST(" + quoteIdentifier(col.name()) + " AS TEXT) ILIKE ? ESCAPE '\\'");
+        } else {
+            for (ColumnMeta col : columns) {
+                parts.add("CAST(" + quoteIdentifier(col.name()) + " AS TEXT) ILIKE ? ESCAPE '\\'");
+            }
         }
         return " WHERE (" + String.join(" OR ", parts) + ")";
     }

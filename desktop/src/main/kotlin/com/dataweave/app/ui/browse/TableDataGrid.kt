@@ -16,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -55,7 +56,7 @@ fun TableDataGrid(facade: ApplicationFacade, connectionId: UUID, table: TableRef
     val scopeKey = remember(table) { "grid-${table.schema}.${table.name}" }
 
     fun browseOptions(): TableBrowseOptions =
-        TableBrowseOptions(sortColumn, sortDesc, filterText.ifBlank { null })
+        TableBrowseOptions(sortColumn, sortDesc, filterText.ifBlank { null }, null)
 
     fun load(nextOffset: Long) {
         scope.launch {
@@ -151,20 +152,45 @@ fun TableDataGrid(facade: ApplicationFacade, connectionId: UUID, table: TableRef
                 }
             }
             LazyColumn(Modifier.weight(1f)) {
-                items(page?.rows.orEmpty()) { row ->
+                items(page?.rows.orEmpty().withIndex().toList()) { (rowIndex, row) ->
                     Row(Modifier.horizontalScroll(hScroll).fillMaxWidth()) {
+                        Text(
+                            "${offset + rowIndex + 1}",
+                            Modifier.padding(8.dp),
+                            style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.outline,
+                        )
                         columns.forEach { col ->
-                            val cell = row[col.name]?.toString() ?: "NULL"
+                            val raw = row[col.name]
+                            val isNull = raw == null
+                            val cell = if (isNull) "NULL" else raw.toString()
                             Text(
                                 cell,
                                 Modifier
                                     .combinedClickable(
-                                        onClick = { copyToClipboard(cell) },
+                                        onClick = { copyToClipboard(if (isNull) "" else cell) },
                                         onLongClick = {
-                                            copyToClipboard(columns.joinToString("\t") { row[it.name]?.toString() ?: "" })
+                                            copyToClipboard(
+                                                columns.joinToString("\t") {
+                                                    val v = row[it.name]
+                                                    if (v == null) "" else v.toString()
+                                                },
+                                            )
                                         },
                                     )
                                     .padding(8.dp),
+                                color =
+                                    if (isNull) {
+                                        MaterialTheme.colorScheme.outline
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface
+                                    },
+                                fontStyle =
+                                    if (isNull) {
+                                        androidx.compose.ui.text.font.FontStyle.Italic
+                                    } else {
+                                        androidx.compose.ui.text.font.FontStyle.Normal
+                                    },
                             )
                         }
                     }

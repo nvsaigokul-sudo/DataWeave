@@ -1,6 +1,22 @@
 # DataWeave completion tracker
 
-Last updated: **2026-10-24** (v0.2.7 release prep; v0.2.6 **published**; v0.2.5 preserved).
+Last updated: **2026-10-24** (v0.3.0 RC in progress on `cursor/dataweave-v0.3.0-d9c8`; v0.2.9 published on `main`).
+
+## v0.3.0 (partial — release candidate branch)
+
+| Requirement area | Status | Evidence |
+|------------------|--------|----------|
+| FR-021 Workspace context | **Partial** | `WorkspaceContext.kt`, shell wiring |
+| UI theme System/Light/Dark | **Implemented** | `SettingsDialog`, `ThemeMode`, tests |
+| SQL read-only transaction | **Implemented** | `ReadOnlyQueryService` BEGIN READ ONLY |
+| Join types (4) | **Implemented** | `JoinPreviewService`, UI, tests |
+| FK discovery (no silent join) | **Implemented** | `CatalogMetadataService`, dataset UI |
+| Project rename/duplicate/delete | **Implemented** | `WorkspaceProjectService`, UI, tests |
+| Dataset definition_json (V4) | **Implemented** | Flyway V4, repository |
+| Spreadsheet Data grid (full PRD) | **Partial** | `SpreadsheetDataGrid.kt`, `TableBrowseColumnFilterIntegrationTest` |
+| Visual dataset canvas | **Partial** | `VisualDatasetBuilderScreen.kt`, `DatasetGraphPreviewIntegrationTest` |
+| Full controls.csv | **Partial** | `docs/controls.csv` major controls |
+| Windows MSI v0.3.0 | **Blocked** | No publish without owner + CI |
 
 ## Live verification (GitHub vs repo)
 

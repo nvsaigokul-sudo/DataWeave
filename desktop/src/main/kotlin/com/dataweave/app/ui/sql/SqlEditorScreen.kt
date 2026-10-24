@@ -23,12 +23,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.dataweave.app.ui.common.ResultDataCard
+import com.dataweave.app.ui.workspace.WorkspaceContext
 import com.dataweave.backend.ApplicationFacade
 import com.dataweave.backend.domain.ConnectionProfile
 import com.dataweave.backend.domain.DataPage
 import com.dataweave.backend.domain.SqlQueryHistoryEntry
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -37,6 +39,7 @@ fun SqlEditorScreen(
     facade: ApplicationFacade,
     activeConnectionId: UUID?,
     onSelectConnection: (UUID) -> Unit,
+    workspace: WorkspaceContext? = null,
     modifier: Modifier = Modifier,
 ) {
     var connections by remember { mutableStateOf<List<ConnectionProfile>>(emptyList()) }
@@ -47,6 +50,7 @@ fun SqlEditorScreen(
     var history by remember { mutableStateOf<List<SqlQueryHistoryEntry>>(emptyList()) }
     var status by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
+    var runJob by remember { mutableStateOf<Job?>(null) }
 
     fun refreshHistory() {
         scope.launch {
@@ -72,6 +76,14 @@ fun SqlEditorScreen(
         connectionId?.let { onSelectConnection(it) }
     }
 
+    LaunchedEffect(workspace?.pendingSqlEditor) {
+        val pending = workspace?.pendingSqlEditor ?: return@LaunchedEffect
+        sql = pending.sqlText
+        pending.connectionId?.let { connectionId = it }
+        status = "Loaded query from project link"
+        workspace.clearPendingSqlEditor()
+    }
+
     Column(modifier.fillMaxSize().padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("SQL editor (read-only SELECT)")
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -93,25 +105,40 @@ fun SqlEditorScreen(
                 enabled = connectionId != null && status != "Running…",
                 onClick = {
                     val id = connectionId ?: return@Button
-                    scope.launch {
-                        status = "Running…"
-                        error = null
-                        runCatching {
-                            withContext(Dispatchers.IO) { facade.runSqlEditorQuery(id, sql) }
-                        }.onSuccess {
-                            page = it
-                            status = "OK (${it.rows.size} rows)"
-                            refreshHistory()
-                        }.onFailure {
-                            page = null
-                            error = it.message
-                            status = "Failed"
-                            refreshHistory()
+                    runJob?.cancel()
+                    runJob =
+                        scope.launch {
+                            status = "Running…"
+                            error = null
+                            runCatching {
+                                withContext(Dispatchers.IO) { facade.runSqlEditorQuery(id, sql) }
+                            }.onSuccess {
+                                page = it
+                                status = "OK (${it.rows.size} rows)"
+                                refreshHistory()
+                            }.onFailure {
+                                if (it.message?.contains("cancel", ignoreCase = true) != true) {
+                                    page = null
+                                    error = it.message
+                                    status = "Failed"
+                                } else {
+                                    status = "Cancelled"
+                                }
+                                refreshHistory()
+                            }
                         }
-                    }
                 },
             ) {
                 Text("Run")
+            }
+            OutlinedButton(
+                enabled = status == "Running…",
+                onClick = {
+                    runJob?.cancel()
+                    status = "Cancelled"
+                },
+            ) {
+                Text("Cancel")
             }
             OutlinedButton(
                 onClick = {

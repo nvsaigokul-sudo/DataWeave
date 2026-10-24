@@ -26,7 +26,7 @@ public class DatasetOutputDefinitionRepository {
     public List<DatasetOutputDefinition> findByProject(UUID projectId) {
         return jdbc.query(
                 """
-                SELECT id, project_id, connection_id, source_schema, source_table, columns_json, updated_at
+                SELECT id, project_id, connection_id, source_schema, source_table, columns_json, definition_json, updated_at
                 FROM dataset_output_definitions WHERE project_id = ? ORDER BY updated_at DESC
                 """,
                 mapper(),
@@ -37,7 +37,7 @@ public class DatasetOutputDefinitionRepository {
         var rows =
                 jdbc.query(
                         """
-                        SELECT id, project_id, connection_id, source_schema, source_table, columns_json, updated_at
+                        SELECT id, project_id, connection_id, source_schema, source_table, columns_json, definition_json, updated_at
                         FROM dataset_output_definitions WHERE id = ?
                         """,
                         mapper(),
@@ -50,13 +50,14 @@ public class DatasetOutputDefinitionRepository {
         jdbc.update(
                 """
                 INSERT INTO dataset_output_definitions
-                (id, project_id, connection_id, source_schema, source_table, columns_json, updated_at)
-                VALUES (?,?,?,?,?,?,?)
+                (id, project_id, connection_id, source_schema, source_table, columns_json, definition_json, updated_at)
+                VALUES (?,?,?,?,?,?,?,?)
                 ON CONFLICT(id) DO UPDATE SET
                   connection_id = excluded.connection_id,
                   source_schema = excluded.source_schema,
                   source_table = excluded.source_table,
                   columns_json = excluded.columns_json,
+                  definition_json = excluded.definition_json,
                   updated_at = excluded.updated_at
                 """,
                 def.id().toString(),
@@ -65,6 +66,7 @@ public class DatasetOutputDefinitionRepository {
                 def.sourceSchema(),
                 def.sourceTable(),
                 columnsJson,
+                def.definitionJson(),
                 def.updatedAt().toString());
     }
 
@@ -90,6 +92,7 @@ public class DatasetOutputDefinitionRepository {
                 rs.getString("source_schema"),
                 rs.getString("source_table"),
                 columns,
+                rs.getString("definition_json"),
                 Instant.parse(rs.getString("updated_at")));
     }
 }
