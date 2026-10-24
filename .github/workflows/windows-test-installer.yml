@@ -69,10 +69,18 @@ jobs:
           Download the **installers-windows-latest** artifact from this workflow run.
           "@
 
+      - name: Stage installers for upload
+        shell: pwsh
+        run: |
+          $staging = Join-Path $env:RUNNER_TEMP 'test-installer-upload'
+          New-Item -ItemType Directory -Force -Path $staging | Out-Null
+          Get-ChildItem -Recurse desktop/build/compose/binaries -Include *.msi,*.exe |
+            Copy-Item -Destination $staging -Force
+          Get-ChildItem $staging | ForEach-Object { $_.Name }
+
       - name: Upload installer artifacts
         uses: actions/upload-artifact@v4
         with:
           name: TEST-windows-msi-${{ github.sha }}
-          path: |
-            desktop/build/compose/binaries/**/*
+          path: ${{ runner.temp }}/test-installer-upload/
           if-no-files-found: error
