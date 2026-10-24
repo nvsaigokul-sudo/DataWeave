@@ -1,5 +1,6 @@
 package com.dataweave.backend;
 
+import com.dataweave.backend.startup.StartupTiming;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -11,11 +12,13 @@ import org.springframework.context.ConfigurableApplicationContext;
 public class DataWeaveBackendApplication {
 
     public static ConfigurableApplicationContext start(String... args) {
+        StartupTiming.markJvmStart();
         return startInternal(false, args);
     }
 
     /** Compose Desktop needs a non-headless AWT toolkit; default Spring headless mode breaks GUI. */
     public static ConfigurableApplicationContext startForGui(String... args) {
+        StartupTiming.markJvmStart();
         return startInternal(true, args);
     }
 

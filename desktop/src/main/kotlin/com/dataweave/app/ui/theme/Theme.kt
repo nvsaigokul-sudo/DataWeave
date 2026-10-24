@@ -2,10 +2,14 @@ package com.dataweave.app.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 
 private val LightColors =
     lightColorScheme(
@@ -29,10 +33,19 @@ private val DarkColors =
         outline = Color(0xFF546E7A),
     )
 
+private val DwTypography =
+    Typography(
+        titleLarge = Typography().titleLarge.copy(fontWeight = FontWeight.SemiBold, letterSpacing = (-0.2).sp),
+        titleSmall = Typography().titleSmall.copy(fontWeight = FontWeight.Medium),
+        bodySmall = Typography().bodySmall.copy(fontFamily = FontFamily.Monospace, fontSize = 12.sp),
+        labelSmall = Typography().labelSmall.copy(letterSpacing = 0.1.sp),
+    )
+
 @Composable
 fun DataWeaveTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = if (darkTheme) DarkColors else LightColors,
+        typography = DwTypography,
         content = content,
     )
 }

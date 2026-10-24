@@ -137,6 +137,32 @@ public class ConnectionProfileService {
         return version;
     }
 
+    /** Updates JDBC database name and tears down any live pool (caller reconnects). */
+    public ConnectionProfile switchDatabase(UUID id, String databaseName) {
+        if (databaseName == null || databaseName.isBlank()) {
+            throw new IllegalArgumentException("Database name is required");
+        }
+        ConnectionProfile existing = require(id);
+        connectionManager.disconnect(id);
+        Instant now = Instant.now();
+        ConnectionProfile updated =
+                new ConnectionProfile(
+                        existing.id(),
+                        existing.name(),
+                        existing.host(),
+                        existing.port(),
+                        databaseName.trim(),
+                        existing.username(),
+                        existing.sslMode(),
+                        existing.credentialKey(),
+                        existing.connectTimeoutSeconds(),
+                        existing.createdAt(),
+                        now);
+        repository.update(updated);
+        cacheInvalidationService.invalidateConnection(id);
+        return updated;
+    }
+
     public ConnectionProfile require(UUID id) {
         return repository.findById(id).orElseThrow(() -> new IllegalArgumentException("Unknown connection"));
     }

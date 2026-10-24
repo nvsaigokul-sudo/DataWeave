@@ -164,12 +164,27 @@ public class ApplicationFacade {
         return connectionProfileService.refreshSchema(connectionId);
     }
 
+    public ConnectionSessionStatus switchConnectionDatabase(UUID connectionId, String databaseName) {
+        connectionProfileService.switchDatabase(connectionId, databaseName);
+        connectionSessionService.markDisconnected(connectionId);
+        return connectionSessionService.connect(connectionId);
+    }
+
+    public List<String> listDatabases(UUID connectionId) throws Exception {
+        return catalogMetadataService.listDatabases(connectionId);
+    }
+
     public List<String> listSchemas(UUID connectionId) throws Exception {
         return catalogMetadataService.listSchemas(connectionId);
     }
 
     public List<TableRef> listTables(UUID connectionId, String schema) throws Exception {
         return catalogMetadataService.listTables(connectionId, schema);
+    }
+
+    public List<com.dataweave.backend.domain.ColumnMeta> listColumns(UUID connectionId, String schema, String table)
+            throws Exception {
+        return catalogMetadataService.listColumns(connectionId, schema, table);
     }
 
     public CompletableFuture<DataPage> fetchTablePage(

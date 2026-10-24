@@ -31,6 +31,27 @@ public class CatalogMetadataService {
         this.schemaVersionRepository = schemaVersionRepository;
     }
 
+    @Cacheable(cacheNames = "metadata", key = "#connectionId + ':databases:' + @catalogMetadataService.schemaVersion(#connectionId)")
+    public List<String> listDatabases(UUID connectionId) throws Exception {
+        ConnectionProfile profile = connectionProfileService.require(connectionId);
+        DataSource ds = connectionManager.getDataSource(profile);
+        try (Connection conn = ds.getConnection();
+                PreparedStatement ps =
+                        conn.prepareStatement(
+                                """
+                                SELECT datname FROM pg_database
+                                WHERE datallowconn AND NOT datistemplate
+                                ORDER BY datname
+                                """);
+                ResultSet rs = ps.executeQuery()) {
+            List<String> databases = new ArrayList<>();
+            while (rs.next()) {
+                databases.add(rs.getString(1));
+            }
+            return databases;
+        }
+    }
+
     @Cacheable(cacheNames = "metadata", key = "#connectionId + ':schemas:' + @catalogMetadataService.schemaVersion(#connectionId)")
     public List<String> listSchemas(UUID connectionId) throws Exception {
         ConnectionProfile profile = connectionProfileService.require(connectionId);

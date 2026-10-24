@@ -1,5 +1,6 @@
 package com.dataweave.app.ui.connections
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,6 +54,7 @@ fun ConnectionsScreen(
     var sslMode by remember { mutableStateOf(SslMode.PREFER) }
     var timeout by remember { mutableStateOf("10") }
     var message by remember { mutableStateOf<String?>(null) }
+    var advancedOpen by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     fun refresh() {
@@ -109,16 +112,32 @@ fun ConnectionsScreen(
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SslMode.entries.forEach { mode ->
-                        FilterChip(
-                            selected = sslMode == mode,
-                            onClick = { sslMode = mode },
-                            label = { Text(mode.name.lowercase()) },
+                TextButton(onClick = { advancedOpen = !advancedOpen }) {
+                    Text(if (advancedOpen) "Hide advanced" else "Advanced connection options")
+                }
+                AnimatedVisibility(visible = advancedOpen) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            "jdbc:postgresql://$host:${port.toIntOrNull() ?: 5432}/$database?sslmode=${sslMode.name.lowercase()}",
+                            style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            SslMode.entries.forEach { mode ->
+                                FilterChip(
+                                    selected = sslMode == mode,
+                                    onClick = { sslMode = mode },
+                                    label = { Text(mode.name.lowercase()) },
+                                )
+                            }
+                        }
+                        OutlinedTextField(
+                            timeout,
+                            { timeout = it },
+                            label = { Text("Timeout (seconds)") },
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
                 }
-                OutlinedTextField(timeout, { timeout = it }, label = { Text("Timeout (seconds)") }, modifier = Modifier.fillMaxWidth())
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(
                         onClick = {

@@ -33,7 +33,11 @@ fun dataWeaveMain(args: Array<String>) {
 
     try {
         LaunchDiagnostics.appendLaunchLog("starting DesktopSession")
+        val sessionStart = System.nanoTime()
         val session = DesktopSession.startForGui(*buildSpringArgs(args))
+        val sessionMs = (System.nanoTime() - sessionStart) / 1_000_000
+        val springMs = com.dataweave.backend.startup.StartupTiming.springReadyMs()
+        LaunchDiagnostics.appendLaunchLog("DesktopSession ready in ${sessionMs}ms (spring-ready=${springMs}ms)")
         Runtime.getRuntime().addShutdownHook(Thread { session.close() })
         LaunchDiagnostics.appendLaunchLog("starting Compose application")
         application {

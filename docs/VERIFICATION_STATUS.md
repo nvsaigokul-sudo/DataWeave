@@ -1,6 +1,6 @@
 # DataWeave verification status
 
-Last updated: **2026-10-24** (v0.2.5 **published**; v0.2.1–v0.2.4 preserved).
+Last updated: **2026-10-24** (v0.2.6 in release; v0.2.5 **published**; v0.2.1–v0.2.4 preserved).
 
 This page summarizes **what we have actually run**, not roadmap intent. For architecture and audit detail see [AUDIT.md](./AUDIT.md).
 
@@ -45,7 +45,9 @@ Prior CI with same Windows GUI matrix: [40061037014](https://github.com/nvsaigok
 | Connection lifecycle (save ≠ connect, bad creds, unreachable) | **PASS** | `ConnectionLifecycleIntegrationTest` |
 | GUI connection-first workspace | **NOT TESTED** on laptop | Compose `WorkspaceShell`; Linux CI GUI not re-run this cycle |
 | GUI “add connection” flow | **PARTIAL** | Separate Save/Test/Connect/Disconnect in UI; laptop **NOT TESTED** |
-| **v0.2.5** Connections page vertical scroll | **NOT VERIFIED** (manual) | Code fix `3c073f8`; no Windows/macOS laptop scroll session on cloud agent |
+| **v0.2.5** Connections page vertical scroll | **PASS** (manual, user Windows) | User verified launch + scroll 2026-10-24; fix `3c073f8` |
+| **v0.2.6** Explorer lazy tree after Connect | **NOT VERIFIED** (manual) | P0 fix: no infinite Loading; Linux integration + headless smoke **PASS** |
+| **v0.2.6** UI modernization / startup timing | **PARTIAL** | `StartupTiming` in launch.log; laptop timing **NOT VERIFIED** |
 
 ## Security / cache (recent fixes)
 

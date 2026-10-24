@@ -7,9 +7,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -24,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.dataweave.app.preferences.UserPreferences
+import com.dataweave.app.ui.theme.DwSpacing
 import com.dataweave.app.ui.browse.TableDataGrid
 import com.dataweave.app.ui.connections.ConnectionsScreen
 import com.dataweave.app.ui.datasets.DatasetBuilderScreen
@@ -66,11 +65,12 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                 )
                 HorizontalDivider()
                 Row(Modifier.weight(1f)) {
-                    Column(
+                    Surface(
                         Modifier
-                            .width(260.dp)
                             .fillMaxHeight()
-                            .padding(8.dp),
+                            .padding(DwSpacing.sm),
+                        tonalElevation = 1.dp,
+                        shape = MaterialTheme.shapes.medium,
                     ) {
                         DatabaseTreeSidebar(
                             facade = facade,
@@ -80,10 +80,10 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                                 section = WorkspaceSection.Browse
                                 statusBar = "Selected ${table.qualifiedName()}"
                             },
+                            modifier = Modifier.padding(DwSpacing.xs).fillMaxHeight(),
                         )
                     }
-                    VerticalDivider(Modifier.fillMaxHeight())
-                    Box(Modifier.weight(1f).padding(12.dp)) {
+                    Box(Modifier.weight(1f).padding(DwSpacing.lg)) {
                         when (section) {
                             WorkspaceSection.Welcome ->
                                 WelcomePanel(
