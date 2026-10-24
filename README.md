@@ -11,9 +11,9 @@
 
 **You do not need to clone this repository, install Java, or run Gradle.**
 
-**Latest release:** [github.com/nvsaigokul-sudo/DataWeave/releases/latest](https://github.com/nvsaigokul-sudo/DataWeave/releases/latest)
+**Latest published release:** [v0.2.4](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.4) · **v0.2.5** (Connections scroll fix) is **UNPUBLISHED** — prep on `cursor/release-v0.2.5-prep-d9c8`; see [docs/V0.2.5_RELEASE.md](docs/V0.2.5_RELEASE.md).
 
-| Your OS | Download |
+| Your OS | Download (**published v0.2.4** — use until v0.2.5 is approved) |
 |---------|----------|
 | **Windows** | **[Releases → v0.2.4 `.msi`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.4/windows-DataWeave-Setup.msi)** (SHA256 `db19e0c9…`) — PG connection sessions + workspace UI. [LFS/media MSI](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi) matches after `main` refresh. [SHA256SUMS](downloads/SHA256SUMS.txt) |
 | **Linux (x64)** | [`.deb` (v0.2.4)](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.4/linux-dataweave_1.2.4_amd64.deb) · [linux/](downloads/linux/) |
@@ -31,7 +31,7 @@ Verify with `./scripts/verify-downloads-checksums.sh` and per-platform [download
 
 Full instructions: **[docs/INSTALL.md](docs/INSTALL.md)** · Troubleshooting: [docs/PLATFORMS.md](docs/PLATFORMS.md)
 
-Supported: **Windows 10/11**, **Linux (x64)**, **macOS 12+** (Apple Silicon installers on Releases; Intel via local build). Installer file versions show **1.2.4** (jpackage mapping from app **0.2.4**). Each bundle includes a **private Java runtime** — no separate JDK install.
+Supported: **Windows 10/11**, **Linux (x64)**, **macOS 12+** (Apple Silicon installers on Releases; Intel via local build). Published installers use file version **1.2.4** (jpackage mapping from app **0.2.4**); prep **0.2.5** → **1.2.5** after publish. Each bundle includes a **private Java runtime** — no separate JDK install.
 
 ---
 

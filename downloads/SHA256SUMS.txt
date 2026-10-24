@@ -1,3 +1,4 @@
 # Index — per-platform sums live in subfolders. CI verifies files present in the checkout.
-# Windows (in repo, Git LFS) — v0.2.4:
+# v0.2.5 (UNPUBLISHED): refresh after release CI — do not reuse v0.2.4 hashes below.
+# Windows (in repo, Git LFS) — v0.2.4 (published):
 db19e0c98c6d4efc1b130a6b5333125dba62088afb9f3b7c47e08c6ddfb2d419  windows/DataWeave-Setup.msi
