@@ -1,2 +1,2 @@
-# DataWeave Windows installer (Git LFS; CI GUI smoke @ run 39996985661, commit 2ac8c22)
-b613ec64d2c30abe613ac2ec821cc0c4443c70c539023b481b33118666dd886e  DataWeave-Setup.msi
+# DataWeave Windows installer (Git LFS; CI GUI smoke @ run 40063457806, commit 34b832f)
+35333f603bac8180316934b299623227d2ce35dea5dbf767af92fea45a4c5323  DataWeave-Setup.msi

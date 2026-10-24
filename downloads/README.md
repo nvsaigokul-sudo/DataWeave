@@ -14,7 +14,7 @@ The Windows **MSI** is stored with **Git LFS** (exceeds GitHub’s 100 MB blob l
 
 | File | SHA256 |
 |------|--------|
-| [windows/DataWeave-Setup.msi](windows/DataWeave-Setup.msi) | `b613ec64d2c30abe613ac2ec821cc0c4443c70c539023b481b33118666dd886e` |
+| [windows/DataWeave-Setup.msi](windows/DataWeave-Setup.msi) | `35333f603bac8180316934b299623227d2ce35dea5dbf767af92fea45a4c5323` |
 
 **Direct download (browser):**
 
@@ -26,11 +26,13 @@ https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloa
 
 ```bash
 sha256sum downloads/windows/DataWeave-Setup.msi
-# expect: b613ec64d2c30abe613ac2ec821cc0c4443c70c539023b481b33118666dd886e
+# expect: 35333f603bac8180316934b299623227d2ce35dea5dbf767af92fea45a4c5323
 ./scripts/verify-downloads-checksums.sh
 ```
 
-Built from CI run [39996985661](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/39996985661) (`:desktop:packageMsi`, commit `2ac8c22`). Bundled JRE includes **`java.desktop`** and **`jdk.accessibility`**. CI installs the MSI on `windows-latest` and runs `--diagnose`, `--headless-smoke`, `--gui-smoke`, and a **normal GUI launch** (no args, process alive 15s).
+**Mandatory reinstall:** If your installed copy has SHA256 `b613ec64…` (or `app\resources` is empty / `DataWeave.cfg` lists `DataWeaveAppKt`), uninstall the old MSI and install this build. Older LFS MSIs predated bootstrap + `DataWeave-JvmDebug.cmd`.
+
+Built from CI run [40063457806](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40063457806) (`:desktop:packageMsi`, commit `34b832f`). Includes **`DataWeaveBootstrapKt`**, **`app/resources/DataWeave-JvmDebug.cmd`**, bundled **`runtime/bin/java.exe`**, and JRE modules **`java.desktop`** + **`jdk.accessibility`**. CI installs the MSI on `windows-latest` and runs `--diagnose`, `DataWeave-JvmDebug.cmd --diagnose`, `--headless-smoke`, `--gui-smoke`, and a **normal GUI launch** (no args, process alive 15s).
 
 ## All platforms (releases)
 
