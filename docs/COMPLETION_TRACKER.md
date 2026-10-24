@@ -6,7 +6,8 @@ Last updated: **2026-10-24** (Windows GUI headless fix worker `bc-324a2265-6c67-
 
 | Asset | Expected SHA256 | Live check | Status |
 |-------|-----------------|------------|--------|
-| LFS / media MSI | `35333f603bac8180316934b299623227d2ce35dea5dbf767af92fea45a4c5323` | media URL `etag` matches; local `verify-downloads-checksums.sh` | **VERIFIED** |
+| LFS / media MSI (v0.2.3) | `68eb8524926e26532a2f7345b089fad37380c090c43ed92ef2888d95dfb070f5` | Release + CI Windows smoke [40070764011](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40070764011) | **VERIFIED** |
+| v0.2.2 MSI (superseded for GUI) | `35333f603bac…` | Preserved on [v0.2.2 release](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.2) | **SUPERSEDED** for HeadlessException |
 | Release v0.2.1 MSI | `6716b5aeccbe3eefbf8669b375e9c0277ebc08cf3a5c8b679b16f979960e9544` | Downloaded 2026-10-24 | **VERIFIED** (unchanged; not deleted) |
 | User legacy MSI | `a9c8ab77e653c6f202f58ebd877c526e5c220a712eb97f045b5457923d0f06fb` | Documented only | **SUPERSEDED** — reinstall from LFS |
 | raw.githubusercontent MSI | `24f3a23a…` (134 B pointer) | Documented | **INVALID** — use media URL |
@@ -15,7 +16,7 @@ Last updated: **2026-10-24** (Windows GUI headless fix worker `bc-324a2265-6c67-
 
 | Item | Evidence | Commit |
 |------|----------|--------|
-| **v0.2.3** Spring `headless(false)` for Compose GUI (`startForGui`) | `SpringHeadlessPropertyTest`; user `HeadlessException` root cause | (this push) |
+| **v0.2.3** Spring `headless(false)` for Compose GUI (`startForGui`) | `SpringHeadlessPropertyTest`; user `HeadlessException` root cause | `63b1cfc` |
 | Release publish uses **CI Windows MSI** (not stale LFS swap) | `.github/workflows/release.yml` | (this push) |
 | Normal GUI CI asserts `launch.log` reaches Compose | `windows-packaged-smoke.ps1` | (this push) |
 | Shared Windows packaged smoke script | `scripts/ci/windows-packaged-smoke.ps1` | (this push) |
@@ -39,8 +40,8 @@ Last updated: **2026-10-24** (Windows GUI headless fix worker `bc-324a2265-6c67-
 |------|--------|
 | Root cause documented | Spring Boot default headless → Compose `HeadlessException`; jpackage **Failed to launch JVM** masks Java exit |
 | `./gradlew test :desktop:runHeadlessSmoke` | **PASS** (agent) |
-| Tag `v0.2.3` + Windows CI smoke + publish | **PENDING** push |
-| LFS MSI SHA256 refresh | **PENDING** after green Windows package job |
+| Tag `v0.2.3` + Windows CI smoke + publish | **DONE** — CI [40070764011](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40070764011), Release [40070767809](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40070767809) |
+| LFS MSI SHA256 refresh | **DONE** `68eb8524…` |
 
 ## Release v0.2.2
 

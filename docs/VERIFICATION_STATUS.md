@@ -1,6 +1,6 @@
 # DataWeave verification status
 
-Last updated: **2026-10-24** (v0.2.3 headless GUI fix on branch `cursor/fix-windows-headless-gui-053d`; v0.2.2 preserved @ [40069176332](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40069176332)).
+Last updated: **2026-10-24** (v0.2.3 published; CI [40070764011](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40070764011); Release [40070767809](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40070767809); Windows MSI `68eb8524…`).
 
 This page summarizes **what we have actually run**, not roadmap intent. For architecture and audit detail see [AUDIT.md](./AUDIT.md).
 
@@ -58,7 +58,8 @@ Prior CI with same Windows GUI matrix: [40061037014](https://github.com/nvsaigok
 
 | Artifact | SHA256 | Size (bytes) | Test evidence |
 |----------|--------|--------------|---------------|
-| LFS + [media.githubusercontent.com MSI](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi) (README primary) | `35333f603bac8180316934b299623227d2ce35dea5dbf767af92fea45a4c5323` | 187727956 | Re-fetched 2026-10-24 audit; CI matrix [40063956281](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40063956281) |
+| LFS + [media.githubusercontent.com MSI](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi) (v0.2.3) | `68eb8524926e26532a2f7345b089fad37380c090c43ed92ef2888d95dfb070f5` | (see release) | CI + release [40070767809](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40070767809) |
+| v0.2.2 MSI | `35333f603bac8180316934b299623227d2ce35dea5dbf767af92fea45a4c5323` | 187727956 | GUI HeadlessException — use v0.2.3 |
 | `raw.githubusercontent.com/.../DataWeave-Setup.msi` | `24f3a23a8d46760578818e9ef2ab62102f558e9d3d9c163247fa454bd3046f17` | 134 | LFS pointer — **invalid installer** |
 | Legacy LFS MSI (user report) | `a9c8ab77e653c6f202f58ebd877c526e5c220a712eb97f045b5457923d0f06fb` | ~167 MB | Pre-reset; superseded by `35333f60…` |
 | Release `windows-DataWeave-1.2.1.msi` (v0.2.1 / **Latest**) | `6716b5aeccbe3eefbf8669b375e9c0277ebc08cf3a5c8b679b16f979960e9544` | 187499257 | Release build only — **no** install/GUI smoke in `release.yml` |
@@ -72,7 +73,7 @@ Different MSI hashes reflect **different build runs**; README explains when to p
 | Check | Status | Notes |
 |-------|--------|--------|
 | `SpringHeadlessPropertyTest` (`startForGui` → `java.awt.headless=false`) | **PASS** | Linux agent |
-| Packaged normal GUI reaches Compose in `launch.log` | **PENDING** | Windows CI after v0.2.3 tag |
+| Packaged normal GUI reaches Compose in `launch.log` | **PASS** | Windows CI [40070764011](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40070764011) |
 | User laptop with v0.2.2 `HeadlessException` | **FIX EXPECTED** | Requires v0.2.3 MSI (new SHA256) |
 
 **Root cause (v0.2.2 and earlier):** `DesktopSession.start()` used Spring Boot’s default headless mode before Compose `application { }`, so AWT reported headless on Windows and Skiko/Compose threw `HeadlessException` (`getGlobalDensity` / `getDefaultScreenDevice`). `--gui-smoke` could pass when it set headless false manually; normal launch did not. jpackage’s **Failed to launch JVM** is the generic wrapper for this Java-side exit.

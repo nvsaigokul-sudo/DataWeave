@@ -1,3 +1,3 @@
 # Index — per-platform sums live in subfolders. CI verifies files present in the checkout.
-# Windows (in repo, Git LFS):
-35333f603bac8180316934b299623227d2ce35dea5dbf767af92fea45a4c5323  windows/DataWeave-Setup.msi
+# Windows (in repo, Git LFS) — v0.2.3:
+68eb8524926e26532a2f7345b089fad37380c090c43ed92ef2888d95dfb070f5  windows/DataWeave-Setup.msi
