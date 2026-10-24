@@ -1,6 +1,6 @@
 # DataWeave completion tracker
 
-Last updated: **2026-10-24** (v0.2.5 prep worker `bc-86e0b378-b014-5001-a9ed-9eb014705401`; v0.2.4 publish **DONE**).
+Last updated: **2026-10-24** (v0.2.5 publish **DONE**; v0.2.4 preserved).
 
 ## Live verification (GitHub vs repo)
 
@@ -39,18 +39,17 @@ Last updated: **2026-10-24** (v0.2.5 prep worker `bc-86e0b378-b014-5001-a9ed-9eb
 | 20M-row grid / M2 pipeline | Roadmap — not in v0.2.2 scope |
 | Code signing / notarization | Future release hardening |
 
-## Release v0.2.5 (**UNPUBLISHED** — prep only)
+## Release v0.2.5
 
 | Step | Status |
 |------|--------|
-| Scroll fix integrated (`3c073f8` on `cursor/release-v0.2.5-prep-d9c8`) | **DONE** |
-| Gradle `0.2.5` (single source); jpackage **1.2.5** derived | **DONE** (prep branch) |
-| Draft [V0.2.5_RELEASE.md](./V0.2.5_RELEASE.md) | **DONE** |
-| `./gradlew test :desktop:runHeadlessSmoke` | **PASS** (agent 2026-10-24, prep branch) |
-| Linux `dataweave_1.2.5_amd64.deb` local build | **PASS** — `desktop/build/compose/binaries/main/deb/dataweave_1.2.5_amd64.deb` |
+| Scroll fix integrated (`3c073f8`) | **DONE** |
+| Gradle `0.2.5`; jpackage **1.2.5** | **DONE** |
+| [V0.2.5_RELEASE.md](./V0.2.5_RELEASE.md) | **DONE** |
+| `./gradlew test :desktop:runHeadlessSmoke` | **PASS** (agent 2026-10-24) |
+| Tag `v0.2.5` + GitHub Release | **DONE** — [release](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.5) · workflow [40078734530](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40078734530) |
+| LFS MSI + SHA256 from live assets | **DONE** — `a67cf1a0…` |
 | Windows Connections scroll (manual) | **NOT VERIFIED** |
-| Tag `v0.2.5` + GitHub Release | **BLOCKED** — owner approval required |
-| LFS / SHA256 refresh for v0.2.5 MSI | **BLOCKED** — fill from release CI after publish |
 
 ## Release v0.2.4
 

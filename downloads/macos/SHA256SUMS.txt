@@ -1,3 +1,6 @@
-# macOS Apple Silicon — v0.2.4 release assets (not stored in LFS):
+# macOS Apple Silicon — v0.2.5 release assets (not stored in LFS):
+830c77d8377f0ecd44a97f79959e8b25d739a0135b3ce1cea35db77aed9e0171  macos-arm64-DataWeave-1.2.5.dmg
+a6f98e8da7f240877b6b1c01bb0f26bec61e198806ed9938b960b67b5f469a29  macos-arm64-DataWeave-1.2.5.pkg
+# v0.2.4 — historical:
 e461b4a59d360671f1207db4b8b47d33664b46f7e6645c519994fe0070be2959  macos-arm64-DataWeave-1.2.4.dmg
 0211f6b6d82120ecdbd39cf55ae28770020dfa3e95b3a4718e182cb3a6785ff8  macos-arm64-DataWeave-1.2.4.pkg

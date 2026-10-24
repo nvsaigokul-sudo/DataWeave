@@ -1,6 +1,6 @@
 # DataWeave verification status
 
-Last updated: **2026-10-24** (v0.2.5 **UNPUBLISHED** prep; v0.2.4 published; v0.2.1–v0.2.3 preserved).
+Last updated: **2026-10-24** (v0.2.5 **published**; v0.2.1–v0.2.4 preserved).
 
 This page summarizes **what we have actually run**, not roadmap intent. For architecture and audit detail see [AUDIT.md](./AUDIT.md).
 
@@ -13,6 +13,7 @@ This page summarizes **what we have actually run**, not roadmap intent. For arch
 | `ci.yml` (macos-14) | test, headless smoke, macOS package | **PASS** | same run |
 | `ci.yml` (`downloads-verify`) | `scripts/verify-downloads-checksums.sh` | **PASS** | same run |
 | `release.yml` @ v0.2.1 | Linux/Windows/macOS artifacts | **PASS** (build) | [39998843720](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/39998843720) — **no** Windows GUI install smoke (fixed on `main` for v0.2.2+) |
+| `release.yml` @ v0.2.5 | Linux/Windows/macOS artifacts + publish | **PASS** | [40078734530](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40078734530) |
 | Local Gradle (Linux VM) | `./gradlew test :desktop:runHeadlessSmoke` | **PASS** | agent 2026-10-24 |
 | Linux `.deb` install smoke | `/opt/dataweave/bin/DataWeave` CLI modes | **PASS** | packaged `@ baa193c` tree |
 | Linux packaged `--gui-smoke` (Xvfb) | Compose window opens | **PASS** | agent 2026-10-24 — `GUI_SMOKE_OK` |
@@ -61,7 +62,8 @@ Prior CI with same Windows GUI matrix: [40061037014](https://github.com/nvsaigok
 
 | Artifact | SHA256 | Size (bytes) | Test evidence |
 |----------|--------|--------------|---------------|
-| LFS + [media.githubusercontent.com MSI](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi) (v0.2.4) | `db19e0c98c6d4efc1b130a6b5333125dba62088afb9f3b7c47e08c6ddfb2d419` | (see release) | CI [40073615869](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40073615869) + release [40074093471](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40074093471) |
+| LFS + [media.githubusercontent.com MSI](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi) (v0.2.5) | `a67cf1a0b93be83a1b9662ac72c351497d8e2e926914bdf150b66139254bd32d` | 188067924 | Release [40078734530](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40078734530) — live download verified 2026-10-24 |
+| v0.2.4 MSI (superseded) | `db19e0c98c6d4efc1b130a6b5333125dba62088afb9f3b7c47e08c6ddfb2d419` | (see release) | Preserved on [v0.2.4 release](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.4) |
 | v0.2.3 MSI (superseded) | `68eb8524…` | Preserved on [v0.2.3 release](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.3) | **SUPERSEDED** by v0.2.4 feature release |
 | v0.2.2 MSI | `35333f603bac8180316934b299623227d2ce35dea5dbf767af92fea45a4c5323` | 187727956 | GUI HeadlessException — use v0.2.3 |
 | `raw.githubusercontent.com/.../DataWeave-Setup.msi` | `24f3a23a8d46760578818e9ef2ab62102f558e9d3d9c163247fa454bd3046f17` | 134 | LFS pointer — **invalid installer** |
