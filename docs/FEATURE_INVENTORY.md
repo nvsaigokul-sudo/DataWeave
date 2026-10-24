@@ -1,6 +1,6 @@
 # DataWeave interactive control inventory
 
-**Version target:** 0.2.7  
+**Version target:** 0.2.9  
 **Last updated:** 2026-10-24  
 
 Legend: **PASS** = wired and covered by automated test or code review; **FIX** = repaired in 0.2.7 prep; **MANUAL** = requires Windows GUI verification; **N/I** = not implemented.

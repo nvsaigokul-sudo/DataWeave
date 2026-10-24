@@ -91,6 +91,10 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                                 statusBar = "Selected ${table.qualifiedName()}"
                             },
                             onOpenConnections = { section = WorkspaceSection.Connections },
+                            onEditConnection = { id ->
+                                pendingEditConnectionId = id
+                                section = WorkspaceSection.Connections
+                            },
                             onConnectionEstablished = { id ->
                                 setActiveConnection(id)
                                 statusBar = "Connected"

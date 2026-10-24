@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.dataweave.app.ui.connections.CredentialRecoveryPanel
 import com.dataweave.app.ui.theme.DwSpacing
 import com.dataweave.backend.ApplicationFacade
 import com.dataweave.backend.domain.ColumnMeta
@@ -71,6 +72,7 @@ fun DatabaseTreeSidebar(
     connectionId: UUID?,
     onSelectTable: (TableRef) -> Unit,
     onOpenConnections: () -> Unit,
+    onEditConnection: (UUID) -> Unit,
     onConnectionEstablished: (UUID) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -88,6 +90,7 @@ fun DatabaseTreeSidebar(
     val expandedTables = remember { mutableStateMapOf<String, Boolean>() }
     var loadGeneration by remember { mutableStateOf(0) }
     var connectBusy by remember { mutableStateOf(false) }
+    var needsCredentialRecovery by remember { mutableStateOf(false) }
 
     fun resetTree() {
         rootState = ExplorerSlice()
@@ -213,9 +216,13 @@ fun DatabaseTreeSidebar(
                 lifecycleState = st.state()
                 connectionPhase = "${st.state()}: ${st.message()}"
                 if (st.state() == ConnectionLifecycleState.CONNECTED) {
+                    needsCredentialRecovery = false
                     onConnectionEstablished(id)
                     refreshAll()
                 } else if (st.state() == ConnectionLifecycleState.ERROR) {
+                    needsCredentialRecovery =
+                        st.errorKind().orElse("").equals("missing_credential", ignoreCase = true) ||
+                            !facade.hasStoredCredential(id)
                     rootState = ExplorerSlice(state = ExplorerLoadState.Error, error = st.message())
                 }
             } catch (ex: Exception) {
@@ -242,6 +249,7 @@ fun DatabaseTreeSidebar(
         val gen = loadGeneration + 1
         loadGeneration = gen
         profile = withContext(Dispatchers.IO) { facade.listConnections().firstOrNull { it.id == id } }
+        needsCredentialRecovery = withContext(Dispatchers.IO) { !facade.hasStoredCredential(id) }
         val status = withContext(Dispatchers.IO) { facade.connectionStatus(id) }
         lifecycleState = status.state()
         connectionPhase = "${status.state()}: ${status.message()}"
@@ -320,6 +328,18 @@ fun DatabaseTreeSidebar(
             )
         }
         when {
+            connectionId != null && profile != null && needsCredentialRecovery ->
+                CredentialRecoveryPanel(
+                    facade = facade,
+                    profile = profile!!,
+                    onConnected = {
+                        needsCredentialRecovery = false
+                        onConnectionEstablished(it)
+                        refreshAll()
+                    },
+                    onOpenFullConnections = { onEditConnection(connectionId!!) },
+                    modifier = Modifier.weight(1f),
+                )
             connectionId == null ->
                 DisconnectedExplorerPanel(onOpenConnections = onOpenConnections)
             lifecycleState == ConnectionLifecycleState.DISCONNECTED ->
@@ -336,19 +356,36 @@ fun DatabaseTreeSidebar(
                     Text("Loading databases…")
                 }
             rootState.state == ExplorerLoadState.Error ->
-                Column(Modifier.padding(DwSpacing.sm)) {
-                    ErrorRow(
-                        rootState.error ?: "Error",
-                        onRetry =
-                            if (lifecycleState == ConnectionLifecycleState.CONNECTED) {
-                                { refreshAll() }
-                            } else {
-                                { connectActiveProfile() }
+                Column(Modifier.padding(DwSpacing.sm).weight(1f)) {
+                    val missingCred =
+                        rootState.error?.contains("missing_credential", ignoreCase = true) == true ||
+                            rootState.error?.contains("No saved password", ignoreCase = true) == true ||
+                            rootState.error?.contains("Missing stored credential", ignoreCase = true) == true
+                    if (missingCred && profile != null && connectionId != null) {
+                        CredentialRecoveryPanel(
+                            facade = facade,
+                            profile = profile!!,
+                            onConnected = {
+                                needsCredentialRecovery = false
+                                onConnectionEstablished(it)
+                                refreshAll()
                             },
-                    )
-                    if (lifecycleState != ConnectionLifecycleState.CONNECTED) {
-                        OutlinedButton(onClick = onOpenConnections, modifier = Modifier.padding(top = 4.dp)) {
-                            Text("Edit connection")
+                            onOpenFullConnections = { onEditConnection(connectionId!!) },
+                        )
+                    } else {
+                        ErrorRow(
+                            rootState.error ?: "Error",
+                            onRetry =
+                                if (lifecycleState == ConnectionLifecycleState.CONNECTED) {
+                                    { refreshAll() }
+                                } else {
+                                    { connectActiveProfile() }
+                                },
+                        )
+                        if (lifecycleState != ConnectionLifecycleState.CONNECTED) {
+                            OutlinedButton(onClick = { onEditConnection(connectionId!!) }, modifier = Modifier.padding(top = 4.dp)) {
+                                Text("Edit connection")
+                            }
                         }
                     }
                 }

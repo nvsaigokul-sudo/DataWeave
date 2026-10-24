@@ -166,4 +166,9 @@ public class ConnectionProfileService {
     public ConnectionProfile require(UUID id) {
         return repository.findById(id).orElseThrow(() -> new IllegalArgumentException("Unknown connection"));
     }
+
+    public boolean hasStoredCredential(UUID id) {
+        ConnectionProfile profile = require(id);
+        return vault.load(profile.credentialKey()).isPresent();
+    }
 }

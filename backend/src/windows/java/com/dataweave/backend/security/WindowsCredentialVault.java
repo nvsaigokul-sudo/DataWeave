@@ -23,7 +23,8 @@ public class WindowsCredentialVault implements CredentialVault {
 
     private static final String PREFIX = "DataWeave/";
     private static final int CRED_TYPE_GENERIC = 1;
-    private static final int CRED_PERSIST_SESSION = 1;
+    /** Persist across logoff/reboot for the local user (required for saved connection profiles). */
+    private static final int CRED_PERSIST_LOCAL_MACHINE = 2;
 
     /** Same-process fallback when Credential Manager read fails (e.g. restricted CI runners). */
     private final Map<String, char[]> sessionSecrets = new ConcurrentHashMap<>();
@@ -39,7 +40,7 @@ public class WindowsCredentialVault implements CredentialVault {
         credential.TargetName = PREFIX + key;
         credential.CredentialBlob = blobMemory;
         credential.CredentialBlobSize = blob.length;
-        credential.Persist = CRED_PERSIST_SESSION;
+        credential.Persist = CRED_PERSIST_LOCAL_MACHINE;
         credential.UserName = "dataweave";
         credential.write();
         if (!WindowsCredAdvapi32.INSTANCE.CredWriteW(credential, 0)) {

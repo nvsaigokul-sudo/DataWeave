@@ -37,7 +37,8 @@ public class PostgresConnectionManager {
             return probe;
         }
         disconnect(id);
-        pools.put(id, createPool(profile, passwordOverride, false));
+        Optional<char[]> password = resolvePassword(profile, passwordOverride);
+        pools.put(id, createPool(profile, password.orElseThrow(), false));
         return probe;
     }
 
@@ -56,7 +57,13 @@ public class PostgresConnectionManager {
     }
 
     private ConnectionTestResult probe(ConnectionProfile profile, char[] passwordOverride) {
-        try (HikariDataSource ds = createPool(profile, passwordOverride, true)) {
+        Optional<char[]> password = resolvePassword(profile, passwordOverride);
+        if (password.isEmpty()) {
+            return ConnectionTestResult.fail(
+                    "missing_credential",
+                    "No saved password for this profile. Enter your password and press Save credentials, then Connect.");
+        }
+        try (HikariDataSource ds = createPool(profile, password.get(), true)) {
             try (Connection conn = ds.getConnection()) {
                 conn.createStatement().execute("SELECT 1");
                 return ConnectionTestResult.ok(
@@ -79,13 +86,14 @@ public class PostgresConnectionManager {
         pools.clear();
     }
 
-    private HikariDataSource createPool(ConnectionProfile profile, char[] passwordOverride, boolean forTest) {
-        char[] password = passwordOverride;
-        if (password == null) {
-            password =
-                    vault.load(profile.credentialKey())
-                            .orElseThrow(() -> new IllegalStateException("Missing stored credential for connection"));
+    private Optional<char[]> resolvePassword(ConnectionProfile profile, char[] passwordOverride) {
+        if (passwordOverride != null) {
+            return Optional.of(passwordOverride);
         }
+        return vault.load(profile.credentialKey());
+    }
+
+    private HikariDataSource createPool(ConnectionProfile profile, char[] password, boolean forTest) {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(buildJdbcUrl(profile));
         config.setUsername(profile.username());

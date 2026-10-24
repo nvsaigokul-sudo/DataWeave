@@ -131,6 +131,10 @@ public class ApplicationFacade {
         return connectionProfileService.test(id, passwordOverride);
     }
 
+    public boolean hasStoredCredential(UUID connectionId) {
+        return connectionProfileService.hasStoredCredential(connectionId);
+    }
+
     public ConnectionSessionStatus connectConnection(UUID id) {
         return connectionSessionService.connect(id);
     }

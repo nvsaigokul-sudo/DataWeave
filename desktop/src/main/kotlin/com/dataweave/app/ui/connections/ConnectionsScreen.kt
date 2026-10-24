@@ -60,6 +60,7 @@ fun ConnectionsScreen(
     var advancedOpen by remember { mutableStateOf(false) }
     var busyAction by remember { mutableStateOf<String?>(null) }
     var pendingDeleteId by remember { mutableStateOf<UUID?>(null) }
+    var vaultMissingForEdit by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     fun resetNewForm() {
@@ -95,6 +96,9 @@ fun ConnectionsScreen(
         password = ""
         sslMode = p.sslMode
         timeout = p.connectTimeoutSeconds.toString()
+        scope.launch {
+            vaultMissingForEdit = withContext(Dispatchers.IO) { !facade.hasStoredCredential(p.id) }
+        }
     }
 
     LaunchedEffect(Unit) { refresh() }
@@ -120,6 +124,13 @@ fun ConnectionsScreen(
             "Save stores profile + vault password. Connect opens a live pool. Test probes without connecting.",
             style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
         )
+        if (vaultMissingForEdit && editingId != null) {
+            Text(
+                "No password is stored in the vault for this profile. Enter a password below and press Save before Connect.",
+                style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                color = androidx.compose.material3.MaterialTheme.colorScheme.error,
+            )
+        }
         if (WindowsPostgresServiceHelper.isWindows()) {
             WindowsServiceHints()
         }
