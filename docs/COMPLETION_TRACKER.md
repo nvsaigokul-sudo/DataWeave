@@ -47,8 +47,8 @@ Last updated: **2026-10-24** (v0.2.7 release prep; v0.2.6 **published**; v0.2.5 
 | Gradle `0.2.7`; jpackage **1.2.7** | **DONE** |
 | Verification passes 1–3 | **PASS** — see [VERIFICATION_STATUS.md](./VERIFICATION_STATUS.md) |
 | [V0.2.7_RELEASE.md](./V0.2.7_RELEASE.md), [REGRESSION_MATRIX.md](./REGRESSION_MATRIX.md), [FEATURE_INVENTORY.md](./FEATURE_INVENTORY.md) | **DONE** |
-| Tag `v0.2.7` + GitHub Release | **IN PROGRESS** (push tag → `release.yml`) |
-| LFS MSI + SHA256 from v0.2.7 Windows artifact | **PENDING** post-release |
+| Tag `v0.2.7` + GitHub Release | **DONE** — [40084406582](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40084406582) |
+| LFS MSI + SHA256 from v0.2.7 Windows artifact | **DONE** — `d96bb070…` |
 | User Windows manual (Home Connect, explorer) | **PENDING** |
 
 ## Release v0.2.5

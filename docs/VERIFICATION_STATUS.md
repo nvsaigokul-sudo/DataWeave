@@ -53,6 +53,7 @@ Prior CI with same Windows GUI matrix: [40061037014](https://github.com/nvsaigok
 | **v0.2.5** Connections page vertical scroll | **PASS** (manual, user Windows) | User verified launch + scroll 2026-10-24; fix `3c073f8` |
 | **v0.2.6** Explorer lazy tree after Connect | **NOT VERIFIED** (manual) | P0 fix: no infinite Loading; Linux integration + headless smoke **PASS** |
 | **v0.2.7** Home Connect + explorer object filter | **NOT VERIFIED** (manual) | UI fix; automated passes **PASS** — see [REGRESSION_MATRIX.md](./REGRESSION_MATRIX.md) |
+| **v0.2.8** Interactive control fixes (Edit/Delete/Clear/busy) | **NOT VERIFIED** (manual) | `./gradlew test` **PASS** — [FEATURE_INVENTORY.md](./FEATURE_INVENTORY.md) |
 | **v0.2.6** UI modernization / startup timing | **PARTIAL** | `StartupTiming` in launch.log; laptop timing **NOT VERIFIED** |
 
 ## Security / cache (recent fixes)
@@ -70,7 +71,8 @@ Prior CI with same Windows GUI matrix: [40061037014](https://github.com/nvsaigok
 
 | Artifact | SHA256 | Size (bytes) | Test evidence |
 |----------|--------|--------------|---------------|
-| LFS + [media.githubusercontent.com MSI](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi) (v0.2.5) | `a67cf1a0b93be83a1b9662ac72c351497d8e2e926914bdf150b66139254bd32d` | 188067924 | Release [40078734530](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40078734530) — live download verified 2026-10-24 |
+| LFS + [media.githubusercontent.com MSI](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi) (v0.2.7) | `d96bb070c45f0c6f328947f9339c3e19196c824b300f94f0633f6d035b216d3a` | 224288868 | Release [40084406582](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40084406582) — live download verified 2026-10-24 |
+| v0.2.5 MSI (preserved on tag) | `a67cf1a0b93be83a1b9662ac72c351497d8e2e926914bdf150b66139254bd32d` | 188067924 | [v0.2.5 release](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.5) — **unchanged** |
 | v0.2.4 MSI (superseded) | `db19e0c98c6d4efc1b130a6b5333125dba62088afb9f3b7c47e08c6ddfb2d419` | (see release) | Preserved on [v0.2.4 release](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.4) |
 | v0.2.3 MSI (superseded) | `68eb8524…` | Preserved on [v0.2.3 release](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.3) | **SUPERSEDED** by v0.2.4 feature release |
 | v0.2.2 MSI | `35333f603bac8180316934b299623227d2ce35dea5dbf767af92fea45a4c5323` | 187727956 | GUI HeadlessException — use v0.2.3 |

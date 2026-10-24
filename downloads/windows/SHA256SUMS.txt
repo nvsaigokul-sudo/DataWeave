@@ -1,2 +1,2 @@
-# DataWeave-Setup.msi (v0.2.5, CI-smoked Release workflow 40078734530)
-a67cf1a0b93be83a1b9662ac72c351497d8e2e926914bdf150b66139254bd32d  DataWeave-Setup.msi
+# DataWeave-Setup.msi (v0.2.7, CI-smoked Release workflow 40084406582)
+d96bb070c45f0c6f328947f9339c3e19196c824b300f94f0633f6d035b216d3a  DataWeave-Setup.msi
