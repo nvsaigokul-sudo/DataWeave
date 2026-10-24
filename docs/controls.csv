@@ -14,14 +14,18 @@ CONN-CRED-RECOVERY,Connections,Panel,Credential recovery,Re-enter password when 
 EXPL-TABLE,Explorer,Tree item,Table,Select table for Data,Connected,facade.listTables,MetadataExplorerIntegrationTest,PASS
 EXPL-VIEW,Explorer,Tree item,View,Open view in Data,Connected,facade.listViews,MetadataExplorerIntegrationTest,PARTIAL
 EXPL-RETRY,Explorer,Button,Retry metadata,Reload failed branch,Error state,facade.refreshSchema,MetadataExplorerIntegrationTest,PASS
-EXPL-PK,Explorer,Label,Primary key,Show PK columns,Table expanded,facade.getTablePrimaryKey,ExplorerTableMetadataIntegrationTest,PASS
-EXPL-IDX,Explorer,Label,Index,Show pg indexes,Table expanded,facade.listTableIndexes,ExplorerTableMetadataIntegrationTest,PASS
-EXPL-FK,Explorer,Label,Foreign key,Show FK targets,Table expanded,facade.listForeignKeysForTable,ForeignKeyMetadataIntegrationTest,PASS
+EXPL-PK,Explorer,Tree section,Primary keys,Expand PK column list,Table expanded,facade.getTablePrimaryKey,ExplorerTableMetadataIntegrationTest,PARTIAL
+EXPL-IDX,Explorer,Tree section,Indexes,Expand index list,Table expanded,facade.listTableIndexes,ExplorerTableMetadataIntegrationTest,PARTIAL
+EXPL-FK,Explorer,Tree section,Foreign keys,Expand FK list,Table expanded,facade.listForeignKeysForTable,ForeignKeyMetadataIntegrationTest,PARTIAL
+EXPL-COLS,Explorer,Tree section,Columns,Expand column list,Table expanded,facade.listColumns,MetadataExplorerIntegrationTest,PARTIAL
 GRID-PAGE,Data,Button,Next/Previous,Server paging,Table open,facade.fetchTablePage,PaginationAndTypesIntegrationTest,PASS
 GRID-FILTER,Data,Field,Search all columns,Server ILIKE OR,Table open,facade.fetchTablePage,PaginationAndTypesIntegrationTest,PASS
 GRID-COL-FILTER,Data,Field,Column filter,Single-column ILIKE,Column chosen,facade.fetchTablePage,TableBrowseColumnFilterIntegrationTest,PASS
 GRID-EXPORT,Data,Button,Export CSV,Stream table to file,Table open,facade.exportTableToCsv,TableExportServiceTest,PASS
 GRID-CANCEL,Data,Button,Cancel,Cancel in-flight page load,Loading,loadJob.cancel,manual,PARTIAL
+GRID-KEYBOARD,Data,Keyboard,Arrow/Home/End/Page,Move selection and paging,Grid focused,GridSelectionLogic+SpreadsheetDataGrid,GridSelectionLogicTest,PARTIAL
+GRID-COL-REORDER,Data,Menu,Move column left/right,Reorder visible columns,Grid open,GridSelectionLogic.reorderColumn,GridSelectionLogicTest,PASS
+GRID-COL-COPY,Data,Menu,Copy column (page),TSV column values,Page loaded,GridSelectionLogic.formatColumnValues,GridSelectionLogicTest,PASS
 GRID-ROWNUM,Data,Gutter,#,Row index display,Paged data,UI only,manual,NOT TESTED
 DATA-TABS,Data,Tab row,Table tabs,Multi-tab + restore prefs,Tables opened,UserPreferences.dataTabs,manual,NOT TESTED
 DATA-COL-RESIZE,Data,Drag,Column resize,Adjust column width,Grid open,SpreadsheetDataGrid,manual,NOT TESTED
@@ -39,3 +43,6 @@ PROJ-CREATE,Projects,Button,Create project,New SQLite project,Name non-blank,fac
 PROJ-RENAME,Projects,Button,Rename,Update project metadata,Project exists,facade.updateProject,WorkspaceProjectServiceTest,PASS
 PROJ-DUP,Projects,Button,Duplicate,Copy project shell,Project exists,facade.duplicateProject,WorkspaceProjectServiceTest,PASS
 PROJ-DEL,Projects,Button,Delete,Remove project with confirm,Project exists,facade.deleteProject,WorkspaceProjectServiceTest,PASS
+PROJ-LINK-DS,Projects,Button,Link dataset,Add dataset ref to project,Saved dataset in project,facade.addDatasetProjectItem,ProjectDatasetLinkIntegrationTest,PASS
+PROJ-UNLINK,Projects,Button,Remove link,Delete project_items row,Link exists,facade.removeProjectItem,ProjectDatasetLinkIntegrationTest,PARTIAL
+PROJ-SHOW-ITEMS,Projects,Button,Show items,Load linked items list,Project exists,facade.listProjectItems,ProjectDatasetLinkIntegrationTest,PARTIAL

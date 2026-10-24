@@ -12,6 +12,7 @@ import com.dataweave.backend.domain.SslMode;
 import com.dataweave.backend.domain.TableBrowseOptions;
 import com.dataweave.backend.domain.TableExportResult;
 import com.dataweave.backend.domain.TableRef;
+import com.dataweave.backend.domain.ProjectItem;
 import com.dataweave.backend.domain.WorkspaceProject;
 import com.dataweave.backend.postgres.PostgresConnectionManager;
 import com.dataweave.backend.service.CatalogMetadataService;
@@ -32,6 +33,7 @@ import com.dataweave.backend.service.ReadOnlyQueryService;
 import com.dataweave.backend.service.SqlEditorService;
 import com.dataweave.backend.service.TableDataService;
 import com.dataweave.backend.service.TableExportService;
+import com.dataweave.backend.service.ProjectItemService;
 import com.dataweave.backend.service.WorkspaceProjectService;
 import java.nio.file.Path;
 import java.util.List;
@@ -44,6 +46,7 @@ import org.springframework.stereotype.Component;
 public class ApplicationFacade {
 
     private final WorkspaceProjectService workspaceProjectService;
+    private final ProjectItemService projectItemService;
     private final ConnectionProfileService connectionProfileService;
     private final ConnectionSessionService connectionSessionService;
     private final CatalogMetadataService catalogMetadataService;
@@ -62,6 +65,7 @@ public class ApplicationFacade {
 
     public ApplicationFacade(
             WorkspaceProjectService workspaceProjectService,
+            ProjectItemService projectItemService,
             ConnectionProfileService connectionProfileService,
             ConnectionSessionService connectionSessionService,
             CatalogMetadataService catalogMetadataService,
@@ -78,6 +82,7 @@ public class ApplicationFacade {
             CacheInvalidationService cacheInvalidationService,
             PostgresConnectionManager postgresConnectionManager) {
         this.workspaceProjectService = workspaceProjectService;
+        this.projectItemService = projectItemService;
         this.connectionProfileService = connectionProfileService;
         this.connectionSessionService = connectionSessionService;
         this.catalogMetadataService = catalogMetadataService;
@@ -113,6 +118,18 @@ public class ApplicationFacade {
 
     public void deleteProject(UUID id) {
         workspaceProjectService.delete(id);
+    }
+
+    public List<ProjectItem> listProjectItems(UUID projectId) {
+        return projectItemService.listForProject(projectId);
+    }
+
+    public ProjectItem addDatasetProjectItem(UUID projectId, UUID datasetDefinitionId, String label) {
+        return projectItemService.addDatasetReference(projectId, datasetDefinitionId, label);
+    }
+
+    public void removeProjectItem(UUID itemId) {
+        projectItemService.removeItem(itemId);
     }
 
     public List<ConnectionProfile> listConnections() {

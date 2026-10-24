@@ -96,6 +96,7 @@ fun DatabaseTreeSidebar(
     val indexSlices = remember { mutableStateMapOf<String, ExplorerSlice<TableIndexMeta>>() }
     val expandedSchemas = remember { mutableStateMapOf<String, Boolean>() }
     val expandedTables = remember { mutableStateMapOf<String, Boolean>() }
+    val expandedTableMeta = remember { mutableStateMapOf<String, Boolean>() }
     var loadGeneration by remember { mutableStateOf(0) }
     var connectBusy by remember { mutableStateOf(false) }
     var needsCredentialRecovery by remember { mutableStateOf(false) }
@@ -112,6 +113,7 @@ fun DatabaseTreeSidebar(
         expandedDbs.clear()
         expandedSchemas.clear()
         expandedTables.clear()
+        expandedTableMeta.clear()
     }
 
     suspend fun timeoutMs(): Long {
@@ -482,6 +484,7 @@ fun DatabaseTreeSidebar(
                                 indexSlices = indexSlices,
                                 expandedSchemas = expandedSchemas,
                                 expandedTables = expandedTables,
+                                expandedTableMeta = expandedTableMeta,
                                 onExpandSchema = { schema, expand ->
                                     expandedSchemas[schema] = expand
                                     if (expand) loadTables(loadGeneration, db, schema)
@@ -516,6 +519,7 @@ private fun DatabaseSchemasSection(
     indexSlices: MutableMap<String, ExplorerSlice<TableIndexMeta>>,
     expandedSchemas: MutableMap<String, Boolean>,
     expandedTables: MutableMap<String, Boolean>,
+    expandedTableMeta: MutableMap<String, Boolean>,
     onExpandSchema: (String, Boolean) -> Unit,
     onExpandTable: (String, String, Boolean) -> Unit,
     onSelectTable: (TableRef) -> Unit,
@@ -571,52 +575,117 @@ private fun DatabaseSchemasSection(
                                 )
                                 if (tableExpanded) {
                                     val cKey = "db:$database:schema:$schema:table:${table.name}"
-                                    val colSlice = columnSlices[cKey] ?: ExplorerSlice()
-                                    when (colSlice.state) {
-                                        ExplorerLoadState.Loading, ExplorerLoadState.Refreshing ->
-                                            Text("Loading columns…", modifier = Modifier.padding(start = 48.dp))
-                                        ExplorerLoadState.Error ->
-                                            ErrorRow(
-                                                colSlice.error ?: "Columns error",
-                                                onRetry = { onRetryColumns(schema, table.name) },
-                                                indent = 48,
-                                            )
-                                        ExplorerLoadState.Empty ->
-                                            Text("(no columns)", modifier = Modifier.padding(start = 48.dp))
-                                        ExplorerLoadState.Loaded, ExplorerLoadState.Idle ->
-                                            colSlice.items
-                                                .filter { filter.isBlank() || it.name.contains(filter, ignoreCase = true) }
-                                                .forEach { col ->
-                                                    Text(
-                                                        "${col.name} : ${col.dataType}",
-                                                        style = MaterialTheme.typography.bodySmall,
-                                                        modifier = Modifier.padding(start = 48.dp, top = 2.dp, bottom = 2.dp),
-                                                    )
-                                                }
+                                    val metaKey = cKey
+                                    fun metaExpanded(section: String): Boolean = expandedTableMeta["$tableKey:$section"] == true
+                                    fun toggleMeta(section: String) {
+                                        val k = "$tableKey:$section"
+                                        expandedTableMeta[k] = !(expandedTableMeta[k] ?: false)
                                     }
-                                    val metaKey = "db:$database:schema:$schema:table:${table.name}"
-                                    pkSlices[metaKey]?.items?.firstOrNull()?.let { pk ->
-                                        if (pk.columnNames().isNotEmpty()) {
-                                            Text(
-                                                "PK: ${pk.columnNames().joinToString(", ")}",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                modifier = Modifier.padding(start = 48.dp),
-                                            )
+                                    TreeRow(
+                                        label = "Columns",
+                                        prefix = if (metaExpanded("columns")) "▼" else "▶",
+                                        indent = 3,
+                                        onClick = { toggleMeta("columns") },
+                                    )
+                                    if (metaExpanded("columns")) {
+                                        val colSlice = columnSlices[cKey] ?: ExplorerSlice()
+                                        when (colSlice.state) {
+                                            ExplorerLoadState.Loading, ExplorerLoadState.Refreshing ->
+                                                Text("Loading columns…", modifier = Modifier.padding(start = 64.dp))
+                                            ExplorerLoadState.Error ->
+                                                ErrorRow(
+                                                    colSlice.error ?: "Columns error",
+                                                    onRetry = { onRetryColumns(schema, table.name) },
+                                                    indent = 64,
+                                                )
+                                            ExplorerLoadState.Empty ->
+                                                Text("(no columns)", modifier = Modifier.padding(start = 64.dp))
+                                            ExplorerLoadState.Loaded, ExplorerLoadState.Idle ->
+                                                colSlice.items
+                                                    .filter { filter.isBlank() || it.name.contains(filter, ignoreCase = true) }
+                                                    .forEach { col ->
+                                                        Text(
+                                                            "${col.name} : ${col.dataType}${if (col.nullable) "?" else ""}",
+                                                            style = MaterialTheme.typography.bodySmall,
+                                                            modifier = Modifier.padding(start = 64.dp, top = 2.dp, bottom = 2.dp),
+                                                        )
+                                                    }
                                         }
                                     }
-                                    fkTableSlices[metaKey]?.items?.forEach { fk ->
-                                        Text(
-                                            "FK → ${fk.referencedTable()}.${fk.referencedColumn()}",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            modifier = Modifier.padding(start = 48.dp),
-                                        )
+                                    TreeRow(
+                                        label = "Primary keys",
+                                        prefix = if (metaExpanded("pk")) "▼" else "▶",
+                                        indent = 3,
+                                        onClick = { toggleMeta("pk") },
+                                    )
+                                    if (metaExpanded("pk")) {
+                                        val pkSlice = pkSlices[metaKey] ?: ExplorerSlice()
+                                        when (pkSlice.state) {
+                                            ExplorerLoadState.Loading, ExplorerLoadState.Refreshing ->
+                                                Text("Loading…", modifier = Modifier.padding(start = 64.dp))
+                                            ExplorerLoadState.Error ->
+                                                ErrorRow(pkSlice.error ?: "PK error", onRetry = { onRetryColumns(schema, table.name) }, indent = 64)
+                                            else -> {
+                                                val pk = pkSlice.items.firstOrNull()
+                                                if (pk == null || pk.columnNames().isEmpty()) {
+                                                    Text("(none)", modifier = Modifier.padding(start = 64.dp))
+                                                } else {
+                                                    pk.columnNames().forEach { cn ->
+                                                        Text(cn, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(start = 64.dp))
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
-                                    indexSlices[metaKey]?.items?.forEach { idx ->
-                                        Text(
-                                            "Index ${idx.indexName()}${if (idx.unique()) " (unique)" else ""}",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            modifier = Modifier.padding(start = 48.dp),
-                                        )
+                                    TreeRow(
+                                        label = "Foreign keys",
+                                        prefix = if (metaExpanded("fk")) "▼" else "▶",
+                                        indent = 3,
+                                        onClick = { toggleMeta("fk") },
+                                    )
+                                    if (metaExpanded("fk")) {
+                                        val fkSlice = fkTableSlices[metaKey] ?: ExplorerSlice()
+                                        when (fkSlice.state) {
+                                            ExplorerLoadState.Loading, ExplorerLoadState.Refreshing ->
+                                                Text("Loading…", modifier = Modifier.padding(start = 64.dp))
+                                            ExplorerLoadState.Error ->
+                                                ErrorRow(fkSlice.error ?: "FK error", onRetry = { onRetryColumns(schema, table.name) }, indent = 64)
+                                            ExplorerLoadState.Empty ->
+                                                Text("(none)", modifier = Modifier.padding(start = 64.dp))
+                                            else ->
+                                                fkSlice.items.forEach { fk ->
+                                                    Text(
+                                                        "${fk.column()} → ${fk.referencedSchema()}.${fk.referencedTable()}.${fk.referencedColumn()}",
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        modifier = Modifier.padding(start = 64.dp),
+                                                    )
+                                                }
+                                        }
+                                    }
+                                    TreeRow(
+                                        label = "Indexes",
+                                        prefix = if (metaExpanded("idx")) "▼" else "▶",
+                                        indent = 3,
+                                        onClick = { toggleMeta("idx") },
+                                    )
+                                    if (metaExpanded("idx")) {
+                                        val idxSlice = indexSlices[metaKey] ?: ExplorerSlice()
+                                        when (idxSlice.state) {
+                                            ExplorerLoadState.Loading, ExplorerLoadState.Refreshing ->
+                                                Text("Loading…", modifier = Modifier.padding(start = 64.dp))
+                                            ExplorerLoadState.Error ->
+                                                ErrorRow(idxSlice.error ?: "Index error", onRetry = { onRetryColumns(schema, table.name) }, indent = 64)
+                                            ExplorerLoadState.Empty ->
+                                                Text("(none)", modifier = Modifier.padding(start = 64.dp))
+                                            else ->
+                                                idxSlice.items.forEach { idx ->
+                                                    Text(
+                                                        "${idx.indexName()}${if (idx.unique()) " (unique)" else ""}",
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        modifier = Modifier.padding(start = 64.dp),
+                                                    )
+                                                }
+                                        }
                                     }
                                 }
                             }
