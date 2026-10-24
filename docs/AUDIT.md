@@ -42,7 +42,8 @@ Draft tag workflow to align Releases with LFS: [RELEASE_v0.2.2_PREP.md](./RELEAS
 
 ## Not implemented / deferred
 
-- v0.2.2 release tag to replace v0.2.1 Windows assets with LFS-identical MSI (documented split; tag only if release page must match LFS byte-for-byte).
+- v0.2.2 release tag — operator steps in [V0.2.2_RELEASE.md](./V0.2.2_RELEASE.md); Gradle `0.2.2-SNAPSHOT`; tag not pushed from cloud agent (user/CI publishes).
+- SQL editor, CSV ingest, join preview, table export — implemented with integration tests; **GUI on user laptop pending**.
 - macOS Keychain via CLI (`-w` on command line) — process-list exposure; needs native API for a proper fix.
 - Full manual UX sign-off on user Windows/macOS hardware.
 

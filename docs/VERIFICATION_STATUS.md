@@ -1,6 +1,6 @@
 # DataWeave verification status
 
-Last updated: **2026-10-24** (`b90dcb0` on `main`; audit re-verified MSI URLs + `./gradlew test :desktop:runHeadlessSmoke` PASS; CI [40067692708](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40067692708)).
+Last updated: **2026-10-24** (product completion: Flyway v2, SQL/CSV/join/export + Compose screens; `./gradlew test :desktop:runHeadlessSmoke` **PASS** on agent; prior CI [40067692708](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40067692708)).
 
 This page summarizes **what we have actually run**, not roadmap intent. For architecture and audit detail see [AUDIT.md](./AUDIT.md).
 
@@ -90,8 +90,8 @@ Downloads layout: `downloads/{windows,linux,macos}/` with `./scripts/verify-down
 
 | Roadmap item | Classification |
 |--------------|----------------|
-| M0 — connections, metadata browse, paginated grid | **Implemented & tested** (backend + headless; Windows CI packaged GUI) |
-| M1 — CSV ingest, virtualized preview | **Not implemented** |
+| M0 — connections, metadata browse, paginated grid, SQL editor + history, table CSV export | **Implemented & tested** (backend integration tests + headless; Windows CI packaged GUI for browse path) |
+| M1 — CSV ingest, virtualized preview | **Partial** — CSV register + paginated preview + column subset preview; no 20M-row virtualization |
 | M2 — pipeline designer | **Not implemented** |
 | M3 — Windows packaging | **Implemented** (MSI/EXE; CI smoke); code signing **not done** |
 | M4 — optional sync | **Not implemented** |

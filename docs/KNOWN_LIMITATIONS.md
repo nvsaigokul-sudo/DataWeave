@@ -12,7 +12,11 @@ Last reviewed: **2026-10-24** (`main` engineering reset).
 ## Product scope
 
 - **PostgreSQL required for data** — local SQLite stores app metadata only; remote PG must be reachable to browse tables.
-- **Navigation placeholders** — Sources, Pipelines, Settings remain disabled in the shell until later milestones.
+- **Pipelines / Settings** — not in the shell; M2 pipeline designer remains roadmap-only.
+- **CSV ingest** — registers local file paths (512 MB cap); moving/deleting files breaks preview until re-registered.
+- **Join preview** — inner join on explicit keys only (no visual graph); max 500 rows per preview.
+- **Table CSV export** — streams up to 100,000 rows; not tested on user hardware at multi-GB scale.
+- **SQL editor** — SELECT-only (same rules as backend); no DDL/DML; GUI not pixel-tested on user laptops.
 - **No delete UI** — backend supports delete; UI omits until confirmation design lands.
 - **Dataset builder / pipelines / sync** — not implemented (see [IMPLEMENTATION_ROADMAP.md](./IMPLEMENTATION_ROADMAP.md)).
 - **Large grid / 20M-row performance** — page-sized fetch and `LazyColumn` only; no production-scale perf proof.

@@ -40,6 +40,8 @@ Supported: **Windows 10/11**, **Linux (x64)**, **macOS 12+** (Apple Silicon inst
 - **Compose Desktop UI** + **embedded Spring Boot** (single process — no separate server to start)
 - Save **real PostgreSQL** connections (host, port, SSL, credentials in OS keychain/credential manager)
 - Browse schemas/tables and view **paginated** table data from your database
+- **SQL editor** (read-only `SELECT`) with local query history
+- **Dataset builder** — column preview, CSV file registration/preview, inner-join preview; **Export CSV** from table browse (streamed, capped)
 - Local **SQLite** metadata at `~/.dataweave/` (not your business data warehouse)
 
 No fake demo databases, Docker, or browser UI.

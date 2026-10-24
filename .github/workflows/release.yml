@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing v* tag to rebuild (optional; default = ref that triggered push)"
+        required: false
+        type: string
 
 permissions:
   contents: write
