@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
@@ -40,6 +41,8 @@ import kotlinx.coroutines.withContext
 fun ConnectionsScreen(
     facade: ApplicationFacade,
     onConnected: (UUID) -> Unit,
+    initialEditConnectionId: UUID? = null,
+    onConsumedEditConnectionId: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var connections by remember { mutableStateOf<List<ConnectionProfile>>(emptyList()) }
@@ -55,7 +58,22 @@ fun ConnectionsScreen(
     var timeout by remember { mutableStateOf("10") }
     var message by remember { mutableStateOf<String?>(null) }
     var advancedOpen by remember { mutableStateOf(false) }
+    var busyAction by remember { mutableStateOf<String?>(null) }
+    var pendingDeleteId by remember { mutableStateOf<UUID?>(null) }
     val scope = rememberCoroutineScope()
+
+    fun resetNewForm() {
+        editingId = null
+        password = ""
+        name = "Local PostgreSQL"
+        host = "127.0.0.1"
+        port = "5432"
+        database = "postgres"
+        username = "postgres"
+        sslMode = SslMode.PREFER
+        timeout = "10"
+        message = "New connection form"
+    }
 
     fun refresh() {
         scope.launch {
@@ -67,8 +85,6 @@ fun ConnectionsScreen(
         }
     }
 
-    LaunchedEffect(Unit) { refresh() }
-
     fun loadProfile(p: ConnectionProfile) {
         editingId = p.id
         name = p.name
@@ -79,6 +95,17 @@ fun ConnectionsScreen(
         password = ""
         sslMode = p.sslMode
         timeout = p.connectTimeoutSeconds.toString()
+    }
+
+    LaunchedEffect(Unit) { refresh() }
+
+    LaunchedEffect(initialEditConnectionId, connections) {
+        val id = initialEditConnectionId ?: return@LaunchedEffect
+        connections.firstOrNull { it.id == id }?.let {
+            loadProfile(it)
+            message = "Editing ${it.name}"
+            onConsumedEditConnectionId()
+        }
     }
 
     val scrollState = rememberScrollState()
@@ -140,8 +167,10 @@ fun ConnectionsScreen(
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(
+                        enabled = busyAction == null,
                         onClick = {
                             scope.launch {
+                                busyAction = "save"
                                 runCatching {
                                     withContext(Dispatchers.IO) {
                                         val pass = password.toCharArray()
@@ -160,16 +189,11 @@ fun ConnectionsScreen(
                                     editingId = it.id
                                     refresh()
                                 }.onFailure { message = it.message }
+                                busyAction = null
                             }
                         },
                     ) { Text("Save") }
-                    Button(
-                        onClick = {
-                            editingId = null
-                            password = ""
-                            name = "Local PostgreSQL"
-                        },
-                    ) { Text("New") }
+                    Button(onClick = { resetNewForm() }) { Text("New") }
                 }
                 message?.let { Text(it) }
             }
@@ -192,54 +216,113 @@ fun ConnectionsScreen(
                             Button(onClick = { loadProfile(conn) }) { Text("Edit") }
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Button(onClick = { scope.launch { testConn(facade, conn.id, password, { refresh() }) { message = it } } }) {
+                            Button(
+                                enabled = busyAction == null,
+                                onClick = {
+                                    scope.launch {
+                                        busyAction = "test-${conn.id}"
+                                        testConn(facade, conn.id, password, { refresh() }) { message = it }
+                                        busyAction = null
+                                    }
+                                },
+                            ) {
                                 Text("Test")
                             }
                             Button(
+                                enabled = busyAction == null,
                                 onClick = {
                                     scope.launch {
+                                        busyAction = "connect-${conn.id}"
                                         connectConn(facade, conn.id, password) { msg, ok ->
                                             message = msg
                                             refresh()
                                             if (ok) onConnected(conn.id)
                                         }
+                                        busyAction = null
                                     }
                                 },
                             ) { Text("Connect") }
-                            Button(onClick = { scope.launch { disconnectConn(facade, conn.id, { refresh() }) { message = it } } }) {
+                            Button(
+                                enabled = busyAction == null,
+                                onClick = {
+                                    scope.launch {
+                                        busyAction = "disconnect-${conn.id}"
+                                        disconnectConn(facade, conn.id, { refresh() }) { message = it }
+                                        busyAction = null
+                                    }
+                                },
+                            ) {
                                 Text("Disconnect")
                             }
-                            Button(onClick = { scope.launch { reconnectConn(facade, conn.id, password, { refresh() }) { message = it } } }) {
+                            Button(
+                                enabled = busyAction == null,
+                                onClick = {
+                                    scope.launch {
+                                        busyAction = "reconnect-${conn.id}"
+                                        reconnectConn(facade, conn.id, password, { refresh() }) { message = it }
+                                        busyAction = null
+                                    }
+                                },
+                            ) {
                                 Text("Reconnect")
                             }
                             Button(
+                                enabled = busyAction == null,
                                 onClick = {
                                     scope.launch {
+                                        busyAction = "refresh-${conn.id}"
                                         runCatching { withContext(Dispatchers.IO) { facade.refreshSchema(conn.id) } }
                                             .onSuccess { message = "Metadata cache refreshed (v$it)" }
                                             .onFailure { message = it.message }
+                                        busyAction = null
                                     }
                                 },
                             ) { Text("Refresh metadata") }
-                            Button(
-                                onClick = {
-                                    scope.launch {
-                                        withContext(Dispatchers.IO) { facade.deleteConnection(conn.id) }
-                                        refresh()
-                                    }
-                                },
-                            ) { Text("Delete") }
+                            Button(onClick = { pendingDeleteId = conn.id }) { Text("Delete") }
                         }
                     }
                 }
             }
         }
     }
+
+    pendingDeleteId?.let { deleteId ->
+        val conn = connections.firstOrNull { it.id == deleteId }
+        AlertDialog(
+            onDismissRequest = { pendingDeleteId = null },
+            title = { Text("Delete connection?") },
+            text = {
+                Text(
+                    conn?.let { "Remove \"${it.name}\" and its saved credentials from this device?" }
+                        ?: "Remove this connection profile?",
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            busyAction = "delete"
+                            withContext(Dispatchers.IO) { facade.deleteConnection(deleteId) }
+                            if (editingId == deleteId) resetNewForm()
+                            pendingDeleteId = null
+                            refresh()
+                            message = "Connection deleted"
+                            busyAction = null
+                        }
+                    },
+                ) { Text("Delete") }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDeleteId = null }) { Text("Cancel") }
+            },
+        )
+    }
 }
 
 @Composable
 private fun WindowsServiceHints() {
     var services by remember { mutableStateOf(WindowsPostgresServiceHelper.listPostgresServices()) }
+    var expandedService by remember { mutableStateOf<String?>(null) }
     if (services.isEmpty()) return
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -247,14 +330,20 @@ private fun WindowsServiceHints() {
             services.forEach { svc ->
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("${svc.displayName} — ${svc.status}", modifier = Modifier.weight(1f))
-                    Button(onClick = { /* messaging only — no remote/admin actions from agent */ }) {
-                        Text("Start help")
+                    TextButton(
+                        onClick = {
+                            expandedService = if (expandedService == svc.name) null else svc.name
+                        },
+                    ) {
+                        Text(if (expandedService == svc.name) "Hide help" else "Start help")
                     }
                 }
-                Text(
-                    WindowsPostgresServiceHelper.startServiceMessage(svc.name),
-                    style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
-                )
+                if (expandedService == svc.name) {
+                    Text(
+                        WindowsPostgresServiceHelper.startServiceMessage(svc.name),
+                        style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                    )
+                }
             }
         }
     }

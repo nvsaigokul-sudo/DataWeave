@@ -40,6 +40,7 @@ fun HomeConnectionHub(
     onConnected: (UUID) -> Unit,
     onCreateConnection: () -> Unit,
     onManageConnections: () -> Unit,
+    onEditProfile: (UUID) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -89,7 +90,10 @@ fun HomeConnectionHub(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
-        val activeStatus = activeConnectionId?.let { statuses[it] }
+        val activeStatus =
+            activeConnectionId?.let { id ->
+                statuses[id] ?: ConnectionSessionStatus.disconnected(id)
+            }
         if (activeConnectionId != null && activeStatus != null) {
             ConnectionStatusCard(
                 profile = profiles.firstOrNull { it.id == activeConnectionId },
@@ -126,13 +130,21 @@ fun HomeConnectionHub(
                     busy = busyId == profile.id,
                     onSelect = { onActiveConnectionChange(profile.id) },
                     onConnect = { connect(profile.id) },
-                    onEdit = onManageConnections,
+                    onEdit = { onEditProfile(profile.id) },
                 )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = onCreateConnection) { Text("New connection") }
                 TextButton(onClick = onManageConnections) { Text("Manage all") }
             }
+        }
+
+        if (activeConnectionId == null && profiles.isNotEmpty()) {
+            Text(
+                "Tip: select a profile below, then press Connect — or use the explorer sidebar Connect when a profile is selected.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
 
         message?.let {
@@ -186,7 +198,7 @@ private fun SavedProfileRow(
     busy: Boolean,
     onSelect: () -> Unit,
     onConnect: () -> Unit,
-    onEdit: () -> Unit,
+    onEdit: () -> Unit = {},
 ) {
     val state = status?.state() ?: ConnectionLifecycleState.DISCONNECTED
     Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {

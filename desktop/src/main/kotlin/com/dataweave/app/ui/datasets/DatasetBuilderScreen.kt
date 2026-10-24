@@ -78,6 +78,12 @@ fun DatasetBuilderScreen(
         if (connectionId == null && connections.isNotEmpty()) connectionId = connections.first().id
     }
 
+    LaunchedEffect(activeConnectionId) {
+        if (activeConnectionId != null) {
+            connectionId = activeConnectionId
+        }
+    }
+
     LaunchedEffect(projectId) {
         val pid = projectId ?: return@LaunchedEffect
         csvSources = withContext(Dispatchers.IO) { facade.listCsvSources(pid) }

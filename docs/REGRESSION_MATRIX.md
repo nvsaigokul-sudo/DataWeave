@@ -10,8 +10,12 @@ Use before each patch release. **v0.2.7** agent run: 2026-10-24.
 | R04 | Connections page scroll | Full form reachable | **PASS** manual | — | Not re-run | PENDING |
 | R05 | Save profile ≠ Connect | Saved shows disconnected until Connect | PASS integration | PASS | **PASS** | PENDING |
 | R06 | Explorer after Connect | Tree loads, no infinite Loading | FAIL reported | Fix in 0.2.6 | **PASS** integration | PENDING |
-| R07 | Home without connection | Visible Connect / create path | FAIL (0.2.6 UX) | FAIL | **FIX** UI | PENDING |
-| R08 | Explorer filter label | Filters objects only when connected | Confusing in 0.2.6 | Confusing | **FIX** | PENDING |
+| R07 | Home without connection | Visible Connect / create path | FAIL (0.2.6 UX) | FAIL | **FIX** (`HomeConnectionHub`) | PENDING |
+| R08 | Explorer filter label | Filters objects only when connected | Confusing in 0.2.6 | Confusing | **FIX** ("Filter objects") | PENDING |
+| R13 | Connections Edit from Home | Loads profile in form | — | FAIL | **FIX** | PENDING |
+| R14 | Delete connection | Confirms before delete | — | FAIL | **FIX** | PENDING |
+| R15 | Windows Start help | Shows instructions | no-op | no-op | **FIX** | PENDING |
+| R16 | SQL Clear | Clears editor/results | — | missing | **FIX** | PENDING |
 | R09 | DB switch in explorer | Reconnect + refresh | — | PASS integration | **PASS** | PENDING |
 | R10 | Spring headless=false for GUI | No `HeadlessException` | PASS | PASS | **PASS** `SpringHeadlessPropertyTest` | — |
 | R11 | Query cache key includes SQL | No wrong-row cache hit | PASS | PASS | **PASS** | — |

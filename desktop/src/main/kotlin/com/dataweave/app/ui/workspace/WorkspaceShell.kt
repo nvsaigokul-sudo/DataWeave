@@ -53,6 +53,7 @@ fun WorkspaceShell(facade: ApplicationFacade) {
         )
     }
     var selectedTable by remember { mutableStateOf<TableRef?>(null) }
+    var pendingEditConnectionId by remember { mutableStateOf<UUID?>(null) }
     var statusBar by remember { mutableStateOf("Ready") }
 
     fun setActiveConnection(id: UUID?) {
@@ -109,13 +110,22 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                                         section = WorkspaceSection.Browse
                                         statusBar = "Connected"
                                     },
-                                    onCreateConnection = { section = WorkspaceSection.Connections },
+                                    onCreateConnection = {
+                                        pendingEditConnectionId = null
+                                        section = WorkspaceSection.Connections
+                                    },
                                     onManageConnections = { section = WorkspaceSection.Connections },
+                                    onEditProfile = { id ->
+                                        pendingEditConnectionId = id
+                                        section = WorkspaceSection.Connections
+                                    },
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             WorkspaceSection.Connections ->
                                 ConnectionsScreen(
                                     facade = facade,
+                                    initialEditConnectionId = pendingEditConnectionId,
+                                    onConsumedEditConnectionId = { pendingEditConnectionId = null },
                                     onConnected = {
                                         setActiveConnection(it)
                                         section = WorkspaceSection.Browse

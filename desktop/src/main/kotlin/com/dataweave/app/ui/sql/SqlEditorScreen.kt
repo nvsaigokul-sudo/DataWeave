@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -61,6 +62,12 @@ fun SqlEditorScreen(
         refreshHistory()
     }
 
+    LaunchedEffect(activeConnectionId) {
+        if (activeConnectionId != null) {
+            connectionId = activeConnectionId
+        }
+    }
+
     LaunchedEffect(connectionId) {
         connectionId?.let { onSelectConnection(it) }
     }
@@ -83,7 +90,7 @@ fun SqlEditorScreen(
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(
-                enabled = connectionId != null,
+                enabled = connectionId != null && status != "Running…",
                 onClick = {
                     val id = connectionId ?: return@Button
                     scope.launch {
@@ -105,6 +112,16 @@ fun SqlEditorScreen(
                 },
             ) {
                 Text("Run")
+            }
+            OutlinedButton(
+                onClick = {
+                    sql = ""
+                    page = null
+                    error = null
+                    status = ""
+                },
+            ) {
+                Text("Clear")
             }
             Text(status)
         }
