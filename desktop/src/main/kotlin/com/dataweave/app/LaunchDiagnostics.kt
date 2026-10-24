@@ -31,6 +31,9 @@ object LaunchDiagnostics {
         out += "os.version=${System.getProperty("os.version")}"
         out += "user.dir=${System.getProperty("user.dir")}"
         out += "user.home=${System.getProperty("user.home")}"
+        out += "env.JAVA_HOME=${System.getenv("JAVA_HOME") ?: "(not set)"}"
+        out += "env.JAVA_TOOL_OPTIONS=${System.getenv("JAVA_TOOL_OPTIONS") ?: "(not set)"}"
+        out += "env._JAVA_OPTIONS=${System.getenv("_JAVA_OPTIONS") ?: "(not set)"}"
 
         val appPath = System.getProperty("jpackage.app-path")
         out += "jpackage.app-path=${appPath ?: "(not set — dev/gradle run)"}"
@@ -116,6 +119,7 @@ object LaunchDiagnostics {
             val cfgText = cfg.readText()
             line("install.cfg.skiko.library.path", cfgText.lines().firstOrNull { it.contains("skiko.library.path") })
             line("install.cfg.mainclass", cfgText.lines().firstOrNull { it.contains("app.mainclass") })
+            line("install.cfg.runtime", cfgText.lines().firstOrNull { it.contains("app.runtime") })
         }
         if (release.isRegularFile()) {
             val releaseText = release.readText()
@@ -126,6 +130,8 @@ object LaunchDiagnostics {
             line("install.runtime.has_java.desktop", modules?.contains("java.desktop") == true)
             line("install.runtime.has_jdk.accessibility", modules?.contains("jdk.accessibility") == true)
             line("install.runtime.has_jdk.crypto.ec", modules?.contains("jdk.crypto.ec") == true)
+            val missing = RuntimeModuleRequirements.missingFrom(modules)
+            line("install.runtime.missing_required_modules", if (missing.isEmpty()) "(none)" else missing.joinToString(","))
         }
         val skikoDll = appDir.resolve("skiko-windows-x64.dll")
         if (System.getProperty("os.name").lowercase().contains("win")) {

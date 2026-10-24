@@ -7,7 +7,7 @@ import androidx.compose.ui.window.rememberWindowState
 import com.dataweave.app.ui.AppShell
 import com.dataweave.backend.DesktopSession
 
-fun main(args: Array<String>) {
+fun dataWeaveMain(args: Array<String>) {
     LaunchFailureReporting.install()
     LaunchDiagnostics.appendLaunchLog("main start args=${args.joinToString(" ")}")
 

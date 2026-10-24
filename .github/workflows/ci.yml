@@ -101,8 +101,15 @@ jobs:
 
           $release = Join-Path $installRoot 'runtime/release'
           $releaseText = Get-Content $release -Raw
-          if ($releaseText -notmatch 'java\.desktop') { throw 'Bundled runtime missing java.desktop (Compose/Skiko GUI)' }
-          if ($releaseText -notmatch 'jdk\.accessibility') { throw 'Bundled runtime missing jdk.accessibility (Access Bridge)' }
+          $requiredModules = @(
+            'java.base', 'java.desktop', 'java.sql', 'java.xml', 'java.naming',
+            'java.net.http', 'java.prefs', 'jdk.accessibility', 'jdk.crypto.ec', 'jdk.unsupported'
+          )
+          foreach ($mod in $requiredModules) {
+            if ($releaseText -notmatch [regex]::Escape($mod)) {
+              throw "Bundled runtime missing required module: $mod"
+            }
+          }
 
           function Assert-LaunchLogsHealthy {
             param([string]$Label)
@@ -217,10 +224,31 @@ jobs:
           }
 
           Invoke-DataWeaveConsoleSmoke -Arguments @('--diagnose') -Label 'diagnose' -ExpectedPattern '=== end diagnostics ==='
+          $diagOut = Get-Content (Join-Path $env:RUNNER_TEMP 'dataweave-diagnose.out') -Raw
+          if ($diagOut -notmatch 'install\.runtime\.missing_required_modules=\(none\)') {
+            throw 'Packaged --diagnose reports missing required jlink modules'
+          }
+
+          $jvmDebug = Join-Path $installRoot 'app/resources/DataWeave-JvmDebug.cmd'
+          if (-not (Test-Path $jvmDebug)) { throw "Missing JVM debug launcher: $jvmDebug" }
+          Write-Host 'Running DataWeave-JvmDebug.cmd --diagnose (bypass native launcher)'
+          $debugProc = Start-Process -FilePath 'cmd.exe' -ArgumentList @('/c', $jvmDebug, '--diagnose') `
+            -WorkingDirectory $installRoot -Wait -PassThru -NoNewWindow
+          if ($debugProc.ExitCode -ne 0) { throw "DataWeave-JvmDebug.cmd --diagnose failed exit=$($debugProc.ExitCode)" }
+          $debugLog = Join-Path $env:LOCALAPPDATA 'DataWeave/jvm-debug.log'
+          if (-not (Test-Path $debugLog)) { throw 'jvm-debug.log not written by DataWeave-JvmDebug.cmd' }
+          $debugText = Get-Content $debugLog -Raw
+          if ($debugText -notmatch '=== end diagnostics ===') {
+            throw 'JVM debug launcher did not run packaged --diagnose successfully'
+          }
           Invoke-DataWeaveConsoleSmoke -Arguments @('--headless-smoke') -Label 'headless-smoke' -ExpectedPattern 'HEADLESS_SMOKE_OK' -WaitSeconds 420
-          Invoke-DataWeaveGuiSmoke -Label 'gui-smoke'
+          Invoke-DataWeaveGuiSmoke -Label 'gui-smoke-access-bridge-on'
           # Start Menu shortcuts may use a different working directory than the install root.
           Invoke-DataWeaveGuiSmoke -Label 'gui-smoke-bad-cwd' -WorkingDirectory $env:USERPROFILE
+
+          Remove-Item $accessProps -Force -ErrorAction SilentlyContinue
+          Write-Host 'Accessibility properties removed; re-testing GUI smoke without Access Bridge'
+          Invoke-DataWeaveGuiSmoke -Label 'gui-smoke-access-bridge-off'
 
           # Normal Start Menu path: no smoke flags, full Spring + Compose AppShell (not pixel-tested on GHA).
           Test-NormalGuiAlive -Label 'gui-normal-install-root' -WorkingDirectory $installRoot

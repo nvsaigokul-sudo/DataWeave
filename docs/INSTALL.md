@@ -57,6 +57,14 @@ Release binaries are **not code-signed/notarized** unless stated on a specific r
    & "C:\Program Files\DataWeave\DataWeave.exe" --diagnose
    ```
 
-3. Check `%LOCALAPPDATA%\DataWeave\launch-error.log` after a failed start (written by recent builds).
+3. If **step 2 also shows “Failed to launch JVM”** (failure before Java `main`), bypass the native launcher:
+
+   ```cmd
+   "C:\Program Files\DataWeave\app\resources\DataWeave-JvmDebug.cmd" --diagnose
+   ```
+
+   Output is appended to `%LOCALAPPDATA%\DataWeave\jvm-debug.log` (includes a full `--diagnose` block when the bundled runtime is intact).
+
+4. Check `%LOCALAPPDATA%\DataWeave\launch-error.log` after a failed start (Java-side failures after `main`; recent builds).
 
 **Older installers** (before `ce8e76c`) may omit **`java.desktop`** and/or **`jdk.accessibility`** from the bundled JRE. Headless smoke can pass while **GUI launch fails** with the same generic dialog. Check `runtime\release` on your install: `MODULES=` must include both `java.desktop` and `jdk.accessibility`. Download the latest [DataWeave-Setup.msi](../downloads/windows/DataWeave-Setup.msi) (see [downloads/README.md](../downloads/README.md) for SHA256) and remove stale Start Menu shortcuts pointing at an old install path.

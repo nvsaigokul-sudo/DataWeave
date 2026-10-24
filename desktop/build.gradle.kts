@@ -35,8 +35,9 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "com.dataweave.app.DataWeaveAppKt"
+        mainClass = "com.dataweave.app.DataWeaveBootstrapKt"
         nativeDistributions {
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
             packageName = "DataWeave"
             val pkgVersion = jpackageVersion(project.version.toString())
             packageVersion = pkgVersion
@@ -52,11 +53,14 @@ compose.desktop {
                 "java.instrument",
                 "java.logging",
                 "java.management",
+                "java.naming",
                 "java.net.http",
                 "java.prefs",
                 "java.scripting",
                 "java.security.jgss",
+                "java.sql",
                 "java.sql.rowset",
+                "java.xml",
                 "jdk.crypto.ec",
                 "jdk.jfr",
                 "jdk.localedata",
