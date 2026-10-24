@@ -232,7 +232,7 @@ jobs:
           $jvmDebug = Join-Path $installRoot 'app/resources/DataWeave-JvmDebug.cmd'
           if (-not (Test-Path $jvmDebug)) { throw "Missing JVM debug launcher: $jvmDebug" }
           Write-Host 'Running DataWeave-JvmDebug.cmd --diagnose (bypass native launcher)'
-          $debugProc = Start-Process -FilePath 'cmd.exe' -ArgumentList @('/c', $jvmDebug, '--diagnose') `
+          $debugProc = Start-Process -FilePath 'cmd.exe' -ArgumentList @('/c', "`"$jvmDebug`"", '--diagnose') `
             -WorkingDirectory $installRoot -Wait -PassThru -NoNewWindow
           if ($debugProc.ExitCode -ne 0) { throw "DataWeave-JvmDebug.cmd --diagnose failed exit=$($debugProc.ExitCode)" }
           $debugLog = Join-Path $env:LOCALAPPDATA 'DataWeave/jvm-debug.log'
