@@ -1,6 +1,6 @@
 # Release v0.2.2 preparation (draft — no tag pushed)
 
-**Status:** Prepared workflow only. **Do not** delete or rewrite [v0.2.1](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.1) without explicit approval.
+**Status:** Release workflow updated (Windows smoke + LFS MSI alignment on publish). Tag **`v0.2.2`** pushed from repair worker when CI pre-checks pass. **Do not** delete or rewrite [v0.2.1](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.1).
 
 ## Why v0.2.2
 

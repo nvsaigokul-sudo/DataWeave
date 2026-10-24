@@ -4,7 +4,7 @@ Last reviewed: **2026-10-24** (`main` engineering reset).
 
 ## Packaging & platforms
 
-- **Release v0.2.1 vs LFS Windows MSI** — different build runs (different SHA256). Prefer [downloads/windows/DataWeave-Setup.msi](../downloads/windows/DataWeave-Setup.msi) for the CI GUI-tested build.
+- **Release v0.2.1 vs LFS Windows MSI** — v0.2.1 release MSI (`6716b5ae…`) differs from LFS (`35333f60…`). **v0.2.2+** release workflow publishes LFS-identical MSI; until then prefer [downloads/windows/DataWeave-Setup.msi](../downloads/windows/DataWeave-Setup.msi).
 - **Code signing / notarization** — not applied; see [INSTALL.md](./INSTALL.md).
 - **macOS Intel** — not built on GitHub Actions; build locally on an Intel Mac.
 - **End-user Windows/macOS laptops** — not verified in cloud agents; see [VERIFICATION_STATUS.md](./VERIFICATION_STATUS.md).

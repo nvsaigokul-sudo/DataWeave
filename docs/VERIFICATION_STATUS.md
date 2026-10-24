@@ -12,7 +12,7 @@ This page summarizes **what we have actually run**, not roadmap intent. For arch
 | `ci.yml` (windows) | test, MSI/EXE, install, JvmDebug.cmd, `--diagnose` / `--headless-smoke` / `--gui-smoke`, normal GUI 15s | **PASS** | same run |
 | `ci.yml` (macos-14) | test, headless smoke, macOS package | **PASS** | same run |
 | `ci.yml` (`downloads-verify`) | `scripts/verify-downloads-checksums.sh` | **PASS** | same run |
-| `release.yml` @ v0.2.1 | Linux/Windows/macOS artifacts | **PASS** (build) | [39998843720](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/39998843720) — **no** Windows GUI install smoke |
+| `release.yml` @ v0.2.1 | Linux/Windows/macOS artifacts | **PASS** (build) | [39998843720](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/39998843720) — **no** Windows GUI install smoke (fixed on `main` for v0.2.2+) |
 | Local Gradle (Linux VM) | `./gradlew test :desktop:runHeadlessSmoke` | **PASS** | agent 2026-10-24 |
 | Linux `.deb` install smoke | `/opt/dataweave/bin/DataWeave` CLI modes | **PASS** | packaged `@ baa193c` tree |
 | Linux packaged `--gui-smoke` (Xvfb) | Compose window opens | **PASS** | agent 2026-10-24 — `GUI_SMOKE_OK` |
@@ -82,7 +82,7 @@ If you see **“Failed to launch JVM”** or an immediate exit on a laptop:
 
 **Ready** for: installable desktop app, PostgreSQL connection/browse/pagination for the implemented UI, automated CI on `main`, Windows CI GUI/JVM launch smoke.
 
-**Not ready / not claimed:** dataset builder (M1), large-scale grid / 20M-row performance, code signing, notarized macOS builds, release-workflow parity with Windows GUI smoke, **user Windows/macOS laptop verification (launch criterion #1)**.
+**Not ready / not claimed:** dataset builder depth (M1 partial), large-scale grid / 20M-row performance, code signing, notarized macOS builds, **user Windows/macOS laptop verification (launch criterion #1)**.
 
 Downloads layout: `downloads/{windows,linux,macos}/` with `./scripts/verify-downloads-checksums.sh` in CI (`downloads-verify` job).
 

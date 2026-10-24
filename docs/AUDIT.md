@@ -1,6 +1,6 @@
 # DataWeave audit summary (2026-10-24)
 
-This page is the user-facing audit snapshot. **Verified on `main` @ `b90dcb0`** (2026-10-24 audit worker).
+This page is the user-facing audit snapshot. **Verified on `main`** through v0.2.2 release prep (2026-10-24).
 
 ## Verified (automated)
 
@@ -42,7 +42,7 @@ Draft tag workflow to align Releases with LFS: [RELEASE_v0.2.2_PREP.md](./RELEAS
 
 ## Not implemented / deferred
 
-- v0.2.2 release tag — operator steps in [V0.2.2_RELEASE.md](./V0.2.2_RELEASE.md); Gradle `0.2.2-SNAPSHOT`; tag not pushed from cloud agent (user/CI publishes).
+- v0.2.2 release — [V0.2.2_RELEASE.md](./V0.2.2_RELEASE.md); `release.yml` Windows smoke + LFS MSI on publish; see [COMPLETION_TRACKER.md](./COMPLETION_TRACKER.md).
 - SQL editor, CSV ingest, join preview, table export — implemented with integration tests; **GUI on user laptop pending**.
 - macOS Keychain via CLI (`-w` on command line) — process-list exposure; needs native API for a proper fix.
 - Full manual UX sign-off on user Windows/macOS hardware.

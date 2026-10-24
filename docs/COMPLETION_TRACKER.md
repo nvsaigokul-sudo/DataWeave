@@ -1,0 +1,63 @@
+# DataWeave completion tracker
+
+Last updated: **2026-10-24** (release repair worker `bc-e7452cf8-f5ad-574a-b6ed-9e4284338371`).
+
+## Live verification (GitHub vs repo)
+
+| Asset | Expected SHA256 | Live check | Status |
+|-------|-----------------|------------|--------|
+| LFS / media MSI | `35333f603bac8180316934b299623227d2ce35dea5dbf767af92fea45a4c5323` | media URL `etag` matches; local `verify-downloads-checksums.sh` | **VERIFIED** |
+| Release v0.2.1 MSI | `6716b5aeccbe3eefbf8669b375e9c0277ebc08cf3a5c8b679b16f979960e9544` | Downloaded 2026-10-24 | **VERIFIED** (unchanged; not deleted) |
+| User legacy MSI | `a9c8ab77e653c6f202f58ebd877c526e5c220a712eb97f045b5457923d0f06fb` | Documented only | **SUPERSEDED** — reinstall from LFS |
+| raw.githubusercontent MSI | `24f3a23a…` (134 B pointer) | Documented | **INVALID** — use media URL |
+
+## Completed (this cycle)
+
+| Item | Evidence | Commit |
+|------|----------|--------|
+| Shared Windows packaged smoke script | `scripts/ci/windows-packaged-smoke.ps1` | (this push) |
+| `release.yml` Windows GUI install smoke | Same script as `ci.yml` | (this push) |
+| Release publish aligns Windows `.msi` with LFS canonical bytes | Publish job `lfs: true` + copy step | (this push) |
+| Gradle test + headless smoke | `./gradlew test :desktop:runHeadlessSmoke` PASS | `626372e` baseline |
+| M0 features (SQL, CSV, join preview, export) | Integration tests + Compose UI | `32b887c`, `d2d4938` |
+| v0.2.2 tag + GitHub Release | See **Release** row below | (after tag push) |
+
+## Blockers / not verified
+
+| Item | Next action |
+|------|-------------|
+| User Windows/macOS laptop GUI | Owner runs INSTALL checklist; share `launch-error.log` if needed |
+| 20M-row grid / M2 pipeline | Roadmap — not in v0.2.2 scope |
+| Code signing / notarization | Future release hardening |
+
+## Release v0.2.2
+
+| Step | Status |
+|------|--------|
+| Preconditions (tests, checksums) | **PASS** on agent |
+| Tag `v0.2.2` on `main` | **Pending** → updated after push |
+| `release.yml` workflow | **Pending** → CI run URL after tag |
+| v0.2.1 release | **Preserved** (no delete/retag) |
+
+### Publish steps (if tag blocked)
+
+```bash
+git checkout main && git pull github main
+./gradlew test :desktop:runHeadlessSmoke
+./scripts/verify-downloads-checksums.sh
+git tag -a v0.2.2 -m "DataWeave v0.2.2"
+git push github v0.2.2
+# Wait for Release workflow; confirm windows-*.msi SHA256 = 35333f60…
+```
+
+## CI reference
+
+| Run | Branch / trigger | Notes |
+|-----|------------------|-------|
+| (filled after push) | `main` / `v0.2.2` | Update this table when green |
+
+## Laptop acceptance (Windows)
+
+1. `certutil -hashfile DataWeave-Setup.msi SHA256` → `35333f60…` (from media URL or v0.2.2 release asset after publish).
+2. Install; `DataWeave.exe --diagnose` from Program Files.
+3. PostgreSQL connection → browse → SQL `SELECT 1` → dataset CSV → export table CSV.

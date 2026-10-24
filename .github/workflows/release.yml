@@ -32,6 +32,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - uses: actions/setup-java@v5
         with:
@@ -52,11 +54,16 @@ jobs:
         shell: bash
         run: ./gradlew :desktop:packageAppImage :desktop:packageDeb --no-daemon
 
-      # Windows GUI install smoke lives in ci.yml only (MSI install + 15s alive). Release tags build artifacts without that matrix.
       - name: Package (Windows)
         if: runner.os == 'Windows'
         shell: bash
         run: ./gradlew :desktop:packageMsi :desktop:packageExe --no-daemon
+
+      - name: Windows packaged app launch smoke
+        if: runner.os == 'Windows'
+        shell: pwsh
+        timeout-minutes: 15
+        run: ./scripts/ci/windows-packaged-smoke.ps1
 
       - name: Package (macOS)
         if: runner.os == 'macOS'
@@ -89,16 +96,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - uses: actions/download-artifact@v4
         with:
           path: dist
           merge-multiple: true
 
-      - name: Flatten artifacts and checksums
+      - name: Flatten artifacts, align Windows MSI with LFS, checksums
         shell: bash
         run: |
           find dist -mindepth 2 -type f -exec mv -n {} dist/ \;
+          CANONICAL="downloads/windows/DataWeave-Setup.msi"
+          if [ -f "$CANONICAL" ]; then
+            actual=$(sha256sum "$CANONICAL" | awk '{print $1}')
+            echo "LFS canonical Windows MSI SHA256=$actual"
+            for f in dist/windows-*.msi; do
+              [ -e "$f" ] || continue
+              cp "$CANONICAL" "$f"
+              echo "Replaced $(basename "$f") with LFS canonical MSI"
+            done
+            cp "$CANONICAL" dist/windows-DataWeave-Setup.msi
+          else
+            echo "WARNING: $CANONICAL missing; release Windows MSI not aligned with LFS"
+          fi
           cd dist
           ls -lah
           sha256sum * | grep -v SHA256SUMS > SHA256SUMS.txt || shasum -a 256 * | grep -v SHA256SUMS > SHA256SUMS.txt
@@ -120,7 +142,7 @@ jobs:
 
           | OS | Files |
           |----|-------|
-          | Windows | \`.msi\` installer, \`.exe\` app package |
+          | Windows | \`.msi\` installer (bytes match [LFS CI-smoked MSI](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi)), \`.exe\` app package |
           | Linux | \`.AppImage\`, \`.deb\` |
           | macOS | \`.dmg\` / \`.pkg\` (Apple Silicon from macos-arm64, Intel from macos-x64) |
 
