@@ -1,6 +1,6 @@
 # DataWeave verification status
 
-Last updated: **2026-10-24** (v0.2.4-SNAPSHOT PG session + workspace UI on agent branch; v0.2.3 release unchanged).
+Last updated: **2026-10-24** (v0.2.4 release publish in progress; v0.2.1–v0.2.3 releases preserved).
 
 This page summarizes **what we have actually run**, not roadmap intent. For architecture and audit detail see [AUDIT.md](./AUDIT.md).
 

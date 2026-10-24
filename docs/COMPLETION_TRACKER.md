@@ -1,6 +1,6 @@
 # DataWeave completion tracker
 
-Last updated: **2026-10-24** (v0.2.4-SNAPSHOT PG session + workspace UI worker `bc-ebf5ffc0-8ca4-5e25-914c-2c11dcf66d39`).
+Last updated: **2026-10-24** (v0.2.4 publish worker `bc-a8066f98-ca38-5632-8159-f9d4fbb081bf`).
 
 ## Live verification (GitHub vs repo)
 
@@ -43,8 +43,10 @@ Last updated: **2026-10-24** (v0.2.4-SNAPSHOT PG session + workspace UI worker `
 
 | Step | Status |
 |------|--------|
+| `main` @ `ae43fca` PG session + workspace UI | **DONE** |
 | `./gradlew test :desktop:runHeadlessSmoke` | **PASS** (agent 2026-10-24) |
-| Tag `v0.2.4` + publish | **NOT DONE** — await owner authorization; **do not** retag v0.2.3 |
+| Linux package `dataweave_1.2.4_amd64.deb` + packaged headless smoke | **PASS** (agent VM) |
+| Tag `v0.2.4` + publish | **IN PROGRESS** — owner authorized publish |
 
 ## Release v0.2.3
 

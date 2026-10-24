@@ -15,9 +15,9 @@
 
 | Your OS | Download |
 |---------|----------|
-| **Windows** | **[Releases → v0.2.3 `.msi`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.3/windows-DataWeave-Setup.msi)** (SHA256 `68eb8524…`) — fixes GUI `HeadlessException` on v0.2.2. [LFS/media MSI](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi) matches after `main` refresh. **Not** legacy `a9c8ab77…` / v0.2.2 `35333f60…`. [SHA256SUMS](downloads/SHA256SUMS.txt) |
-| **Linux (x64)** | [`.deb` (v0.2.2)](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.2/linux-dataweave_1.2.2_amd64.deb) · [linux/](downloads/linux/) |
-| **macOS Apple Silicon** | [`.dmg` (v0.2.2)](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.2/macos-arm64-DataWeave-1.2.2.dmg) · [`.pkg`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.2/macos-arm64-DataWeave-1.2.2.pkg) · [macos/](downloads/macos/) |
+| **Windows** | **[Releases → v0.2.4 `.msi`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.4/windows-DataWeave-Setup.msi)** — PG connection sessions + workspace UI. [LFS/media MSI](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi) matches after `main` refresh. [SHA256SUMS](downloads/SHA256SUMS.txt) |
+| **Linux (x64)** | [`.deb` (v0.2.4)](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.4/linux-dataweave_1.2.4_amd64.deb) · [linux/](downloads/linux/) |
+| **macOS Apple Silicon** | [`.dmg` / `.pkg` (v0.2.4)](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.4) · [macos/](downloads/macos/) |
 | **macOS Intel** | Local build — [downloads/macos/README.md](downloads/macos/README.md) (`macos-13` CI omitted) |
 
 Verify with `./scripts/verify-downloads-checksums.sh` and per-platform [downloads/SHA256SUMS.txt](downloads/SHA256SUMS.txt); release bundles use [`SHA256SUMS.txt` on v0.2.1](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/SHA256SUMS.txt). Details: [downloads/README.md](downloads/README.md).
@@ -31,7 +31,7 @@ Verify with `./scripts/verify-downloads-checksums.sh` and per-platform [download
 
 Full instructions: **[docs/INSTALL.md](docs/INSTALL.md)** · Troubleshooting: [docs/PLATFORMS.md](docs/PLATFORMS.md)
 
-Supported: **Windows 10/11**, **Linux (x64)**, **macOS 12+** (Apple Silicon installers on Releases; Intel via local build). Installer file versions show **1.2.1** (jpackage mapping from app **0.2.1**). Each bundle includes a **private Java runtime** — no separate JDK install.
+Supported: **Windows 10/11**, **Linux (x64)**, **macOS 12+** (Apple Silicon installers on Releases; Intel via local build). Installer file versions show **1.2.4** (jpackage mapping from app **0.2.4**). Each bundle includes a **private Java runtime** — no separate JDK install.
 
 ---
 
@@ -41,7 +41,7 @@ Supported: **Windows 10/11**, **Linux (x64)**, **macOS 12+** (Apple Silicon inst
 - Save **real PostgreSQL** connections (host, port, SSL, credentials in OS keychain/credential manager)
 - Browse schemas/tables and view **paginated** table data from your database
 - **SQL editor** (read-only `SELECT`) with local query history
-- **Dataset builder** — column preview, CSV file registration/preview, inner-join preview; **Export CSV** from table browse (streamed, capped)
+- **Dataset builder** — column preview, CSV file registration/preview, inner-join preview; **Export CSV** from table browse (streamed; optional limit)
 - Local **SQLite** metadata at `~/.dataweave/` (not your business data warehouse)
 
 No fake demo databases, Docker, or browser UI.
