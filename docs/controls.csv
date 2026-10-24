@@ -1,27 +1,41 @@
-control_id,screen,control_type,label,purpose,preconditions,handler,loading_state,success_state,error_state,persistence,test_ref,status
-NAV-HOME,Shell,Tab,Home,Open welcome hub,None,WorkspaceSection.Welcome,,,,,manual,Implemented
-NAV-CONN,Shell,Tab,Connections,Open connection editor,None,WorkspaceSection.Connections,,,,,manual,Implemented
-NAV-DATA,Shell,Tab,Data,Open data grid,None,WorkspaceSection.Browse,,,,,manual,Implemented
-NAV-SQL,Shell,Tab,SQL,Open SQL editor,None,WorkspaceSection.Sql,,,,,manual,Implemented
-NAV-DS,Shell,Tab,Datasets,Open dataset builder,None,WorkspaceSection.Datasets,,,,,manual,Implemented
-NAV-PROJ,Shell,Tab,Projects,Open projects,None,WorkspaceSection.Projects,,,,,manual,Implemented
-SET-OPEN,Shell,Button,Settings,Theme Light/Dark/System,None,SettingsDialog,,,UserPreferences.themeMode,UserPreferencesTest.themeModeRoundTrip,Automated pass
-CONN-SAVE,Connections,Button,Save profile,Persist connection profile,Valid fields,facade.saveConnection,,,,ConnectionLifecycleIntegrationTest,Automated pass
-CONN-TEST,Connections,Button,Test,Validate PG reachability,Profile saved,facade.testConnection,,,,ConnectionLifecycleIntegrationTest,Automated pass
-CONN-CONNECT,Connections,Button,Connect,Open pool + metadata,Credentials available,facade.connect,,,,ConnectionLifecycleIntegrationTest,Automated pass
-CONN-DISC,Connections,Button,Disconnect,Close pool,Connected,facade.disconnect,,,,ConnectionLifecycleIntegrationTest,Automated pass
-EXPL-TABLE,Explorer,Tree item,Table,Select table for Data,Connected,facade.listTables,,,,MetadataExplorerIntegrationTest,Automated pass
-EXPL-RETRY,Explorer,Button,Retry metadata,Reload failed branch,Error state,facade.refreshSchema,,,,MetadataExplorerIntegrationTest,Implemented
-GRID-PAGE,Data,Button,Next/Previous,Server paging,Table open,facade.fetchTablePage,,,,PaginationAndTypesIntegrationTest,Automated pass
-GRID-FILTER,Data,Field,Filter,Server ILIKE filter,Table open,facade.fetchTablePage,,,,PaginationAndTypesIntegrationTest,Automated pass
-GRID-EXPORT,Data,Button,Export CSV,Stream table to file,Table open,facade.exportTableToCsv,,,,TableExportServiceTest,Automated pass
-GRID-ROWNUM,Data,Gutter,#,Row index display,Paged data,UI only,,,,manual,Implemented v0.3.0-rc
-SQL-RUN,SQL,Button,Run,Execute SELECT,Connected read-only,facade.runSqlEditorQuery,,,,ReadOnlyQueryServiceTest,Automated pass
-SQL-CLEAR,SQL,Button,Clear,Reset editor,None,UI state,,,,manual,Implemented
-DS-JOIN-TYPE,Datasets,Button group,Join type,Choose INNER/LEFT/RIGHT/FULL,Two tables,facade.previewJoin,,,,JoinPreviewServiceTest,Automated pass
-DS-FK-LOAD,Datasets,Button,Load FK suggestions,List FK metadata (no auto-join),Connected,facade.listForeignKeys,,,,ForeignKeyMetadataIntegrationTest,Automated pass
-DS-SAVE,Datasets,Button,Save output definition,Persist columns to SQLite,Project selected,facade.saveDatasetDefinition,,,,headless smoke migration V4,Implemented
-PROJ-CREATE,Projects,Button,Create project,New SQLite project,Name non-blank,facade.createProject,,,,WorkspaceProjectServiceTest,Automated pass
-PROJ-RENAME,Projects,Button,Rename,Update project metadata,Project exists,facade.updateProject,,,,WorkspaceProjectServiceTest,Automated pass
-PROJ-DUP,Projects,Button,Duplicate,Copy project shell,Project exists,facade.duplicateProject,,,,WorkspaceProjectServiceTest,Automated pass
-PROJ-DEL,Projects,Button,Delete,Remove project with confirm,Project exists,facade.deleteProject,,,,WorkspaceProjectServiceTest,Automated pass
+control_id,screen,control_type,label,purpose,preconditions,handler,test_ref,status
+NAV-HOME,Shell,Tab,Home,Open welcome hub,None,WorkspaceSection.Welcome,manual,NOT TESTED
+NAV-CONN,Shell,Tab,Connections,Open connection editor,None,WorkspaceSection.Connections,manual,NOT TESTED
+NAV-DATA,Shell,Tab,Data,Open data grid,None,WorkspaceSection.Browse,manual,NOT TESTED
+NAV-SQL,Shell,Tab,SQL,Open SQL editor,None,WorkspaceSection.Sql,manual,NOT TESTED
+NAV-DS,Shell,Tab,Datasets,Open dataset builder,None,WorkspaceSection.Datasets,manual,NOT TESTED
+NAV-PROJ,Shell,Tab,Projects,Open projects,None,WorkspaceSection.Projects,manual,NOT TESTED
+SET-OPEN,Shell,Button,Settings,Theme Light/Dark/System,None,SettingsDialog,UserPreferencesTest.themeModeRoundTrip,PASS
+CONN-SAVE,Connections,Button,Save profile,Persist connection profile,Valid fields,facade.saveConnection,ConnectionLifecycleIntegrationTest,PASS
+CONN-TEST,Connections,Button,Test,Validate PG reachability,Profile saved,facade.testConnection,ConnectionLifecycleIntegrationTest,PASS
+CONN-CONNECT,Connections,Button,Connect,Open pool + metadata,Credentials available,facade.connect,ConnectionLifecycleIntegrationTest,PASS
+CONN-DISC,Connections,Button,Disconnect,Close pool,Connected,facade.disconnect,ConnectionLifecycleIntegrationTest,PASS
+CONN-CRED-RECOVERY,Connections,Panel,Credential recovery,Re-enter password when vault empty,Missing cred,CredentialRecoveryPanel,MissingCredentialIntegrationTest,PASS
+EXPL-TABLE,Explorer,Tree item,Table,Select table for Data,Connected,facade.listTables,MetadataExplorerIntegrationTest,PASS
+EXPL-VIEW,Explorer,Tree item,View,Open view in Data,Connected,facade.listViews,MetadataExplorerIntegrationTest,PARTIAL
+EXPL-RETRY,Explorer,Button,Retry metadata,Reload failed branch,Error state,facade.refreshSchema,MetadataExplorerIntegrationTest,PASS
+EXPL-PK,Explorer,Label,Primary key,Show PK columns,Table expanded,facade.getTablePrimaryKey,ExplorerTableMetadataIntegrationTest,PASS
+EXPL-IDX,Explorer,Label,Index,Show pg indexes,Table expanded,facade.listTableIndexes,ExplorerTableMetadataIntegrationTest,PASS
+EXPL-FK,Explorer,Label,Foreign key,Show FK targets,Table expanded,facade.listForeignKeysForTable,ForeignKeyMetadataIntegrationTest,PASS
+GRID-PAGE,Data,Button,Next/Previous,Server paging,Table open,facade.fetchTablePage,PaginationAndTypesIntegrationTest,PASS
+GRID-FILTER,Data,Field,Search all columns,Server ILIKE OR,Table open,facade.fetchTablePage,PaginationAndTypesIntegrationTest,PASS
+GRID-COL-FILTER,Data,Field,Column filter,Single-column ILIKE,Column chosen,facade.fetchTablePage,TableBrowseColumnFilterIntegrationTest,PASS
+GRID-EXPORT,Data,Button,Export CSV,Stream table to file,Table open,facade.exportTableToCsv,TableExportServiceTest,PASS
+GRID-CANCEL,Data,Button,Cancel,Cancel in-flight page load,Loading,loadJob.cancel,manual,PARTIAL
+GRID-ROWNUM,Data,Gutter,#,Row index display,Paged data,UI only,manual,NOT TESTED
+DATA-TABS,Data,Tab row,Table tabs,Multi-tab + restore prefs,Tables opened,UserPreferences.dataTabs,manual,NOT TESTED
+DATA-COL-RESIZE,Data,Drag,Column resize,Adjust column width,Grid open,SpreadsheetDataGrid,manual,NOT TESTED
+SQL-RUN,SQL,Button,Run,Execute SELECT,Connected read-only,facade.runSqlEditorQuery,SqlEditorServiceTest.recordsHistoryOnSuccess,PASS
+SQL-REJECT-WRITE,SQL,Button,Run blocked,Reject INSERT/UPDATE,Any,facade.runSqlEditorQuery,SqlEditorServiceTest.rejectsNonSelectStatements,PASS
+SQL-CANCEL,SQL,Button,Cancel,Cancel running query,Running,runJob.cancel,manual,PARTIAL
+SQL-CLEAR,SQL,Button,Clear,Reset editor,None,UI state,manual,NOT TESTED
+DS-CANVAS,Datasets,Canvas,Source tables,Movable table cards,Tables added,VisualDatasetBuilderScreen,manual,NOT TESTED
+DS-JOIN-KEYS,Datasets,Fields,Join keys,Edit left/right join columns,Join exists,VisualDatasetBuilderScreen,manual,NOT TESTED
+DS-PREVIEW,Datasets,Button,Preview,Execute graph preview,Graph valid,facade.previewDatasetGraph,DatasetGraphPreviewIntegrationTest,PASS
+DS-SAVE,Datasets,Button,Save,Persist definition_json,Project selected,facade.saveDatasetDefinition,DatasetGraphPreviewIntegrationTest,PARTIAL
+DS-REOPEN,Datasets,Button,Reopen,Restore graph from JSON,Saved def,facade.deserializeDatasetGraph,manual,NOT TESTED
+DS-FK-SUGGEST,Datasets,Button,FK suggestion,Explicit join from metadata,Connected,facade.listForeignKeys,ForeignKeyMetadataIntegrationTest,PASS
+PROJ-CREATE,Projects,Button,Create project,New SQLite project,Name non-blank,facade.createProject,WorkspaceProjectServiceTest,PASS
+PROJ-RENAME,Projects,Button,Rename,Update project metadata,Project exists,facade.updateProject,WorkspaceProjectServiceTest,PASS
+PROJ-DUP,Projects,Button,Duplicate,Copy project shell,Project exists,facade.duplicateProject,WorkspaceProjectServiceTest,PASS
+PROJ-DEL,Projects,Button,Delete,Remove project with confirm,Project exists,facade.deleteProject,WorkspaceProjectServiceTest,PASS

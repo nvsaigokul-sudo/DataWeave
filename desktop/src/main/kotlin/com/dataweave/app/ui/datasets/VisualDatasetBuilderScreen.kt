@@ -288,9 +288,57 @@ fun VisualDatasetBuilderScreen(
             }
             Text("Joins", style = MaterialTheme.typography.labelMedium)
             joins.forEachIndexed { i, j ->
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("${j.joinType()}: ${j.leftAlias()}.${j.leftColumn()} = ${j.rightAlias()}.${j.rightColumn()}")
-                    OutlinedButton(onClick = { joins = joins.filterIndexed { idx, _ -> idx != i }; markStale() }) { Text("×") }
+                Column(Modifier.fillMaxWidth().padding(bottom = 4.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth()) {
+                        Text("${j.joinType()}", style = MaterialTheme.typography.labelSmall)
+                        OutlinedButton(onClick = { joins = joins.filterIndexed { idx, _ -> idx != i }; markStale() }) { Text("×") }
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        OutlinedTextField(
+                            j.leftColumn(),
+                            { v ->
+                                joins =
+                                    joins.mapIndexed { idx, edge ->
+                                        if (idx == i) {
+                                            DatasetGraphDefinition.DatasetJoinEdge(
+                                                edge.leftAlias(),
+                                                v,
+                                                edge.joinType(),
+                                                edge.rightAlias(),
+                                                edge.rightColumn(),
+                                            )
+                                        } else {
+                                            edge
+                                        }
+                                    }
+                                markStale()
+                            },
+                            label = { Text("${j.leftAlias()} key") },
+                            modifier = Modifier.weight(1f),
+                        )
+                        OutlinedTextField(
+                            j.rightColumn(),
+                            { v ->
+                                joins =
+                                    joins.mapIndexed { idx, edge ->
+                                        if (idx == i) {
+                                            DatasetGraphDefinition.DatasetJoinEdge(
+                                                edge.leftAlias(),
+                                                edge.leftColumn(),
+                                                edge.joinType(),
+                                                edge.rightAlias(),
+                                                v,
+                                            )
+                                        } else {
+                                            edge
+                                        }
+                                    }
+                                markStale()
+                            },
+                            label = { Text("${j.rightAlias()} key") },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

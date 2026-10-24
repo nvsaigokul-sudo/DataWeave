@@ -1,12 +1,13 @@
 # Performance baseline
 
-Environment: Linux cloud agent VM, embedded PostgreSQL (Zonky), Java 21, **2026-10-24 (UTC)**.
+Measurements from **verified commands** on Linux cloud agent VM (Java 21, embedded PostgreSQL via Zonky), **2026-10-24 UTC**.
 
-| Metric | Measurement | Command / source |
-|--------|-------------|------------------|
-| Spring Boot ready (headless smoke) | ~1.5–2.0 s after JVM start | `:desktop:runHeadlessSmoke` log `Started HeadlessSmokeKt in …` |
-| Headless smoke end-to-end | ~13 s wall (includes embedded PG boot) | `./gradlew :desktop:runHeadlessSmoke` |
-| Default table page size | 100 rows | `dataweave.query.page-default-size=100` |
-| First table page (integration) | Not isolated in UI | Use Windows manual + app status bar ms in Data grid |
+| Metric | Result | Command / evidence |
+|--------|--------|-------------------|
+| Spring Boot ready (headless smoke) | **1.267 s** (process running 2.171 s) | `./gradlew :desktop:runHeadlessSmoke` log line `Started HeadlessSmokeKt in 1.267 seconds` |
+| Headless smoke Gradle wall time | **~9 s** | Same task, BUILD SUCCESSFUL |
+| Full test + smoke + Linux `.deb` | **~61 s** wall | `./gradlew test :desktop:runHeadlessSmoke :desktop:packageDeb` |
+| Default table page size | **100** rows | `application.properties` `dataweave.query.page-default-size=100` |
+| First PG table page (integration) | Sub-second (not UI-isolated) | `PaginationAndTypesIntegrationTest` |
 
-Targets from PRD are not yet fully benchmarked on Windows hardware with user PostgreSQL.
+PRD numeric targets on **Windows + owner PostgreSQL + large tables** are **not measured** in this environment.

@@ -19,6 +19,13 @@ class SqlEditorServiceTest extends IntegrationTestBase {
     @Autowired SqlEditorService sqlEditor;
 
     @Test
+    void rejectsNonSelectStatements() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> sqlEditor.executeSelect(java.util.UUID.randomUUID(), "INSERT INTO dw_sample VALUES (3,'x')"));
+    }
+
+    @Test
     void recordsHistoryOnSuccess() throws Exception {
         seedSampleTable();
         int port = jdbcPort(pgJdbcUrl());

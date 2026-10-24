@@ -13,8 +13,8 @@ Last updated: **2026-10-24** (v0.3.0 RC in progress on `cursor/dataweave-v0.3.0-
 | FK discovery (no silent join) | **Implemented** | `CatalogMetadataService`, dataset UI |
 | Project rename/duplicate/delete | **Implemented** | `WorkspaceProjectService`, UI, tests |
 | Dataset definition_json (V4) | **Implemented** | Flyway V4, repository |
-| Spreadsheet Data grid (full PRD) | **Not started** | Row gutter only in v0.3.0 RC |
-| Visual dataset canvas | **Not started** | Column list + join preview remains |
+| Spreadsheet Data grid (full PRD) | **Partial** | `SpreadsheetDataGrid.kt`, `TableBrowseColumnFilterIntegrationTest` |
+| Visual dataset canvas | **Partial** | `VisualDatasetBuilderScreen.kt`, `DatasetGraphPreviewIntegrationTest` |
 | Full controls.csv | **Partial** | `docs/controls.csv` major controls |
 | Windows MSI v0.3.0 | **Blocked** | No publish without owner + CI |
 
