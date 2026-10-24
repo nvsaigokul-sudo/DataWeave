@@ -7,7 +7,7 @@ This page is the user-facing audit snapshot (2026-10-24). A longer prioritized r
 | Area | Status |
 |------|--------|
 | Linux `./gradlew test :desktop:runHeadlessSmoke` | **Pass** (cloud agent, 2026-10-24) |
-| CI `main` matrix (ubuntu / windows / macos-14) | **Pass** ([run 40000887132](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40000887132)) |
+| CI `main` matrix (ubuntu / windows / macos-14) | **Pass** ([run 40059507426](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40059507426) after cache fix; [40000887132](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40000887132) prior) |
 | Windows packaged MSI on CI | **Pass** — `java.desktop` + `jdk.accessibility`, `--diagnose`, `--headless-smoke`, `--gui-smoke`, normal GUI alive 15s |
 | LFS Windows MSI SHA256 | `b613ec64…` matches [downloads/SHA256SUMS.txt](../downloads/SHA256SUMS.txt) |
 | Embedded Spring Boot | **No public HTTP server** (`spring.main.web-application-type=none`) |
