@@ -1,6 +1,6 @@
 # DataWeave verification status
 
-Last updated: **2026-10-24** (launch hardening pass; see CI run after push to `main`).
+Last updated: **2026-10-24** (`a48746f` on `main`; CI [40063956281](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40063956281)).
 
 This page summarizes **what we have actually run**, not roadmap intent. For architecture and audit detail see [AUDIT.md](./AUDIT.md).
 
@@ -8,9 +8,10 @@ This page summarizes **what we have actually run**, not roadmap intent. For arch
 
 | Workflow | Scope | Status | Evidence |
 |----------|--------|--------|----------|
-| `ci.yml` (ubuntu) | test, headless smoke, Linux package | **PASS** | [Run 40061538019](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40061538019) |
-| `ci.yml` (windows) | test, MSI/EXE, install, `--diagnose` / `--headless-smoke` / `--gui-smoke`, normal GUI alive 15s (×3 CWDs) | **PASS** | same run — `GUI smoke OK`, `Process still alive after 15s` |
+| `ci.yml` (ubuntu) | test, headless smoke, Linux package | **PASS** | [40063956281](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40063956281) |
+| `ci.yml` (windows) | test, MSI/EXE, install, JvmDebug.cmd, `--diagnose` / `--headless-smoke` / `--gui-smoke`, normal GUI 15s | **PASS** | same run |
 | `ci.yml` (macos-14) | test, headless smoke, macOS package | **PASS** | same run |
+| `ci.yml` (`downloads-verify`) | `scripts/verify-downloads-checksums.sh` | **PASS** | same run |
 | `release.yml` @ v0.2.1 | Linux/Windows/macOS artifacts | **PASS** (build) | [39998843720](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/39998843720) — **no** Windows GUI install smoke |
 | Local Gradle (Linux VM) | `./gradlew test :desktop:runHeadlessSmoke` | **PASS** | agent 2026-10-24 |
 | Linux `.deb` install smoke | `/opt/dataweave/bin/DataWeave` CLI modes | **PASS** | packaged `@ baa193c` tree |
@@ -57,7 +58,7 @@ Prior CI with same Windows GUI matrix: [40061037014](https://github.com/nvsaigok
 
 | Artifact | SHA256 | Size (bytes) | Test evidence |
 |----------|--------|--------------|---------------|
-| LFS `downloads/windows/DataWeave-Setup.msi` (README primary Windows link) | `b613ec64d2c30abe613ac2ec821cc0c4443c70c539023b481b33118666dd886e` | 187499256 | Built @ `2ac8c22`; CI GUI matrix [39996985661](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/39996985661) |
+| LFS `downloads/windows/DataWeave-Setup.msi` (README primary Windows link) | `35333f603bac8180316934b299623227d2ce35dea5dbf767af92fea45a4c5323` | (see file) | Refreshed from CI [40063457806](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40063457806) @ `34b832f`; matrix green [40063956281](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40063956281) |
 | Release `windows-DataWeave-1.2.1.msi` (v0.2.1) | `6716b5aeccbe3eefbf8669b375e9c0277ebc08cf3a5c8b679b16f979960e9544` | 187499257 | Release build only — **no** install/GUI smoke in `release.yml` |
 | Release `linux-dataweave_1.2.1_amd64.deb` (v0.2.1) | `4e30d1482302f78c43fae3b8d51721b4c00b5190eafc664fe50cd410dcddc0c1` | (see release `SHA256SUMS.txt`) | Release build — local install smoke uses VM rebuild below |
 | **This VM** `dataweave_1.2.1_amd64.deb` (`baa193c` tree) | `38be7af0303fb51cd97a3af1d3882cca8aba0f222949d48e47364cb9cf5b34f6` | 173135728 | `--diagnose`, `--headless-smoke`, Xvfb `--gui-smoke` **PASS** |
