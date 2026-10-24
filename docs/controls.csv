@@ -60,3 +60,6 @@ GRID-CTRL-SHIFT-C,Data,Keyboard,Ctrl+Shift+C,Copy selection CSV,Selection active
 DS-JOIN-TYPES,Datasets,Buttons,Join type per edge,INNER/LEFT/RIGHT/FULL,Join row,VisualDatasetBuilderScreen,DatasetGraphSqlGeneratorTest,PASS
 GRID-SHIFT-SEL,Data,Keyboard,Shift+arrows,Rectangular selection,Grid focused,GridSelectionLogic.arrowKey,GridSelectionLogicTest,PASS
 GRID-CTRL-C,Data,Keyboard,Ctrl+C,Copy selection TSV,Selection active,GridSelectionLogic.formatSelectionTsv,GridSelectionLogicTest,PARTIAL
+WIN-MSI-BUILD,Release,CI,packageMsi/packageExe,Windows installers,windows-latest,.github/workflows/windows-test-installer.yml,manual,BLOCKED
+WIN-MSI-SMOKE,Release,Script,windows-packaged-smoke.ps1,Install MSI + 15s GUI alive,CI Windows job,scripts/ci/windows-packaged-smoke.ps1,manual,NOT TESTED
+WIN-OWNER-CHECK,Release,Manual,Owner acceptance,Full product checklist,Packaged MSI,docs/WINDOWS_RELEASE_ACCEPTANCE.md,manual,NOT TESTED

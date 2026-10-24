@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - cursor/release-v0.2.5-prep-d9c8
+      - cursor/dataweave-product-v0.3.0-d9c8
 
 permissions:
   contents: read
