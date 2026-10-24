@@ -34,8 +34,9 @@ if ($cfgText -match 'app\.version=([^\r\n]+)') {
 
 $expectedJpackage = $env:DATAWEAVE_EXPECT_JPACKAGE_VERSION
 if ($expectedJpackage) {
-  $gradleOut = & ./gradlew printProductVersion --no-daemon -q 2>&1 | Out-String
+  $gradleOut = & bash -lc './gradlew printProductVersion --no-daemon 2>&1' | Out-String
   if ($gradleOut -notmatch 'dataweave\.jpackageVersion=([^\r\n]+)') {
+    Write-Host $gradleOut
     throw 'Could not read jpackage version from printProductVersion'
   }
   $built = $Matches[1].Trim()

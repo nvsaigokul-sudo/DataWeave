@@ -4,7 +4,7 @@ $ErrorActionPreference = 'Stop'
 Write-Host "Git ref: $env:GITHUB_REF_NAME @ $env:GITHUB_SHA"
 git log -1 --oneline
 
-$gradleOut = & ./gradlew printProductVersion --no-daemon -q 2>&1 | Out-String
+$gradleOut = & bash -lc './gradlew printProductVersion --no-daemon 2>&1' | Out-String
 Write-Host $gradleOut
 $gradleVersion = if ($gradleOut -match 'dataweave\.gradleVersion=(.+)') { $Matches[1].Trim() } else { '(unknown)' }
 $jpackageVersion = if ($gradleOut -match 'dataweave\.jpackageVersion=(.+)') { $Matches[1].Trim() } else { '(unknown)' }
