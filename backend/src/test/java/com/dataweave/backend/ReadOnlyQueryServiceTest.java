@@ -21,6 +21,13 @@ class ReadOnlyQueryServiceTest extends IntegrationTestBase {
     @Autowired ReadOnlyQueryService queries;
 
     @Test
+    void rejectsNonSelectStatements() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> queries.runSelect(UUID.randomUUID(), "INSERT INTO dw_sample VALUES (2,'x')", List.of()));
+    }
+
+    @Test
     void rejectsMultiStatementSql() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,

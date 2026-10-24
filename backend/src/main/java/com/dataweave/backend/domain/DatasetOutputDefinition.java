@@ -11,4 +11,5 @@ public record DatasetOutputDefinition(
         String sourceSchema,
         String sourceTable,
         List<String> outputColumns,
+        String definitionJson,
         Instant updatedAt) {}

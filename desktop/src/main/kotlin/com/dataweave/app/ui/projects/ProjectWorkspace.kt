@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,6 +35,10 @@ fun ProjectWorkspace(facade: ApplicationFacade, modifier: Modifier = Modifier) {
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
+    var editing by remember { mutableStateOf<WorkspaceProject?>(null) }
+    var editName by remember { mutableStateOf("") }
+    var editDescription by remember { mutableStateOf("") }
+    var deleteConfirm by remember { mutableStateOf<WorkspaceProject?>(null) }
     val scope = rememberCoroutineScope()
 
     fun refresh() {
@@ -75,12 +81,81 @@ fun ProjectWorkspace(facade: ApplicationFacade, modifier: Modifier = Modifier) {
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(projects, key = { it.id }) { project ->
                 Card(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(16.dp)) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(project.name, style = androidx.compose.material3.MaterialTheme.typography.titleMedium)
                         if (project.description.isNotBlank()) Text(project.description)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(onClick = {
+                                editing = project
+                                editName = project.name
+                                editDescription = project.description
+                            }) { Text("Rename") }
+                            Button(onClick = {
+                                scope.launch {
+                                    runCatching { withContext(Dispatchers.IO) { facade.duplicateProject(project.id) } }
+                                        .onSuccess { refresh() }
+                                        .onFailure { error = it.message }
+                                }
+                            }) { Text("Duplicate") }
+                            Button(onClick = { deleteConfirm = project }) { Text("Delete") }
+                        }
                     }
                 }
             }
         }
+    }
+
+    editing?.let { project ->
+        AlertDialog(
+            onDismissRequest = { editing = null },
+            title = { Text("Rename project") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(editName, { editName = it }, label = { Text("Name") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(editDescription, { editDescription = it }, label = { Text("Description") }, modifier = Modifier.fillMaxWidth())
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        scope.launch {
+                            runCatching {
+                                withContext(Dispatchers.IO) {
+                                    facade.updateProject(project.id, editName, editDescription)
+                                }
+                            }.onSuccess {
+                                editing = null
+                                refresh()
+                            }.onFailure { error = it.message }
+                        }
+                    },
+                    enabled = editName.isNotBlank(),
+                ) { Text("Save") }
+            },
+            dismissButton = { TextButton(onClick = { editing = null }) { Text("Cancel") } },
+        )
+    }
+
+    deleteConfirm?.let { project ->
+        AlertDialog(
+            onDismissRequest = { deleteConfirm = null },
+            title = { Text("Delete project?") },
+            text = { Text("Remove \"${project.name}\" and its local references. This cannot be undone.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        scope.launch {
+                            runCatching { withContext(Dispatchers.IO) { facade.deleteProject(project.id) } }
+                                .onSuccess {
+                                    deleteConfirm = null
+                                    refresh()
+                                }
+                                .onFailure { error = it.message }
+                        }
+                    },
+                ) { Text("Delete") }
+            },
+            dismissButton = { TextButton(onClick = { deleteConfirm = null }) { Text("Cancel") } },
+        )
     }
 }

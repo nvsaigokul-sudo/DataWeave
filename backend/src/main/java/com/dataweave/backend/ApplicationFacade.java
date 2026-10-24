@@ -18,6 +18,8 @@ import com.dataweave.backend.service.CatalogMetadataService;
 import com.dataweave.backend.service.ConnectionProfileService;
 import com.dataweave.backend.service.ConnectionSessionService;
 import com.dataweave.backend.domain.DatasetOutputDefinition;
+import com.dataweave.backend.domain.ForeignKeyRef;
+import com.dataweave.backend.domain.JoinType;
 import com.dataweave.backend.service.CsvIngestService;
 import com.dataweave.backend.service.DatasetOutputDefinitionService;
 import com.dataweave.backend.service.DatasetPreviewService;
@@ -92,6 +94,18 @@ public class ApplicationFacade {
 
     public WorkspaceProject createProject(String name, String description) {
         return workspaceProjectService.create(name, description);
+    }
+
+    public WorkspaceProject updateProject(UUID id, String name, String description) {
+        return workspaceProjectService.update(id, name, description);
+    }
+
+    public WorkspaceProject duplicateProject(UUID id) {
+        return workspaceProjectService.duplicate(id);
+    }
+
+    public void deleteProject(UUID id) {
+        workspaceProjectService.delete(id);
     }
 
     public List<ConnectionProfile> listConnections() {
@@ -250,6 +264,23 @@ public class ApplicationFacade {
         return datasetOutputDefinitionService.save(idOrNull, projectId, connectionId, schema, table, outputColumns);
     }
 
+    public DatasetOutputDefinition saveDatasetDefinition(
+            UUID idOrNull,
+            UUID projectId,
+            UUID connectionId,
+            String schema,
+            String table,
+            List<String> outputColumns,
+            String definitionJson)
+            throws Exception {
+        return datasetOutputDefinitionService.save(
+                idOrNull, projectId, connectionId, schema, table, outputColumns, definitionJson);
+    }
+
+    public List<ForeignKeyRef> listForeignKeys(UUID connectionId, String schema) throws Exception {
+        return catalogMetadataService.listForeignKeys(connectionId, schema);
+    }
+
     public void deleteDatasetDefinition(UUID id) {
         datasetOutputDefinitionService.delete(id);
     }
@@ -270,6 +301,21 @@ public class ApplicationFacade {
             throws Exception {
         return joinPreviewService.previewInnerJoin(
                 connectionId, left, right, leftKey, rightKey, selectedColumns, offset, limit);
+    }
+
+    public DataPage previewJoin(
+            UUID connectionId,
+            TableRef left,
+            TableRef right,
+            String leftKey,
+            String rightKey,
+            JoinType joinType,
+            List<String> selectedColumns,
+            long offset,
+            int limit)
+            throws Exception {
+        return joinPreviewService.previewJoin(
+                connectionId, left, right, leftKey, rightKey, joinType, selectedColumns, offset, limit);
     }
 
     public TableExportResult exportTableToCsv(

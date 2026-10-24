@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -21,17 +20,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.dataweave.app.preferences.ThemeMode
 import com.dataweave.app.preferences.UserPreferences
-import java.util.UUID.fromString
-import com.dataweave.app.ui.theme.DwSpacing
 import com.dataweave.app.ui.browse.TableDataGrid
 import com.dataweave.app.ui.connections.ConnectionsScreen
 import com.dataweave.app.ui.datasets.DatasetBuilderScreen
 import com.dataweave.app.ui.projects.ProjectWorkspace
+import com.dataweave.app.ui.settings.SettingsDialog
 import com.dataweave.app.ui.sql.SqlEditorScreen
 import com.dataweave.app.ui.theme.DataWeaveTheme
+import com.dataweave.app.ui.theme.DwSpacing
 import com.dataweave.backend.ApplicationFacade
-import com.dataweave.backend.domain.TableRef
 import java.util.UUID
 
 enum class WorkspaceSection {
@@ -45,33 +44,19 @@ enum class WorkspaceSection {
 
 @Composable
 fun WorkspaceShell(facade: ApplicationFacade) {
-    var darkTheme by remember { mutableStateOf(UserPreferences.loadDarkTheme()) }
+    val workspace = remember { WorkspaceContext() }
+    var themeMode by remember { mutableStateOf(UserPreferences.loadThemeMode()) }
     var section by remember { mutableStateOf(WorkspaceSection.Welcome) }
-    var activeConnectionId by remember {
-        mutableStateOf(
-            UserPreferences.loadLastConnectionId()?.let { runCatching { fromString(it) }.getOrNull() },
-        )
-    }
-    var selectedTable by remember { mutableStateOf<TableRef?>(null) }
     var pendingEditConnectionId by remember { mutableStateOf<UUID?>(null) }
-    var statusBar by remember { mutableStateOf("Ready") }
+    var settingsOpen by remember { mutableStateOf(false) }
 
-    fun setActiveConnection(id: UUID?) {
-        activeConnectionId = id
-        UserPreferences.saveLastConnectionId(id?.toString())
-    }
-
-    DataWeaveTheme(darkTheme = darkTheme) {
+    DataWeaveTheme(themeMode = themeMode) {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             Column(Modifier.fillMaxSize()) {
                 TopBar(
-                    darkTheme = darkTheme,
-                    onToggleTheme = {
-                        darkTheme = !darkTheme
-                        UserPreferences.saveDarkTheme(darkTheme)
-                    },
                     section = section,
                     onNavigate = { section = it },
+                    onOpenSettings = { settingsOpen = true },
                 )
                 HorizontalDivider()
                 Row(Modifier.weight(1f)) {
@@ -84,11 +69,10 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                     ) {
                         DatabaseTreeSidebar(
                             facade = facade,
-                            connectionId = activeConnectionId,
+                            connectionId = workspace.activeConnectionId,
                             onSelectTable = { table ->
-                                selectedTable = table
+                                workspace.selectTable(table)
                                 section = WorkspaceSection.Browse
-                                statusBar = "Selected ${table.qualifiedName()}"
                             },
                             onOpenConnections = { section = WorkspaceSection.Connections },
                             onEditConnection = { id ->
@@ -96,8 +80,8 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                                 section = WorkspaceSection.Connections
                             },
                             onConnectionEstablished = { id ->
-                                setActiveConnection(id)
-                                statusBar = "Connected"
+                                workspace.setActiveConnection(id)
+                                workspace.updateStatus("Connected")
                             },
                             modifier = Modifier.padding(DwSpacing.xs).fillMaxHeight(),
                         )
@@ -107,12 +91,12 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                             WorkspaceSection.Welcome ->
                                 HomeConnectionHub(
                                     facade = facade,
-                                    activeConnectionId = activeConnectionId,
-                                    onActiveConnectionChange = { setActiveConnection(it) },
+                                    activeConnectionId = workspace.activeConnectionId,
+                                    onActiveConnectionChange = { workspace.setActiveConnection(it) },
                                     onConnected = {
-                                        setActiveConnection(it)
+                                        workspace.setActiveConnection(it)
                                         section = WorkspaceSection.Browse
-                                        statusBar = "Connected"
+                                        workspace.updateStatus("Connected")
                                     },
                                     onCreateConnection = {
                                         pendingEditConnectionId = null
@@ -131,15 +115,20 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                                     initialEditConnectionId = pendingEditConnectionId,
                                     onConsumedEditConnectionId = { pendingEditConnectionId = null },
                                     onConnected = {
-                                        setActiveConnection(it)
+                                        workspace.setActiveConnection(it)
                                         section = WorkspaceSection.Browse
-                                        statusBar = "Connected"
+                                        workspace.updateStatus("Connected")
                                     },
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             WorkspaceSection.Browse ->
-                                if (activeConnectionId != null && selectedTable != null) {
-                                    TableDataGrid(facade, activeConnectionId!!, selectedTable!!, Modifier.fillMaxSize())
+                                if (workspace.activeConnectionId != null && workspace.selectedTable != null) {
+                                    TableDataGrid(
+                                        facade,
+                                        workspace.activeConnectionId!!,
+                                        workspace.selectedTable!!,
+                                        Modifier.fillMaxSize(),
+                                    )
                                 } else {
                                     Text(
                                         "Connect and pick a table from the explorer sidebar, or open Connections.",
@@ -149,14 +138,15 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                             WorkspaceSection.Sql ->
                                 SqlEditorScreen(
                                     facade,
-                                    activeConnectionId,
-                                    onSelectConnection = { setActiveConnection(it) },
+                                    workspace.activeConnectionId,
+                                    onSelectConnection = { workspace.setActiveConnection(it) },
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             WorkspaceSection.Datasets ->
                                 DatasetBuilderScreen(
                                     facade,
-                                    activeConnectionId,
+                                    workspace.activeConnectionId,
+                                    workspace.selectedSchema,
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             WorkspaceSection.Projects ->
@@ -165,18 +155,28 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                     }
                 }
                 HorizontalDivider()
-                StatusBar(activeConnectionId, facade, statusBar) { statusBar = it }
+                StatusBar(workspace.activeConnectionId, facade, workspace.statusMessage)
             }
         }
+    }
+
+    if (settingsOpen) {
+        SettingsDialog(
+            themeMode = themeMode,
+            onThemeModeChange = {
+                themeMode = it
+                UserPreferences.saveThemeMode(it)
+            },
+            onDismiss = { settingsOpen = false },
+        )
     }
 }
 
 @Composable
 private fun TopBar(
-    darkTheme: Boolean,
-    onToggleTheme: () -> Unit,
     section: WorkspaceSection,
     onNavigate: (WorkspaceSection) -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     Row(
         Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
@@ -190,8 +190,7 @@ private fun TopBar(
         NavTab("Datasets", section == WorkspaceSection.Datasets) { onNavigate(WorkspaceSection.Datasets) }
         NavTab("Projects", section == WorkspaceSection.Projects) { onNavigate(WorkspaceSection.Projects) }
         Box(Modifier.weight(1f))
-        Text("Dark theme", modifier = Modifier.padding(end = 8.dp))
-        Switch(checked = darkTheme, onCheckedChange = { onToggleTheme() })
+        TextButton(onClick = onOpenSettings) { Text("Settings") }
     }
 }
 
@@ -210,7 +209,6 @@ private fun StatusBar(
     connectionId: UUID?,
     facade: ApplicationFacade,
     message: String,
-    onUpdate: (String) -> Unit,
 ) {
     val connLabel =
         connectionId?.let { id ->

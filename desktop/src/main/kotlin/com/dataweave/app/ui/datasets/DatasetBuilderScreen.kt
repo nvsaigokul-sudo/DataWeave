@@ -43,6 +43,7 @@ import kotlinx.coroutines.withContext
 fun DatasetBuilderScreen(
     facade: ApplicationFacade,
     activeConnectionId: UUID?,
+    initialSchema: String = "public",
     modifier: Modifier = Modifier,
 ) {
     var projects by remember { mutableStateOf<List<WorkspaceProject>>(emptyList()) }
@@ -50,7 +51,9 @@ fun DatasetBuilderScreen(
     var connections by remember { mutableStateOf<List<ConnectionProfile>>(emptyList()) }
     var connectionId by remember { mutableStateOf(activeConnectionId) }
     var schemas by remember { mutableStateOf<List<String>>(emptyList()) }
-    var schema by remember { mutableStateOf("public") }
+    var schema by remember { mutableStateOf(initialSchema) }
+    var joinType by remember { mutableStateOf("INNER") }
+    var foreignKeys by remember { mutableStateOf<List<String>>(emptyList()) }
     var tables by remember { mutableStateOf<List<TableRef>>(emptyList()) }
     var table by remember { mutableStateOf<TableRef?>(null) }
     var columnFilter by remember { mutableStateOf("") }
@@ -82,6 +85,10 @@ fun DatasetBuilderScreen(
         if (activeConnectionId != null) {
             connectionId = activeConnectionId
         }
+    }
+
+    LaunchedEffect(initialSchema) {
+        if (initialSchema.isNotBlank()) schema = initialSchema
     }
 
     LaunchedEffect(projectId) {
@@ -280,17 +287,68 @@ fun DatasetBuilderScreen(
             }
         }
 
-        Text("Inner join preview")
+        Text("Join preview (select type; apply FK suggestion explicitly)")
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("INNER", "LEFT", "RIGHT", "FULL").forEach { jt ->
+                Button(onClick = { joinType = jt }) {
+                    Text(if (joinType == jt) "[$jt]" else jt)
+                }
+            }
+            Button(
+                enabled = connectionId != null,
+                onClick = {
+                    val id = connectionId ?: return@Button
+                    scope.launch {
+                        runCatching {
+                            withContext(Dispatchers.IO) { facade.listForeignKeys(id, schema) }
+                        }.onSuccess { fks ->
+                            foreignKeys =
+                                fks.map {
+                                    "${it.table()}.${it.column()} → ${it.referencedTable()}.${it.referencedColumn()}"
+                                }
+                            status = "Loaded ${fks.size} foreign keys (suggestions only)"
+                        }.onFailure { error = it.message }
+                    }
+                },
+            ) {
+                Text("Load FK suggestions")
+            }
+        }
+        foreignKeys.take(6).forEach { Text(it, style = androidx.compose.material3.MaterialTheme.typography.bodySmall) }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedTextField(leftTable, { leftTable = it }, label = { Text("Left table") })
             OutlinedTextField(rightTable, { rightTable = it }, label = { Text("Right table") })
             OutlinedTextField(leftKey, { leftKey = it }, label = { Text("Left key") })
             OutlinedTextField(rightKey, { rightKey = it }, label = { Text("Right key") })
         }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            foreignKeys.forEach { suggestion ->
+                Button(
+                    onClick = {
+                        val parts = suggestion.split(" → ")
+                        if (parts.size == 2) {
+                            val left = parts[0].substringAfter(".")
+                            val right = parts[1].substringAfter(".")
+                            leftTable = parts[0].substringBefore(".")
+                            rightTable = parts[1].substringBefore(".")
+                            leftKey = left
+                            rightKey = right
+                            status = "Applied FK suggestion (confirm keys before preview)"
+                        }
+                    },
+                ) {
+                    Text("Use: $suggestion")
+                }
+            }
+        }
         Button(
             enabled = connectionId != null && leftTable.isNotBlank() && rightTable.isNotBlank(),
             onClick = {
                 val id = connectionId ?: return@Button
+                val jt =
+                    runCatching {
+                        com.dataweave.backend.domain.JoinType.valueOf(joinType)
+                    }.getOrDefault(com.dataweave.backend.domain.JoinType.INNER)
                 scope.launch {
                     runCatching {
                         withContext(Dispatchers.IO) {
@@ -300,6 +358,7 @@ fun DatasetBuilderScreen(
                                 TableRef(schema, rightTable),
                                 leftKey,
                                 rightKey,
+                                jt,
                                 listOf("left.$leftKey", "right.$rightKey"),
                                 0,
                                 100,
@@ -307,7 +366,7 @@ fun DatasetBuilderScreen(
                         }
                     }.onSuccess {
                         page = it
-                        status = "Join preview OK"
+                        status = "Join preview OK ($joinType)"
                     }.onFailure {
                         error = it.message
                     }

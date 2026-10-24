@@ -39,15 +39,20 @@ public class ReadOnlyQueryService {
     public List<Map<String, Object>> runSelect(UUID connectionId, String sql, List<Object> params) throws Exception {
         String normalized = sql.trim();
         if (!normalized.toLowerCase().startsWith("select")) {
-            throw new IllegalArgumentException("Only read-only SELECT queries are cached");
+            throw new IllegalArgumentException("Only read-only SELECT queries are allowed");
         }
         if (normalized.contains(";")) {
             throw new IllegalArgumentException("Multi-statement SQL is not allowed");
         }
         ConnectionProfile profile = connectionProfileService.require(connectionId);
         DataSource ds = connectionManager.getDataSource(profile);
-        try (Connection conn = ds.getConnection();
-                PreparedStatement ps = conn.prepareStatement(normalized)) {
+        try (Connection conn = ds.getConnection()) {
+            conn.setReadOnly(true);
+            conn.setAutoCommit(false);
+            try (var begin = conn.createStatement()) {
+                begin.execute("BEGIN READ ONLY");
+            }
+            try (PreparedStatement ps = conn.prepareStatement(normalized)) {
             if (params != null) {
                 for (int i = 0; i < params.size(); i++) {
                     ps.setObject(i + 1, params.get(i));
@@ -65,6 +70,9 @@ public class ReadOnlyQueryService {
                     rows.add(row);
                 }
                 return rows;
+            }
+            } finally {
+                conn.rollback();
             }
         }
     }

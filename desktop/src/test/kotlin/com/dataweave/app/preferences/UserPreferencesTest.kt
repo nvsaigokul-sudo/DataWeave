@@ -26,4 +26,15 @@ class UserPreferencesTest {
         UserPreferences.saveLastConnectionId(null)
         assertNull(UserPreferences.loadLastConnectionId())
     }
+
+    @Test
+    fun themeModeRoundTrip() {
+        val dir = Files.createTempDirectory("dw-prefs-theme")
+        System.setProperty("user.home", dir.toString())
+        assertEquals(ThemeMode.SYSTEM, UserPreferences.loadThemeMode())
+        UserPreferences.saveThemeMode(ThemeMode.DARK)
+        assertEquals(ThemeMode.DARK, UserPreferences.loadThemeMode())
+        UserPreferences.saveThemeMode(ThemeMode.LIGHT)
+        assertEquals(ThemeMode.LIGHT, UserPreferences.loadThemeMode())
+    }
 }

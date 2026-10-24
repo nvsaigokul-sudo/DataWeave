@@ -1,5 +1,6 @@
 package com.dataweave.backend;
 
+import com.dataweave.backend.domain.JoinType;
 import com.dataweave.backend.domain.SslMode;
 import com.dataweave.backend.domain.TableRef;
 import com.dataweave.backend.service.ConnectionProfileService;
@@ -46,6 +47,39 @@ class JoinPreviewServiceTest extends IntegrationTestBase {
                         0,
                         50);
         Assertions.assertFalse(page.rows().isEmpty());
+    }
+
+    @Test
+    void leftJoinIncludesUnmatchedLeftRows() throws Exception {
+        seedJoinTables();
+        int port = jdbcPort(pgJdbcUrl());
+        var profile =
+                connections.create(
+                        "join-left",
+                        "127.0.0.1",
+                        port,
+                        "postgres",
+                        "postgres",
+                        "postgres".toCharArray(),
+                        SslMode.DISABLE,
+                        5);
+        Assertions.assertTrue(sessions.connect(profile.id()).state().name().equals("CONNECTED"));
+        try (var conn = postgres.getPostgresDatabase().getConnection();
+                var st = conn.createStatement()) {
+            st.execute("INSERT INTO orders VALUES (11, NULL)");
+        }
+        var page =
+                joins.previewJoin(
+                        profile.id(),
+                        new TableRef("public", "orders"),
+                        new TableRef("public", "customers"),
+                        "customer_id",
+                        "id",
+                        JoinType.LEFT,
+                        List.of("left.id"),
+                        0,
+                        50);
+        Assertions.assertTrue(page.rows().size() >= 2);
     }
 
     private static void seedJoinTables() throws Exception {
