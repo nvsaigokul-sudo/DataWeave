@@ -3,12 +3,9 @@ setlocal EnableExtensions EnableDelayedExpansion
 rem Bypass jpackage native launcher when it shows "Failed to launch JVM" before Java main runs.
 rem Installed path: "%ProgramFiles%\DataWeave\app\resources\DataWeave-JvmDebug.cmd"
 
-set "RES_DIR=%~dp0"
-set "APP_DIR=%RES_DIR%.."
-for %%I in ("%APP_DIR%") do set "APP_DIR=%%~fI"
-set "INSTALL_ROOT=%APP_DIR%\.."
+set "INSTALL_ROOT=%~dp0..\.."
 for %%I in ("%INSTALL_ROOT%") do set "INSTALL_ROOT=%%~fI"
-
+set "APP_DIR=%INSTALL_ROOT%\app"
 set "JAVA_EXE=%INSTALL_ROOT%\runtime\bin\java.exe"
 set "LOG_DIR=%LOCALAPPDATA%\DataWeave"
 if not exist "%LOG_DIR%" mkdir "%LOG_DIR%" 2>nul
@@ -18,6 +15,7 @@ set "LOG=%LOG_DIR%\jvm-debug.log"
   echo === DataWeave JVM debug launcher ===
   echo timestamp=%DATE% %TIME%
   echo install.root=%INSTALL_ROOT%
+  echo app.dir=%APP_DIR%
   echo java.exe=%JAVA_EXE%
   echo cwd=%CD%
   echo args=%*
