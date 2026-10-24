@@ -4,15 +4,15 @@ DataWeave is a **desktop application**. You do **not** need Java, Gradle, Git, o
 
 ## Download
 
-1. Open **[GitHub Releases](https://github.com/nvsaigokul-sudo/DataWeave/releases)**.
+1. Open **[GitHub Releases](https://github.com/nvsaigokul-sudo/DataWeave/releases)** (or for Windows, the CI-tested LFS MSI linked from the [README](../README.md#download-dataweave-end-users)).
 2. Download the installer for your operating system.
-3. Verify the file against `SHA256SUMS.txt` on the release page when provided.
+3. Verify checksums: Windows LFS MSI → [downloads/SHA256SUMS.txt](../downloads/SHA256SUMS.txt); release bundles → `SHA256SUMS.txt` on the release page.
 
 | OS | Typical files |
 |----|----------------|
 | Windows | `.msi` (installer), `.exe` (app package) |
 | Linux | `.AppImage` (universal), `.deb` (Debian/Ubuntu) |
-| macOS | `.dmg` or `.pkg` (Apple Silicon builds from `macos-14`; Intel from `macos-13` CI runners) |
+| macOS | `.dmg` or `.pkg` (Apple Silicon from [Releases](https://github.com/nvsaigokul-sudo/DataWeave/releases); Intel: local `./gradlew :desktop:packageDmg`) |
 
 ## First launch
 

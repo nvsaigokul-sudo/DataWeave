@@ -45,7 +45,7 @@ Compose Desktop requires `-XstartOnFirstThread` on macOS; the Gradle `desktop` m
 | Platform | Automated CI | Manual GUI (agent 2026-10-23) |
 |----------|--------------|-------------------------------|
 | Linux x64 | Expected via GitHub Actions | **Verified** locally in cloud VM (`test`, `runHeadlessSmoke`) |
-| Windows | MSI install + `--diagnose` / `--headless-smoke` / `--gui-smoke` / normal GUI alive 15s on `windows-latest` ([39996985661](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/39996985661)) | **CI GUI path verified**; full AppShell UX still manual |
+| Windows | MSI install + `--diagnose` / `--headless-smoke` / `--gui-smoke` / normal GUI alive 15s on `windows-latest` ([40000887132](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40000887132)) | **CI GUI path verified**; full AppShell UX still manual |
 | macOS (ARM) | Expected via GitHub Actions | **Not verified** in agent VM |
 
 See [CROSS_PLATFORM_VERIFICATION.md](./CROSS_PLATFORM_VERIFICATION.md) for manual checklists.

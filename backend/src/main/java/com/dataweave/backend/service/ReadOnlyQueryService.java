@@ -35,7 +35,7 @@ public class ReadOnlyQueryService {
             cacheNames = "queryResults",
             condition = "#sql.trim().toLowerCase().startsWith('select')",
             key =
-                    "#connectionId + ':' + T(java.util.Objects).hash(#sql, #params) + ':' + @readOnlyQueryService.schemaVersion(#connectionId)")
+                    "#connectionId + ':' + #sql + ':' + T(String).valueOf(#params) + ':' + @readOnlyQueryService.schemaVersion(#connectionId)")
     public List<Map<String, Object>> runSelect(UUID connectionId, String sql, List<Object> params) throws Exception {
         String normalized = sql.trim();
         if (!normalized.toLowerCase().startsWith("select")) {

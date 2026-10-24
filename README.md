@@ -20,7 +20,7 @@
 | **macOS Apple Silicon** | [`.dmg`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/macos-arm64-DataWeave-1.2.1.dmg) · [`.pkg`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/macos-arm64-DataWeave-1.2.1.pkg) |
 | **macOS Intel** | Build on an Intel Mac: `./gradlew :desktop:packageDmg :desktop:packagePkg` (GitHub `macos-13` job omitted due to runner queue) |
 
-Verify with [`SHA256SUMS.txt`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/SHA256SUMS.txt) on the release. Legacy LFS mirror: [downloads/](downloads/README.md).
+Verify Windows with [downloads/SHA256SUMS.txt](downloads/SHA256SUMS.txt); Linux/macOS with [`SHA256SUMS.txt` on v0.2.1](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/SHA256SUMS.txt). Details: [downloads/README.md](downloads/README.md).
 
 | Step | Action |
 |------|--------|
