@@ -2,7 +2,9 @@
 
 ## Versioning
 
-SemVer tags on `main`, e.g. `v0.2.0`. Project version: `0.2.0-SNAPSHOT` in Gradle until tagged.
+SemVer tags on `main`, e.g. `v0.3.0`. Project version: `0.x.y-SNAPSHOT` on development branches; set **`0.x.y`** (no `-SNAPSHOT`) on the commit you tag.
+
+Native installers use jpackage version **`1.x.y`** for product **`0.x.y`** — see [VERSIONING.md](./VERSIONING.md).
 
 ## Automated release
 

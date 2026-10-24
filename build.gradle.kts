@@ -18,7 +18,7 @@ fun jpackageVersion(raw: String): String {
 
 allprojects {
     group = "com.dataweave"
-    version = "0.3.0-SNAPSHOT"
+    version = "0.3.0"
 }
 
 tasks.register("printProductVersion") {

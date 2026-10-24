@@ -1,30 +1,40 @@
 # PRD v0.3.0 traceability (evidence-based)
 
-Last updated: **2026-10-24 (Asia/Calcutta)** · Branch **`cursor/dataweave-product-v0.3.0-d9c8`**
+Last updated: **2026-10-24 (Asia/Calcutta)** · Gradle **`0.3.0`** · branch **`cursor/dataweave-product-v0.3.0-d9c8`**
 
-## Area summary (Must / Partial / Open)
+## Version / release
 
-| Area | PRD focus | Code anchor | Automated evidence | Status |
-|------|-----------|-------------|-------------------|--------|
-| **A** Connections & cred | Lifecycle, scroll, vault persist, recovery | `ConnectionsScreen.kt`, `CredentialRecoveryPanel`, `PostgresConnectionManager` | `ConnectionLifecycleIntegrationTest`, `MissingCredentialIntegrationTest` | **PASS** (Linux CI); Windows GUI **NOT TESTED** |
-| **B** Explorer | DB→schema→table/view→columns; PK/FK/index | `DatabaseTreeSidebar.kt`, `CatalogMetadataService` | `MetadataExplorerIntegrationTest`, `ForeignKeyMetadataIntegrationTest`, `ExplorerTableMetadataIntegrationTest` | **PARTIAL** (Columns/PK/FK/Indexes as expandable tree sections; errors per section) |
-| **C** Data grid | Spreadsheet read-only, paging, filter, export | `SpreadsheetDataGrid.kt`, `GridSelectionLogic.kt`, `DataWorkspaceScreen.kt` | `PaginationAndTypesIntegrationTest`, `LargeTablePagingIntegrationTest`, `GridSelectionLogicTest` (shift-rect, row/col, Ctrl+C TSV) | **PARTIAL** (matrix improved; manual GUI verify for focus ring) |
-| **D** SQL | Read-only SELECT, history, cancel | `SqlEditorScreen.kt`, `ReadOnlyQueryService` | `ReadOnlyQueryServiceTest`, `SqlEditorServiceTest.rejectsNonSelectStatements` | **PARTIAL** (cancel UI; no automated cancel timing test) |
-| **E** Datasets | Visual builder + graph persist | `VisualDatasetBuilderScreen.kt`, `DatasetJoinEdgeLayout`, `DatasetGraphValidator` | `DatasetJoinEdgeLayoutTest`, `DatasetGraphValidatorTest`, `DatasetGraphPersistenceIntegrationTest`, join-type SQL tests | **PARTIAL** (canvas join lines + key pickers; DnD **NOT TESTED** in GUI) |
-| **F** Projects | CRUD + links + reorder | `ProjectWorkspace.kt`, `ProjectItemService` | `ProjectDatasetNavigationIntegrationTest`, `ProjectItemFeaturesIntegrationTest` | **PARTIAL** (query links, reorder, unsaved dialog; GUI navigation **NOT TESTED**) |
-| **G** Settings / theme | Light/Dark/System | `SettingsDialog.kt`, `UserPreferences` | `UserPreferencesTest.themeModeRoundTrip` | **PASS** |
-| **H** Reliability | GUI launch, migrations, secrets | `DataWeaveApp.kt` `startForGui`, `SqliteFlywayBackupConfiguration` | `SpringHeadlessPropertyTest`, headless smoke Flyway V5 | **PASS** (Linux); packaged Windows **NOT TESTED** |
-| **I** Release | MSI/EXE, checksums, owner sign-off | `release.yml`, `windows-test-installer.yml`, `docs/WINDOWS_RELEASE_ACCEPTANCE.md` | Linux: `./gradlew test :desktop:runHeadlessSmoke :desktop:packageDeb` **PASS** @ `3126f14`; Windows MSI/GUI **NOT TESTED** in Linux VM | **BLOCKED** (Windows acceptance + owner sign-off; no v0.3.0 tag) |
+| Item | Evidence | Status |
+|------|----------|--------|
+| Product version | `build.gradle.kts` `version = "0.3.0"` | **PASS** |
+| jpackage mapping | `printProductVersion` → `1.3.0`; [VERSIONING.md](./VERSIONING.md) | **PASS** |
+| Windows TEST @ wrong commit | `3dbb41c` → `1.2.9` explained | **CLOSED** |
+| GitHub Release v0.3.0 | Not created (owner GUI gate) | **BLOCKED** |
 
-## Requirement rows (selected FR)
+## Area summary
 
-| ID | Summary | Implementation | Test | Status |
-|----|---------|----------------|------|--------|
-| FR-021 | Workspace context | `WorkspaceContext.kt`, shell wiring, `activeDatabase` | Manual cross-screen | **PARTIAL** |
-| FR-050+ | Explorer metadata | Tables, views, columns, PK, FK, indexes (lazy) | See area B tests | **PARTIAL** |
-| FR-100+ | Data workspace | Spreadsheet grid + tabs | Pagination + column filter tests | **PARTIAL** |
-| FR-150+ | Visual dataset builder | Canvas, graph JSON save/reopen | Graph preview + SQL generator tests | **PARTIAL** |
-| SEC | Read-only SQL | `BEGIN READ ONLY` | `ReadOnlyQueryServiceTest`, `SqlEditorServiceTest` | **PASS** |
-| DM | SQLite backup pre-migrate | `SqliteFlywayBackupConfiguration` | Headless smoke migrate | **PASS** |
+| Area | PRD focus | Automated evidence | Status |
+|------|-----------|-------------------|--------|
+| **A** Connections | Lifecycle, vault, recovery | `ConnectionLifecycleIntegrationTest`, `MissingCredentialIntegrationTest` | **PASS** (Linux); Windows GUI **NOT TESTED** |
+| **B** Explorer | DB→schema→table; metadata sections | `MetadataExplorerIntegrationTest`, `ExplorerTableMetadataIntegrationTest`, FK tests | **PARTIAL** (sections implemented; views propagation **PARTIAL**) |
+| **C** Data grid | Paging, filter, selection, clipboard | `GridSelectionLogicTest`, `LargeTablePagingIntegrationTest`, `PaginationAndTypesIntegrationTest` | **PARTIAL** (no virtualization / multi-tab matrix in automation) |
+| **D** SQL | Read-only SELECT, history, cancel | `ReadOnlyQueryServiceTest`, `SqlEditorServiceTest` | **PARTIAL** (cancel timing not automated) |
+| **E** Datasets | Visual builder, graph persist | `DatasetGraphValidatorTest`, `DatasetJoinEdgeLayoutTest`, persistence integration tests | **PARTIAL** (GUI DnD **NOT TESTED**) |
+| **F** Projects | Links, reorder, navigation | `ProjectItemFeaturesIntegrationTest`, `ProjectDatasetNavigationIntegrationTest` | **PARTIAL** (GUI **NOT TESTED**) |
+| **G** Settings / theme | Light/Dark/System | `UserPreferencesTest` | **PASS** |
+| **H** Reliability | Migrations, headless smoke | `runHeadlessSmoke`, Flyway V5 | **PASS** (Linux) |
+| **I** Release | MSI/EXE, checksums, acceptance | CI run **40112573212** (packaged smoke); owner checklist | **BLOCKED** |
 
-Windows packaged GUI acceptance remains **NOT TESTED** in cloud agent environment.
+## Selected FR rows
+
+| ID | Summary | Test / evidence | Status |
+|----|---------|-----------------|--------|
+| FR-021 | Workspace context | `WorkspaceContext.kt` + integration navigation tests | **PARTIAL** |
+| SEC | Read-only SQL | `ReadOnlyQueryServiceTest` | **PASS** |
+| DM | SQLite backup pre-migrate | Headless smoke migrate | **PASS** |
+
+## Controls
+
+See [controls.csv](./controls.csv). GUI-heavy rows remain **NOT TESTED** or **PARTIAL** until owner Windows pass.
+
+Windows packaged smoke control **WIN-MSI-SMOKE**: **PARTIAL** (CI @ `dd07d22`; must re-verify on release tag commit).
