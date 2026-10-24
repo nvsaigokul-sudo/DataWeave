@@ -1,6 +1,6 @@
 # DataWeave verification status
 
-Last updated: **2026-10-24** (`8e526bf` on `main`; CI [40067692708](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40067692708)).
+Last updated: **2026-10-24** (`b90dcb0` on `main`; audit re-verified MSI URLs + `./gradlew test :desktop:runHeadlessSmoke` PASS; CI [40067692708](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40067692708)).
 
 This page summarizes **what we have actually run**, not roadmap intent. For architecture and audit detail see [AUDIT.md](./AUDIT.md).
 
@@ -58,10 +58,12 @@ Prior CI with same Windows GUI matrix: [40061037014](https://github.com/nvsaigok
 
 | Artifact | SHA256 | Size (bytes) | Test evidence |
 |----------|--------|--------------|---------------|
-| LFS `downloads/windows/DataWeave-Setup.msi` (README primary Windows link) | `35333f603bac8180316934b299623227d2ce35dea5dbf767af92fea45a4c5323` | (see file) | Refreshed from CI [40063457806](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40063457806) @ `34b832f`; matrix green [40063956281](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40063956281) |
-| Release `windows-DataWeave-1.2.1.msi` (v0.2.1) | `6716b5aeccbe3eefbf8669b375e9c0277ebc08cf3a5c8b679b16f979960e9544` | 187499257 | Release build only — **no** install/GUI smoke in `release.yml` |
+| LFS + [media.githubusercontent.com MSI](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi) (README primary) | `35333f603bac8180316934b299623227d2ce35dea5dbf767af92fea45a4c5323` | 187727956 | Re-fetched 2026-10-24 audit; CI matrix [40063956281](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40063956281) |
+| `raw.githubusercontent.com/.../DataWeave-Setup.msi` | `24f3a23a8d46760578818e9ef2ab62102f558e9d3d9c163247fa454bd3046f17` | 134 | LFS pointer — **invalid installer** |
+| Legacy LFS MSI (user report) | `a9c8ab77e653c6f202f58ebd877c526e5c220a712eb97f045b5457923d0f06fb` | ~167 MB | Pre-reset; superseded by `35333f60…` |
+| Release `windows-DataWeave-1.2.1.msi` (v0.2.1 / **Latest**) | `6716b5aeccbe3eefbf8669b375e9c0277ebc08cf3a5c8b679b16f979960e9544` | 187499257 | Release build only — **no** install/GUI smoke in `release.yml` |
 | Release `linux-dataweave_1.2.1_amd64.deb` (v0.2.1) | `4e30d1482302f78c43fae3b8d51721b4c00b5190eafc664fe50cd410dcddc0c1` | (see release `SHA256SUMS.txt`) | Release build — local install smoke uses VM rebuild below |
-| **This VM** `dataweave_1.2.1_amd64.deb` (`baa193c` tree) | `38be7af0303fb51cd97a3af1d3882cca8aba0f222949d48e47364cb9cf5b34f6` | 173135728 | `--diagnose`, `--headless-smoke`, Xvfb `--gui-smoke` **PASS** |
+| **This VM** `dataweave_1.2.1_amd64.deb` (`b90dcb0` tree) | `3832dc3a826743d1877563a22498b8af27c2b9fe5389050802018bda9339640f` | (see build output) | `--diagnose`, `--headless-smoke` **PASS** 2026-10-24 audit |
 
 Different MSI hashes reflect **different build runs**; README explains when to prefer the LFS MSI (CI GUI-tested modules: `java.desktop`, `jdk.accessibility`).
 

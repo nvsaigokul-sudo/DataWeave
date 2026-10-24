@@ -15,7 +15,7 @@
 
 | Your OS | Download |
 |---------|----------|
-| **Windows** | **[downloads/windows/DataWeave-Setup.msi](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi)** (Git LFS; [SHA256SUMS](downloads/windows/SHA256SUMS.txt)) — CI-tested `java.desktop` + GUI smoke. Alternate: [v0.2.1 release `.msi`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/windows-DataWeave-1.2.1.msi) / [`.exe`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/windows-DataWeave-1.2.1.exe) |
+| **Windows** | **[downloads/windows/DataWeave-Setup.msi](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi)** (Git LFS; SHA256 `35333f60…` — [SHA256SUMS](downloads/windows/SHA256SUMS.txt)) — **recommended**; CI GUI smoke. **Not** `raw.githubusercontent.com` (LFS pointer). [Releases → Latest](https://github.com/nvsaigokul-sudo/DataWeave/releases/latest) serves a **different** `.msi` (`6716b5ae…` on v0.2.1). Alternate portable: [v0.2.1 `.exe`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/windows-DataWeave-1.2.1.exe) |
 | **Linux (x64)** | [`.deb`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/linux-dataweave_1.2.1_amd64.deb) · [linux/](downloads/linux/) |
 | **macOS Apple Silicon** | [`.dmg`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/macos-arm64-DataWeave-1.2.1.dmg) · [`.pkg`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/macos-arm64-DataWeave-1.2.1.pkg) · [macos/](downloads/macos/) |
 | **macOS Intel** | Local build — [downloads/macos/README.md](downloads/macos/README.md) (`macos-13` CI omitted) |

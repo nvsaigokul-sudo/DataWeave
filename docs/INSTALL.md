@@ -8,7 +8,7 @@ DataWeave is a **desktop application**. You do **not** need Java, Gradle, Git, o
 2. Download the installer for your operating system.
 3. Verify checksums: Windows LFS MSI → [downloads/SHA256SUMS.txt](../downloads/SHA256SUMS.txt); release bundles → `SHA256SUMS.txt` on the release page.
 
-   **Windows (mandatory before troubleshooting):** confirm the MSI you installed matches the hash in [downloads/windows/SHA256SUMS.txt](../downloads/windows/SHA256SUMS.txt). An older LFS build (for example SHA256 starting with `b613ec64…`) has **no** `app\resources\DataWeave-JvmDebug.cmd` and uses `DataWeaveAppKt` as the jpackage main class — uninstall it (**Settings → Apps → DataWeave → Uninstall**), delete stale Start Menu shortcuts, then install the current MSI from `downloads/windows/`.
+   **Windows (mandatory before troubleshooting):** confirm the MSI you installed matches the hash in [downloads/windows/SHA256SUMS.txt](../downloads/windows/SHA256SUMS.txt) (`35333f603bac…`). Legacy installers (`a9c8ab77…`, `b613ec64…`) and the v0.2.1 **release** MSI (`6716b5ae…`) differ from this file. Older LFS builds have **no** `app\resources\DataWeave-JvmDebug.cmd` and use `DataWeaveAppKt` — uninstall (**Settings → Apps → DataWeave → Uninstall**), delete stale Start Menu shortcuts, download via the README **media.githubusercontent.com** link (not `raw.githubusercontent.com`, which is an LFS pointer), then reinstall.
 
 | OS | Typical files |
 |----|----------------|

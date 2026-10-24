@@ -30,7 +30,9 @@ sha256sum downloads/windows/DataWeave-Setup.msi
 ./scripts/verify-downloads-checksums.sh
 ```
 
-**Mandatory reinstall:** If your installed copy has SHA256 `b613ec64…` (or `app\resources` is empty / `DataWeave.cfg` lists `DataWeaveAppKt`), uninstall the old MSI and install this build. Older LFS MSIs predated bootstrap + `DataWeave-JvmDebug.cmd`.
+**Mandatory reinstall:** If your installed MSI SHA256 is **`a9c8ab77…`**, **`b613ec64…`**, or **`6716b5ae…`** (v0.2.1 release-only) while you need the CI-smoked bootstrap build, uninstall (**Settings → Apps → DataWeave**), remove stale Start Menu shortcuts, verify the new download hash above, then reinstall. Also reinstall if `app\resources` is empty or `DataWeave.cfg` lists `DataWeaveAppKt`.
+
+**Do not use** `raw.githubusercontent.com/.../DataWeave-Setup.msi` — that URL returns a **134-byte LFS pointer** (SHA256 `24f3a23a…`), not an installer. Use the **media.githubusercontent.com** link above or clone with `git lfs pull`.
 
 Built from CI run [40063457806](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40063457806) (`:desktop:packageMsi`, commit `34b832f`). Includes **`DataWeaveBootstrapKt`**, **`app/resources/DataWeave-JvmDebug.cmd`**, bundled **`runtime/bin/java.exe`**, and JRE modules **`java.desktop`** + **`jdk.accessibility`**. CI installs the MSI on `windows-latest` and runs `--diagnose`, `DataWeave-JvmDebug.cmd --diagnose`, `--headless-smoke`, `--gui-smoke`, and a **normal GUI launch** (no args, process alive 15s).
 

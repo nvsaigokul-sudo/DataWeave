@@ -27,6 +27,11 @@ while IFS= read -r -d '' sums_file; do
       skipped=$((skipped + 1))
       continue
     fi
+    if head -c 40 "$target" 2>/dev/null | grep -q 'git-lfs.github.com'; then
+      echo "FAIL $target is a Git LFS pointer (run: git lfs pull). Do not distribute or install pointer files." >&2
+      fail=1
+      continue
+    fi
     actual="$(sha256sum "$target" | awk '{print $1}')"
     if [[ "$actual" != "$hash" ]]; then
       echo "FAIL checksum $target (expected $hash, got $actual)" >&2
