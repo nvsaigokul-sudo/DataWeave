@@ -1,6 +1,6 @@
 # DataWeave verification status
 
-Last updated: **2026-10-24** (engineering-reset pass; CI run URL updated after push to `github/main`).
+Last updated: **2026-10-24** (`8e526bf` on `main`; CI [40067692708](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40067692708)).
 
 This page summarizes **what we have actually run**, not roadmap intent. For architecture and audit detail see [AUDIT.md](./AUDIT.md).
 
