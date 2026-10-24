@@ -26,6 +26,9 @@ import androidx.compose.ui.unit.dp
 import com.dataweave.backend.ApplicationFacade
 import com.dataweave.backend.domain.DataPage
 import com.dataweave.backend.domain.TableRef
+import java.awt.FileDialog
+import java.awt.Frame
+import java.nio.file.Path
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,6 +40,7 @@ fun TableDataGrid(facade: ApplicationFacade, connectionId: UUID, table: TableRef
     var offset by remember { mutableStateOf(0L) }
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    var exportMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
     val scopeKey = remember(table) { "grid-${table.schema}.${table.name}" }
 
@@ -68,9 +72,35 @@ fun TableDataGrid(facade: ApplicationFacade, connectionId: UUID, table: TableRef
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(vertical = 8.dp)) {
                 Button(onClick = { if (offset >= 100) load(offset - 100) }, enabled = offset > 0 && !loading) { Text("Previous") }
                 Button(onClick = { load(offset + 100) }, enabled = (page?.rows?.size ?: 0) >= 100 && !loading) { Text("Next") }
+                Button(
+                    onClick = {
+                        val dialog = FileDialog(null as Frame?, "Export CSV", FileDialog.SAVE)
+                        dialog.file = "${table.name}.csv"
+                        dialog.isVisible = true
+                        val dir = dialog.directory
+                        val file = dialog.file
+                        if (dir == null || file == null) return@Button
+                        val dest = Path.of(dir, file)
+                        scope.launch {
+                            runCatching {
+                                withContext(Dispatchers.IO) {
+                                    facade.exportTableToCsv(connectionId, table, dest)
+                                }
+                            }.onSuccess { count ->
+                                error = null
+                                exportMessage = "Exported $count rows to $dest"
+                            }.onFailure {
+                                error = it.message
+                            }
+                        }
+                    },
+                ) {
+                    Text("Export CSV")
+                }
                 Text("Offset $offset")
                 if (loading) CircularProgressIndicator()
             }
+            exportMessage?.let { Text(it) }
             error?.let { Text("Error: $it", color = androidx.compose.material3.MaterialTheme.colorScheme.error) }
             val columns = page?.columns.orEmpty()
             val hScroll = rememberScrollState()

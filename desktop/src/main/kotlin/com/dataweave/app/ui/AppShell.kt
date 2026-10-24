@@ -19,7 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.dataweave.app.ui.browse.DataBrowseScreen
 import com.dataweave.app.ui.connections.ConnectionsScreen
+import com.dataweave.app.ui.datasets.DatasetBuilderScreen
 import com.dataweave.app.ui.projects.ProjectWorkspace
+import com.dataweave.app.ui.sql.SqlEditorScreen
 import com.dataweave.app.ui.theme.DataWeaveTheme
 import com.dataweave.backend.ApplicationFacade
 
@@ -27,6 +29,8 @@ enum class MainSection {
     Projects,
     Connections,
     Browse,
+    Sql,
+    Datasets,
 }
 
 @Composable
@@ -53,6 +57,8 @@ fun AppShell(facade: ApplicationFacade) {
                     NavButton("Projects", section == MainSection.Projects) { section = MainSection.Projects }
                     NavButton("Connections", section == MainSection.Connections) { section = MainSection.Connections }
                     NavButton("Browse data", section == MainSection.Browse) { section = MainSection.Browse }
+                    NavButton("SQL editor", section == MainSection.Sql) { section = MainSection.Sql }
+                    NavButton("Datasets", section == MainSection.Datasets) { section = MainSection.Datasets }
                 }
                 when (section) {
                     MainSection.Projects -> ProjectWorkspace(facade, Modifier.weight(1f).padding(16.dp))
@@ -70,6 +76,19 @@ fun AppShell(facade: ApplicationFacade) {
                             facade,
                             activeConnectionId,
                             onSelectConnection = { activeConnectionId = it },
+                            modifier = Modifier.weight(1f).padding(16.dp),
+                        )
+                    MainSection.Sql ->
+                        SqlEditorScreen(
+                            facade,
+                            activeConnectionId,
+                            onSelectConnection = { activeConnectionId = it },
+                            modifier = Modifier.weight(1f).padding(16.dp),
+                        )
+                    MainSection.Datasets ->
+                        DatasetBuilderScreen(
+                            facade,
+                            activeConnectionId,
                             modifier = Modifier.weight(1f).padding(16.dp),
                         )
                 }
