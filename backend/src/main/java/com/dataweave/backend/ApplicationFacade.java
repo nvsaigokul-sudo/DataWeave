@@ -4,17 +4,24 @@ import com.dataweave.backend.cache.CacheDiagnosticsService;
 import com.dataweave.backend.cache.CacheInvalidationService;
 import com.dataweave.backend.domain.ConnectionProfile;
 import com.dataweave.backend.domain.ConnectionTestResult;
+import com.dataweave.backend.domain.CsvSource;
 import com.dataweave.backend.domain.DataPage;
+import com.dataweave.backend.domain.SqlQueryHistoryEntry;
 import com.dataweave.backend.domain.SslMode;
 import com.dataweave.backend.domain.TableRef;
 import com.dataweave.backend.domain.WorkspaceProject;
 import com.dataweave.backend.postgres.PostgresConnectionManager;
 import com.dataweave.backend.service.CatalogMetadataService;
 import com.dataweave.backend.service.ConnectionProfileService;
+import com.dataweave.backend.service.CsvIngestService;
 import com.dataweave.backend.service.DatasetPreviewService;
+import com.dataweave.backend.service.JoinPreviewService;
 import com.dataweave.backend.service.ReadOnlyQueryService;
+import com.dataweave.backend.service.SqlEditorService;
 import com.dataweave.backend.service.TableDataService;
+import com.dataweave.backend.service.TableExportService;
 import com.dataweave.backend.service.WorkspaceProjectService;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -30,6 +37,10 @@ public class ApplicationFacade {
     private final TableDataService tableDataService;
     private final DatasetPreviewService datasetPreviewService;
     private final ReadOnlyQueryService readOnlyQueryService;
+    private final SqlEditorService sqlEditorService;
+    private final CsvIngestService csvIngestService;
+    private final JoinPreviewService joinPreviewService;
+    private final TableExportService tableExportService;
     private final CacheDiagnosticsService cacheDiagnosticsService;
     private final CacheInvalidationService cacheInvalidationService;
     private final PostgresConnectionManager postgresConnectionManager;
@@ -41,6 +52,10 @@ public class ApplicationFacade {
             TableDataService tableDataService,
             DatasetPreviewService datasetPreviewService,
             ReadOnlyQueryService readOnlyQueryService,
+            SqlEditorService sqlEditorService,
+            CsvIngestService csvIngestService,
+            JoinPreviewService joinPreviewService,
+            TableExportService tableExportService,
             CacheDiagnosticsService cacheDiagnosticsService,
             CacheInvalidationService cacheInvalidationService,
             PostgresConnectionManager postgresConnectionManager) {
@@ -50,6 +65,10 @@ public class ApplicationFacade {
         this.tableDataService = tableDataService;
         this.datasetPreviewService = datasetPreviewService;
         this.readOnlyQueryService = readOnlyQueryService;
+        this.sqlEditorService = sqlEditorService;
+        this.csvIngestService = csvIngestService;
+        this.joinPreviewService = joinPreviewService;
+        this.tableExportService = tableExportService;
         this.cacheDiagnosticsService = cacheDiagnosticsService;
         this.cacheInvalidationService = cacheInvalidationService;
         this.postgresConnectionManager = postgresConnectionManager;
@@ -115,6 +134,44 @@ public class ApplicationFacade {
 
     public List<Map<String, Object>> runSelect(UUID connectionId, String sql, List<Object> params) throws Exception {
         return readOnlyQueryService.runSelect(connectionId, sql, params);
+    }
+
+    public DataPage runSqlEditorQuery(UUID connectionId, String sql) throws Exception {
+        return sqlEditorService.executeSelect(connectionId, sql);
+    }
+
+    public List<SqlQueryHistoryEntry> sqlQueryHistory(int limit) {
+        return sqlEditorService.history(limit);
+    }
+
+    public CsvSource registerCsvSource(UUID projectId, String name, Path filePath) throws Exception {
+        return csvIngestService.register(projectId, name, filePath);
+    }
+
+    public List<CsvSource> listCsvSources(UUID projectId) {
+        return csvIngestService.listForProject(projectId);
+    }
+
+    public DataPage previewCsvSource(UUID sourceId, long offset, int limit) throws Exception {
+        return csvIngestService.preview(sourceId, offset, limit);
+    }
+
+    public DataPage previewJoin(
+            UUID connectionId,
+            TableRef left,
+            TableRef right,
+            String leftKey,
+            String rightKey,
+            List<String> selectedColumns,
+            long offset,
+            int limit)
+            throws Exception {
+        return joinPreviewService.previewInnerJoin(
+                connectionId, left, right, leftKey, rightKey, selectedColumns, offset, limit);
+    }
+
+    public long exportTableToCsv(UUID connectionId, TableRef table, Path destination) throws Exception {
+        return tableExportService.exportTableToCsv(connectionId, table, destination);
     }
 
     public Map<String, Map<String, Number>> cacheDiagnostics() {

@@ -8,7 +8,7 @@ plugins {
 
 allprojects {
     group = "com.dataweave"
-    version = "0.2.1-SNAPSHOT"
+    version = "0.2.2-SNAPSHOT"
 }
 
 subprojects {
