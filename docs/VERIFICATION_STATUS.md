@@ -1,6 +1,17 @@
 # DataWeave verification status
 
-Last updated: **2026-10-24** (v0.2.7 release prep; v0.2.6 **published**; v0.2.5 **published**; older tags preserved).
+Last updated: **2026-10-24** (v0.3.0 RC on branch `cursor/dataweave-v0.3.0-d9c8`; v0.2.9 **published** on `main`).
+
+## v0.3.0 release candidate (not published)
+
+| Check | Result | Notes |
+|-------|--------|-------|
+| `./gradlew test :desktop:runHeadlessSmoke` @ `cursor/dataweave-v0.3.0-d9c8` | **PASS** | Cloud agent 2026-10-24 UTC |
+| Flyway V4 migration | **PASS** | headless smoke applies V1–V4 |
+| Windows packaged GUI acceptance | **PENDING** | Owner laptop |
+| MSI/EXE artifact for v0.3.0 | **NOT BUILT** | Await CI/release after merge + owner auth |
+
+See [V0.3.0_RELEASE_CANDIDATE.md](./V0.3.0_RELEASE_CANDIDATE.md).
 
 This page summarizes **what we have actually run**, not roadmap intent. For architecture and audit detail see [AUDIT.md](./AUDIT.md).
 
