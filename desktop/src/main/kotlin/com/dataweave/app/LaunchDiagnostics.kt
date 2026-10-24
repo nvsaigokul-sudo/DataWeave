@@ -34,6 +34,8 @@ object LaunchDiagnostics {
         out += "env.JAVA_HOME=${System.getenv("JAVA_HOME") ?: "(not set)"}"
         out += "env.JAVA_TOOL_OPTIONS=${System.getenv("JAVA_TOOL_OPTIONS") ?: "(not set)"}"
         out += "env._JAVA_OPTIONS=${System.getenv("_JAVA_OPTIONS") ?: "(not set)"}"
+        out += "java.awt.headless=${System.getProperty("java.awt.headless") ?: "(not set)"}"
+        out += "java.awt.graphicsenv.headless=${java.awt.GraphicsEnvironment.isHeadless()}"
 
         val appPath = System.getProperty("jpackage.app-path")
         out += "jpackage.app-path=${appPath ?: "(not set — dev/gradle run)"}"

@@ -30,7 +30,7 @@ sha256sum downloads/windows/DataWeave-Setup.msi
 ./scripts/verify-downloads-checksums.sh
 ```
 
-**Mandatory reinstall:** If your installed MSI SHA256 is **`a9c8ab77…`**, **`b613ec64…`**, or **`6716b5ae…`** (v0.2.1 release-only) while you need the CI-smoked bootstrap build, uninstall (**Settings → Apps → DataWeave**), remove stale Start Menu shortcuts, verify the new download hash above, then reinstall. Also reinstall if `app\resources` is empty or `DataWeave.cfg` lists `DataWeaveAppKt`.
+**Mandatory reinstall:** Use **v0.2.3+** if normal GUI launch fails with `HeadlessException` in `launch-error.log` (v0.2.2 / `35333f60…`). Also reinstall if MSI SHA256 is **`a9c8ab77…`**, **`b613ec64…`**, or **`6716b5ae…`**, if `app\resources` is empty, or if `DataWeave.cfg` lists `DataWeaveAppKt`. Uninstall, remove stale Start Menu shortcuts, verify SHA256 in [SHA256SUMS.txt](SHA256SUMS.txt) (updated after each LFS MSI refresh), then reinstall.
 
 **Do not use** `raw.githubusercontent.com/.../DataWeave-Setup.msi` — that URL returns a **134-byte LFS pointer** (SHA256 `24f3a23a…`), not an installer. Use the **media.githubusercontent.com** link above or clone with `git lfs pull`.
 

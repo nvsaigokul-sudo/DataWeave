@@ -16,6 +16,10 @@ public final class DesktopSession implements AutoCloseable {
         return new DesktopSession(DataWeaveBackendApplication.start(args));
     }
 
+    public static DesktopSession startForGui(String... args) {
+        return new DesktopSession(DataWeaveBackendApplication.startForGui(args));
+    }
+
     public ApplicationFacade facade() {
         return facade;
     }

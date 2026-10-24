@@ -1,6 +1,6 @@
 # DataWeave verification status
 
-Last updated: **2026-10-24** (v0.2.2 published; CI [40069173014](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40069173014); Release [40069176332](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40069176332); release Windows MSI matches LFS `35333f60…`).
+Last updated: **2026-10-24** (v0.2.3 headless GUI fix on branch `cursor/fix-windows-headless-gui-053d`; v0.2.2 preserved @ [40069176332](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40069176332)).
 
 This page summarizes **what we have actually run**, not roadmap intent. For architecture and audit detail see [AUDIT.md](./AUDIT.md).
 
@@ -66,6 +66,16 @@ Prior CI with same Windows GUI matrix: [40061037014](https://github.com/nvsaigok
 | **This VM** `dataweave_1.2.1_amd64.deb` (`b90dcb0` tree) | `3832dc3a826743d1877563a22498b8af27c2b9fe5389050802018bda9339640f` | (see build output) | `--diagnose`, `--headless-smoke` **PASS** 2026-10-24 audit |
 
 Different MSI hashes reflect **different build runs**; README explains when to prefer the LFS MSI (CI GUI-tested modules: `java.desktop`, `jdk.accessibility`).
+
+## Windows GUI headless regression (v0.2.3)
+
+| Check | Status | Notes |
+|-------|--------|--------|
+| `SpringHeadlessPropertyTest` (`startForGui` → `java.awt.headless=false`) | **PASS** | Linux agent |
+| Packaged normal GUI reaches Compose in `launch.log` | **PENDING** | Windows CI after v0.2.3 tag |
+| User laptop with v0.2.2 `HeadlessException` | **FIX EXPECTED** | Requires v0.2.3 MSI (new SHA256) |
+
+**Root cause (v0.2.2 and earlier):** `DesktopSession.start()` used Spring Boot’s default headless mode before Compose `application { }`, so AWT reported headless on Windows and Skiko/Compose threw `HeadlessException` (`getGlobalDensity` / `getDefaultScreenDevice`). `--gui-smoke` could pass when it set headless false manually; normal launch did not. jpackage’s **Failed to launch JVM** is the generic wrapper for this Java-side exit.
 
 ## Windows JVM / laptop troubleshooting
 

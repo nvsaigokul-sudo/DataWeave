@@ -8,7 +8,7 @@ DataWeave is a **desktop application**. You do **not** need Java, Gradle, Git, o
 2. Download the installer for your operating system.
 3. Verify checksums: Windows LFS MSI → [downloads/SHA256SUMS.txt](../downloads/SHA256SUMS.txt); release bundles → `SHA256SUMS.txt` on the release page.
 
-   **Windows (mandatory before troubleshooting):** confirm the MSI you installed matches the hash in [downloads/windows/SHA256SUMS.txt](../downloads/windows/SHA256SUMS.txt) (`35333f603bac…`). Legacy installers (`a9c8ab77…`, `b613ec64…`) and the v0.2.1 **release** MSI (`6716b5ae…`) differ from this file. Older LFS builds have **no** `app\resources\DataWeave-JvmDebug.cmd` and use `DataWeaveAppKt` — uninstall (**Settings → Apps → DataWeave → Uninstall**), delete stale Start Menu shortcuts, download via the README **media.githubusercontent.com** link (not `raw.githubusercontent.com`, which is an LFS pointer), then reinstall.
+   **Windows (mandatory before troubleshooting):** use **v0.2.3+** (see [Releases](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.3)). Confirm the MSI SHA256 matches [downloads/SHA256SUMS.txt](../downloads/SHA256SUMS.txt) — **not** legacy hashes (`a9c8ab77…`, `b613ec64…`, `6716b5ae…`, or v0.2.2 `35333f60…` if you hit GUI `HeadlessException`). Uninstall (**Settings → Apps → DataWeave → Uninstall**), delete stale Start Menu shortcuts, download via the README **media.githubusercontent.com** link (not `raw.githubusercontent.com`, which is an LFS pointer), then reinstall.
 
 | OS | Typical files |
 |----|----------------|
@@ -50,7 +50,7 @@ Release binaries are **not code-signed/notarized** unless stated on a specific r
 
 ## Troubleshooting (Windows)
 
-**“Failed to launch JVM”** — The native launcher shows this message for both a broken bundled JRE and for **uncaught Java/Compose startup errors** (Skiko/AWT/Spring). Collect diagnostics before reinstalling:
+**“Failed to launch JVM”** — The native launcher shows this message for both a broken bundled JRE and for **uncaught Java/Compose startup errors** (Skiko/AWT/Spring). It is **misleading** when Java already started: check `%LOCALAPPDATA%\DataWeave\launch-error.log` for the real stack trace (for example `HeadlessException` at Compose `awaitApplication` on v0.2.2 and earlier). **Fix:** install **v0.2.3+**, which starts Spring with `headless(false)` before opening the Compose window. Collect diagnostics before reinstalling:
 
 1. From PowerShell (repo script or copy from `scripts/diagnostics/DataWeave-Windows-Diagnostics.ps1`):
 
@@ -72,7 +72,7 @@ Release binaries are **not code-signed/notarized** unless stated on a specific r
 
    Output is appended to `%LOCALAPPDATA%\DataWeave\jvm-debug.log` (includes a full `--diagnose` block when the bundled runtime is intact).
 
-4. Check `%LOCALAPPDATA%\DataWeave\launch-error.log` after a failed start (Java-side failures after `main`; recent builds).
+4. Check `%LOCALAPPDATA%\DataWeave\launch-error.log` after a failed start (Java-side failures after `main`; recent builds). A **`HeadlessException`** / **`getDefaultScreenDevice`** stack usually means an older build left AWT in headless mode after Spring Boot startup — upgrade to v0.2.3+ (not a missing JRE).
 
 5. **Prove you have a bootstrap build:** open `C:\Program Files\DataWeave\app\DataWeave.cfg` and confirm a line contains `app.mainclass=com.dataweave.app.DataWeaveBootstrapKt`. If it says `DataWeaveAppKt`, you still have a pre-bootstrap MSI — reinstall from [downloads/windows/DataWeave-Setup.msi](../downloads/windows/DataWeave-Setup.msi) after verifying SHA256.
 

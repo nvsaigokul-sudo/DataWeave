@@ -1,6 +1,6 @@
 # DataWeave completion tracker
 
-Last updated: **2026-10-24** (release repair worker `bc-e7452cf8-f5ad-574a-b6ed-9e4284338371`).
+Last updated: **2026-10-24** (Windows GUI headless fix worker `bc-324a2265-6c67-5f99-9419-4b804473053d`).
 
 ## Live verification (GitHub vs repo)
 
@@ -15,6 +15,9 @@ Last updated: **2026-10-24** (release repair worker `bc-e7452cf8-f5ad-574a-b6ed-
 
 | Item | Evidence | Commit |
 |------|----------|--------|
+| **v0.2.3** Spring `headless(false)` for Compose GUI (`startForGui`) | `SpringHeadlessPropertyTest`; user `HeadlessException` root cause | (this push) |
+| Release publish uses **CI Windows MSI** (not stale LFS swap) | `.github/workflows/release.yml` | (this push) |
+| Normal GUI CI asserts `launch.log` reaches Compose | `windows-packaged-smoke.ps1` | (this push) |
 | Shared Windows packaged smoke script | `scripts/ci/windows-packaged-smoke.ps1` | (this push) |
 | `release.yml` Windows GUI install smoke | Same script as `ci.yml` | (this push) |
 | Release publish aligns Windows `.msi` with LFS canonical bytes | Publish job `lfs: true` + copy step | (this push) |
@@ -29,6 +32,15 @@ Last updated: **2026-10-24** (release repair worker `bc-e7452cf8-f5ad-574a-b6ed-
 | User Windows/macOS laptop GUI | Owner runs INSTALL checklist; share `launch-error.log` if needed |
 | 20M-row grid / M2 pipeline | Roadmap — not in v0.2.2 scope |
 | Code signing / notarization | Future release hardening |
+
+## Release v0.2.3
+
+| Step | Status |
+|------|--------|
+| Root cause documented | Spring Boot default headless → Compose `HeadlessException`; jpackage **Failed to launch JVM** masks Java exit |
+| `./gradlew test :desktop:runHeadlessSmoke` | **PASS** (agent) |
+| Tag `v0.2.3` + Windows CI smoke + publish | **PENDING** push |
+| LFS MSI SHA256 refresh | **PENDING** after green Windows package job |
 
 ## Release v0.2.2
 

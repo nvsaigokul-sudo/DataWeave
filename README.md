@@ -15,7 +15,7 @@
 
 | Your OS | Download |
 |---------|----------|
-| **Windows** | **[Releases → Latest `.msi`](https://github.com/nvsaigokul-sudo/DataWeave/releases/latest)** (v0.2.2+, SHA256 `35333f60…`) or [LFS/media MSI](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi) — same CI-smoked bytes. **Not** `raw.githubusercontent.com` (LFS pointer). [SHA256SUMS](downloads/windows/SHA256SUMS.txt) |
+| **Windows** | **[Releases → v0.2.3 `.msi`](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.3)** (fixes GUI `HeadlessException` on v0.2.2). Verify SHA256 in [downloads/SHA256SUMS.txt](downloads/SHA256SUMS.txt) after publish — **not** legacy `a9c8ab77…` / v0.2.2 `35333f60…` if GUI fails. [LFS/media MSI](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi) updates with main. **Not** `raw.githubusercontent.com` (LFS pointer). |
 | **Linux (x64)** | [`.deb` (v0.2.2)](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.2/linux-dataweave_1.2.2_amd64.deb) · [linux/](downloads/linux/) |
 | **macOS Apple Silicon** | [`.dmg` (v0.2.2)](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.2/macos-arm64-DataWeave-1.2.2.dmg) · [`.pkg`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.2/macos-arm64-DataWeave-1.2.2.pkg) · [macos/](downloads/macos/) |
 | **macOS Intel** | Local build — [downloads/macos/README.md](downloads/macos/README.md) (`macos-13` CI omitted) |

@@ -47,6 +47,8 @@ echo mainclass=%MAIN%>>"%LOG%"
   -Dcompose.application.resources.dir="%APP_DIR%\resources" ^
   -Dcompose.application.configure.swing.globals=true ^
   -Dskiko.library.path="%APP_DIR%" ^
+  -Dspring.main.headless=false ^
+  -Djava.awt.headless=false ^
   -cp "%CP%" %MAIN% %* >>"%LOG%" 2>&1
 set "ERR=!ERRORLEVEL!"
 echo exit.code=!ERR!>>"%LOG%"

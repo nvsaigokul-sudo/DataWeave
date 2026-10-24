@@ -33,7 +33,7 @@ fun dataWeaveMain(args: Array<String>) {
 
     try {
         LaunchDiagnostics.appendLaunchLog("starting DesktopSession")
-        val session = DesktopSession.start(*buildSpringArgs(args))
+        val session = DesktopSession.startForGui(*buildSpringArgs(args))
         Runtime.getRuntime().addShutdownHook(Thread { session.close() })
         LaunchDiagnostics.appendLaunchLog("starting Compose application")
         application {

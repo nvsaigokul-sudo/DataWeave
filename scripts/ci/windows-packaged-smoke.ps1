@@ -69,6 +69,11 @@ function Test-NormalGuiAlive {
   if (Test-Path $launchLog) {
     Write-Host "[$Label] launch.log tail:"
     Get-Content $launchLog -Tail 15 | Write-Host
+    if (-not (Select-String -Path $launchLog -Pattern 'starting Compose application' -Quiet)) {
+      throw "[$Label] launch.log missing 'starting Compose application' (GUI path may have failed before Compose)"
+    }
+  } else {
+    throw "[$Label] launch.log missing after normal GUI alive check"
   }
   Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
 }
@@ -156,6 +161,9 @@ Invoke-DataWeaveConsoleSmoke -Arguments @('--diagnose') -Label 'diagnose' -Expec
 $diagOut = Get-Content (Join-Path $env:RUNNER_TEMP 'dataweave-diagnose.out') -Raw
 if ($diagOut -notmatch 'install\.runtime\.missing_required_modules=\(none\)') {
   throw 'Packaged --diagnose reports missing required jlink modules'
+}
+if ($diagOut -notmatch 'java\.awt\.headless=') {
+  throw 'Packaged --diagnose missing java.awt.headless field'
 }
 
 $jvmDebug = Join-Path $installRoot 'app/resources/DataWeave-JvmDebug.cmd'

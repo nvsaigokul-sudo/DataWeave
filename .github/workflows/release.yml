@@ -108,18 +108,13 @@ jobs:
         shell: bash
         run: |
           find dist -mindepth 2 -type f -exec mv -n {} dist/ \;
-          CANONICAL="downloads/windows/DataWeave-Setup.msi"
-          if [ -f "$CANONICAL" ]; then
-            actual=$(sha256sum "$CANONICAL" | awk '{print $1}')
-            echo "LFS canonical Windows MSI SHA256=$actual"
-            for f in dist/windows-*.msi; do
-              [ -e "$f" ] || continue
-              cp "$CANONICAL" "$f"
-              echo "Replaced $(basename "$f") with LFS canonical MSI"
-            done
-            cp "$CANONICAL" dist/windows-DataWeave-Setup.msi
+          # CI-built Windows MSI is the release source of truth (do not swap in stale LFS bytes).
+          CI_MSI=$(find dist -maxdepth 1 -name 'windows-*.msi' -print -quit)
+          if [ -n "$CI_MSI" ] && [ -f "$CI_MSI" ]; then
+            cp "$CI_MSI" dist/windows-DataWeave-Setup.msi
+            echo "Release Windows MSI from CI: $(sha256sum "$CI_MSI")"
           else
-            echo "WARNING: $CANONICAL missing; release Windows MSI not aligned with LFS"
+            echo "WARNING: no CI windows-*.msi in dist; check windows package job"
           fi
           cd dist
           ls -lah
