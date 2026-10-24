@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.dataweave.app.preferences.UserPreferences
+import java.util.UUID.fromString
 import com.dataweave.app.ui.theme.DwSpacing
 import com.dataweave.app.ui.browse.TableDataGrid
 import com.dataweave.app.ui.connections.ConnectionsScreen
@@ -30,7 +31,6 @@ import com.dataweave.app.ui.projects.ProjectWorkspace
 import com.dataweave.app.ui.sql.SqlEditorScreen
 import com.dataweave.app.ui.theme.DataWeaveTheme
 import com.dataweave.backend.ApplicationFacade
-import com.dataweave.backend.domain.ConnectionLifecycleState
 import com.dataweave.backend.domain.TableRef
 import java.util.UUID
 
@@ -47,9 +47,18 @@ enum class WorkspaceSection {
 fun WorkspaceShell(facade: ApplicationFacade) {
     var darkTheme by remember { mutableStateOf(UserPreferences.loadDarkTheme()) }
     var section by remember { mutableStateOf(WorkspaceSection.Welcome) }
-    var activeConnectionId by remember { mutableStateOf<UUID?>(null) }
+    var activeConnectionId by remember {
+        mutableStateOf(
+            UserPreferences.loadLastConnectionId()?.let { runCatching { fromString(it) }.getOrNull() },
+        )
+    }
     var selectedTable by remember { mutableStateOf<TableRef?>(null) }
     var statusBar by remember { mutableStateOf("Ready") }
+
+    fun setActiveConnection(id: UUID?) {
+        activeConnectionId = id
+        UserPreferences.saveLastConnectionId(id?.toString())
+    }
 
     DataWeaveTheme(darkTheme = darkTheme) {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
@@ -80,26 +89,35 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                                 section = WorkspaceSection.Browse
                                 statusBar = "Selected ${table.qualifiedName()}"
                             },
+                            onOpenConnections = { section = WorkspaceSection.Connections },
+                            onConnectionEstablished = { id ->
+                                setActiveConnection(id)
+                                statusBar = "Connected"
+                            },
                             modifier = Modifier.padding(DwSpacing.xs).fillMaxHeight(),
                         )
                     }
                     Box(Modifier.weight(1f).padding(DwSpacing.lg)) {
                         when (section) {
                             WorkspaceSection.Welcome ->
-                                WelcomePanel(
+                                HomeConnectionHub(
                                     facade = facade,
                                     activeConnectionId = activeConnectionId,
-                                    onManageConnections = { section = WorkspaceSection.Connections },
+                                    onActiveConnectionChange = { setActiveConnection(it) },
                                     onConnected = {
-                                        activeConnectionId = it
+                                        setActiveConnection(it)
                                         section = WorkspaceSection.Browse
+                                        statusBar = "Connected"
                                     },
+                                    onCreateConnection = { section = WorkspaceSection.Connections },
+                                    onManageConnections = { section = WorkspaceSection.Connections },
+                                    modifier = Modifier.fillMaxSize(),
                                 )
                             WorkspaceSection.Connections ->
                                 ConnectionsScreen(
                                     facade = facade,
                                     onConnected = {
-                                        activeConnectionId = it
+                                        setActiveConnection(it)
                                         section = WorkspaceSection.Browse
                                         statusBar = "Connected"
                                     },
@@ -118,7 +136,7 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                                 SqlEditorScreen(
                                     facade,
                                     activeConnectionId,
-                                    onSelectConnection = { activeConnectionId = it },
+                                    onSelectConnection = { setActiveConnection(it) },
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             WorkspaceSection.Datasets ->
@@ -170,32 +188,6 @@ private fun NavTab(label: String, selected: Boolean, onClick: () -> Unit) {
             label,
             color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
         )
-    }
-}
-
-@Composable
-private fun WelcomePanel(
-    facade: ApplicationFacade,
-    activeConnectionId: UUID?,
-    onManageConnections: () -> Unit,
-    onConnected: (UUID) -> Unit,
-) {
-    Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) {
-        Text("Welcome to DataWeave", style = MaterialTheme.typography.headlineSmall)
-        Text("Connect to PostgreSQL to browse schemas, run SQL, and build datasets.")
-        val status =
-            activeConnectionId?.let { id ->
-                facade.connectionStatus(id).let { "${it.state()}: ${it.message()}" }
-            } ?: "No active connection"
-        Text("Status: $status")
-        Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
-            TextButton(onClick = onManageConnections) { Text("Manage connections") }
-            activeConnectionId?.let { id ->
-                if (facade.connectionStatus(id).state() != ConnectionLifecycleState.CONNECTED) {
-                    TextButton(onClick = { onConnected(id) }) { Text("Open data workspace") }
-                }
-            }
-        }
     }
 }
 

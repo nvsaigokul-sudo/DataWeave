@@ -14,10 +14,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -68,6 +70,8 @@ fun DatabaseTreeSidebar(
     facade: ApplicationFacade,
     connectionId: UUID?,
     onSelectTable: (TableRef) -> Unit,
+    onOpenConnections: () -> Unit,
+    onConnectionEstablished: (UUID) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -75,6 +79,7 @@ fun DatabaseTreeSidebar(
     var rootState by remember { mutableStateOf(ExplorerSlice<String>()) }
     var profile by remember { mutableStateOf<ConnectionProfile?>(null) }
     var connectionPhase by remember { mutableStateOf("Disconnected") }
+    var lifecycleState by remember { mutableStateOf(ConnectionLifecycleState.DISCONNECTED) }
     val expandedDbs = remember { mutableStateMapOf<String, Boolean>() }
     val schemaSlices = remember { mutableStateMapOf<String, ExplorerSlice<String>>() }
     val tableSlices = remember { mutableStateMapOf<String, ExplorerSlice<TableRef>>() }
@@ -82,6 +87,7 @@ fun DatabaseTreeSidebar(
     val expandedSchemas = remember { mutableStateMapOf<String, Boolean>() }
     val expandedTables = remember { mutableStateMapOf<String, Boolean>() }
     var loadGeneration by remember { mutableStateOf(0) }
+    var connectBusy by remember { mutableStateOf(false) }
 
     fun resetTree() {
         rootState = ExplorerSlice()
@@ -198,11 +204,38 @@ fun DatabaseTreeSidebar(
         }
     }
 
+    fun connectActiveProfile() {
+        val id = connectionId ?: return
+        connectBusy = true
+        scope.launch {
+            try {
+                val st = withContext(Dispatchers.IO) { facade.connectConnection(id) }
+                lifecycleState = st.state()
+                connectionPhase = "${st.state()}: ${st.message()}"
+                if (st.state() == ConnectionLifecycleState.CONNECTED) {
+                    onConnectionEstablished(id)
+                    refreshAll()
+                } else if (st.state() == ConnectionLifecycleState.ERROR) {
+                    rootState = ExplorerSlice(state = ExplorerLoadState.Error, error = st.message())
+                }
+            } catch (ex: Exception) {
+                rootState =
+                    ExplorerSlice(
+                        state = ExplorerLoadState.Error,
+                        error = ex.message ?: "Connect failed",
+                    )
+            } finally {
+                connectBusy = false
+            }
+        }
+    }
+
     LaunchedEffect(connectionId) {
         resetTree()
         val id = connectionId
         if (id == null) {
             connectionPhase = "Disconnected"
+            lifecycleState = ConnectionLifecycleState.DISCONNECTED
             profile = null
             return@LaunchedEffect
         }
@@ -210,6 +243,7 @@ fun DatabaseTreeSidebar(
         loadGeneration = gen
         profile = withContext(Dispatchers.IO) { facade.listConnections().firstOrNull { it.id == id } }
         val status = withContext(Dispatchers.IO) { facade.connectionStatus(id) }
+        lifecycleState = status.state()
         connectionPhase = "${status.state()}: ${status.message()}"
         when (status.state()) {
             ConnectionLifecycleState.CONNECTED -> {
@@ -224,11 +258,13 @@ fun DatabaseTreeSidebar(
                         state = ExplorerLoadState.Error,
                         error = status.message(),
                     )
+            ConnectionLifecycleState.DISCONNECTED ->
+                rootState = ExplorerSlice(state = ExplorerLoadState.Idle)
             else ->
                 rootState =
                     ExplorerSlice(
                         state = ExplorerLoadState.Error,
-                        error = "Connect to load metadata",
+                        error = status.message().ifBlank { "Connect to load metadata" },
                     )
         }
     }
@@ -267,23 +303,55 @@ fun DatabaseTreeSidebar(
                 color = MaterialTheme.colorScheme.outline,
             )
         }
-        OutlinedTextField(
-            value = filter,
-            onValueChange = { filter = it },
-            modifier = Modifier.fillMaxWidth().padding(vertical = DwSpacing.sm),
-            singleLine = true,
-            label = { Text("Filter") },
-        )
+        val showObjectFilter =
+            connectionId != null &&
+                (rootState.state == ExplorerLoadState.Loaded ||
+                    rootState.state == ExplorerLoadState.Empty ||
+                    rootState.state == ExplorerLoadState.Refreshing ||
+                    (rootState.state == ExplorerLoadState.Loading && rootState.items.isNotEmpty()))
+        if (showObjectFilter) {
+            OutlinedTextField(
+                value = filter,
+                onValueChange = { filter = it },
+                modifier = Modifier.fillMaxWidth().padding(vertical = DwSpacing.sm),
+                singleLine = true,
+                label = { Text("Filter objects") },
+                placeholder = { Text("Schema, table, column…") },
+            )
+        }
         when {
             connectionId == null ->
-                Text("Select or connect a profile", modifier = Modifier.padding(DwSpacing.sm))
+                DisconnectedExplorerPanel(onOpenConnections = onOpenConnections)
+            lifecycleState == ConnectionLifecycleState.DISCONNECTED ->
+                DisconnectedProfilePanel(
+                    profileName = profile?.name ?: "Profile",
+                    database = profile?.databaseName,
+                    busy = connectBusy,
+                    onConnect = { connectActiveProfile() },
+                    onManage = onOpenConnections,
+                )
             rootState.state == ExplorerLoadState.Loading || rootState.state == ExplorerLoadState.Refreshing ->
                 Row(Modifier.padding(DwSpacing.sm), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
                     Text("Loading databases…")
                 }
             rootState.state == ExplorerLoadState.Error ->
-                ErrorRow(rootState.error ?: "Error", onRetry = { refreshAll() })
+                Column(Modifier.padding(DwSpacing.sm)) {
+                    ErrorRow(
+                        rootState.error ?: "Error",
+                        onRetry =
+                            if (lifecycleState == ConnectionLifecycleState.CONNECTED) {
+                                { refreshAll() }
+                            } else {
+                                { connectActiveProfile() }
+                            },
+                    )
+                    if (lifecycleState != ConnectionLifecycleState.CONNECTED) {
+                        OutlinedButton(onClick = onOpenConnections, modifier = Modifier.padding(top = 4.dp)) {
+                            Text("Edit connection")
+                        }
+                    }
+                }
             else ->
                 LazyColumn(Modifier.weight(1f)) {
                     val dbs =
@@ -471,6 +539,57 @@ private fun TreeRow(
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
     )
+}
+
+@Composable
+private fun DisconnectedExplorerPanel(onOpenConnections: () -> Unit) {
+    Column(
+        Modifier.fillMaxWidth().padding(DwSpacing.sm),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            "No connection selected",
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Text(
+            "Choose a saved profile on Home and press Connect, or create a new connection.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Button(onClick = onOpenConnections, modifier = Modifier.fillMaxWidth()) {
+            Text("Connections")
+        }
+    }
+}
+
+@Composable
+private fun DisconnectedProfilePanel(
+    profileName: String,
+    database: String?,
+    busy: Boolean,
+    onConnect: () -> Unit,
+    onManage: () -> Unit,
+) {
+    Column(
+        Modifier.fillMaxWidth().padding(DwSpacing.sm),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(profileName, style = MaterialTheme.typography.titleSmall)
+        database?.let {
+            Text("Database: $it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Text(
+            "Profile saved — connect to load schemas and tables.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Button(onClick = onConnect, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
+            Text(if (busy) "Connecting…" else "Connect")
+        }
+        OutlinedButton(onClick = onManage, modifier = Modifier.fillMaxWidth()) {
+            Text("Manage connection")
+        }
+    }
 }
 
 @Composable

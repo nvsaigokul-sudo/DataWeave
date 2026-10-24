@@ -1,6 +1,6 @@
 # DataWeave completion tracker
 
-Last updated: **2026-10-24** (v0.2.5 publish **DONE**; v0.2.4 preserved).
+Last updated: **2026-10-24** (v0.2.7 release prep; v0.2.6 **published**; v0.2.5 preserved).
 
 ## Live verification (GitHub vs repo)
 
@@ -38,6 +38,18 @@ Last updated: **2026-10-24** (v0.2.5 publish **DONE**; v0.2.4 preserved).
 | User Windows/macOS laptop GUI | Owner runs INSTALL checklist; share `launch-error.log` if needed |
 | 20M-row grid / M2 pipeline | Roadmap — not in v0.2.2 scope |
 | Code signing / notarization | Future release hardening |
+
+## Release v0.2.7
+
+| Step | Status |
+|------|--------|
+| Home Connect hub + explorer disconnected UX | **DONE** — `HomeConnectionHub`, sidebar CTAs |
+| Gradle `0.2.7`; jpackage **1.2.7** | **DONE** |
+| Verification passes 1–3 | **PASS** — see [VERIFICATION_STATUS.md](./VERIFICATION_STATUS.md) |
+| [V0.2.7_RELEASE.md](./V0.2.7_RELEASE.md), [REGRESSION_MATRIX.md](./REGRESSION_MATRIX.md), [FEATURE_INVENTORY.md](./FEATURE_INVENTORY.md) | **DONE** |
+| Tag `v0.2.7` + GitHub Release | **IN PROGRESS** (push tag → `release.yml`) |
+| LFS MSI + SHA256 from v0.2.7 Windows artifact | **PENDING** post-release |
+| User Windows manual (Home Connect, explorer) | **PENDING** |
 
 ## Release v0.2.5
 

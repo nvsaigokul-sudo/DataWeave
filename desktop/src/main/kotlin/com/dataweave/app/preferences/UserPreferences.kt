@@ -15,13 +15,34 @@ object UserPreferences {
     }
 
     fun saveDarkTheme(enabled: Boolean) {
-        val props =
-            if (Files.exists(file)) {
-                Properties().apply { Files.newInputStream(file).use { load(it) } }
-            } else {
-                Properties()
-            }
+        val props = loadProps()
         props.setProperty("darkTheme", enabled.toString())
+        store(props)
+    }
+
+    fun loadLastConnectionId(): String? {
+        if (!Files.exists(file)) return null
+        return loadProps().getProperty("lastConnectionId")?.takeIf { it.isNotBlank() }
+    }
+
+    fun saveLastConnectionId(id: String?) {
+        val props = loadProps()
+        if (id.isNullOrBlank()) {
+            props.remove("lastConnectionId")
+        } else {
+            props.setProperty("lastConnectionId", id)
+        }
+        store(props)
+    }
+
+    private fun loadProps(): Properties =
+        if (Files.exists(file)) {
+            Properties().apply { Files.newInputStream(file).use { load(it) } }
+        } else {
+            Properties()
+        }
+
+    private fun store(props: Properties) {
         Files.newOutputStream(file).use { props.store(it, "DataWeave user preferences") }
     }
 }

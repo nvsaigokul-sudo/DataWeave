@@ -1,6 +1,6 @@
 # DataWeave verification status
 
-Last updated: **2026-10-24** (v0.2.6 in release; v0.2.5 **published**; v0.2.1–v0.2.4 preserved).
+Last updated: **2026-10-24** (v0.2.7 release prep; v0.2.6 **published**; v0.2.5 **published**; older tags preserved).
 
 This page summarizes **what we have actually run**, not roadmap intent. For architecture and audit detail see [AUDIT.md](./AUDIT.md).
 
@@ -16,7 +16,10 @@ This page summarizes **what we have actually run**, not roadmap intent. For arch
 | `release.yml` @ v0.2.5 | Linux/Windows/macOS artifacts + publish | **PASS** | [40078734530](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40078734530) |
 | `release.yml` @ v0.2.6 | Linux/Windows/macOS artifacts + publish | **PASS** | [40080836716](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40080836716) |
 | `ci.yml` @ v0.2.6 `main` | test + headless smoke + packages | **PASS** | [40080834895](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40080834895) |
-| Local Gradle (Linux VM) | `./gradlew test :desktop:runHeadlessSmoke` | **PASS** | agent 2026-10-24 |
+| Local Gradle (Linux VM) | `./gradlew test :desktop:runHeadlessSmoke` | **PASS** | agent 2026-10-24 (v0.2.7 branch) |
+| v0.2.7 verification pass 1 (unit/component) | `./gradlew test` | **PASS** | agent 2026-10-24 |
+| v0.2.7 verification pass 2 (PG integration) | Zonky backend tests | **PASS** | agent 2026-10-24 |
+| v0.2.7 verification pass 3 (smoke + GUI) | headless smoke + `dataweave_1.2.7_amd64.deb` `--gui-smoke` | **PASS** | agent 2026-10-24 |
 | Linux `.deb` install smoke | `/opt/dataweave/bin/DataWeave` CLI modes | **PASS** | packaged `@ baa193c` tree |
 | Linux packaged `--gui-smoke` (Xvfb) | Compose window opens | **PASS** | agent 2026-10-24 — `GUI_SMOKE_OK` |
 | Linux interactive UI (connections wizard) | Full Compose UX | **NOT TESTED** | no manual session |
@@ -49,6 +52,7 @@ Prior CI with same Windows GUI matrix: [40061037014](https://github.com/nvsaigok
 | GUI “add connection” flow | **PARTIAL** | Separate Save/Test/Connect/Disconnect in UI; laptop **NOT TESTED** |
 | **v0.2.5** Connections page vertical scroll | **PASS** (manual, user Windows) | User verified launch + scroll 2026-10-24; fix `3c073f8` |
 | **v0.2.6** Explorer lazy tree after Connect | **NOT VERIFIED** (manual) | P0 fix: no infinite Loading; Linux integration + headless smoke **PASS** |
+| **v0.2.7** Home Connect + explorer object filter | **NOT VERIFIED** (manual) | UI fix; automated passes **PASS** — see [REGRESSION_MATRIX.md](./REGRESSION_MATRIX.md) |
 | **v0.2.6** UI modernization / startup timing | **PARTIAL** | `StartupTiming` in launch.log; laptop timing **NOT VERIFIED** |
 
 ## Security / cache (recent fixes)
