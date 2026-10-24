@@ -1,6 +1,6 @@
 # DataWeave verification status
 
-Last updated: **2026-10-24** (Linux cloud agent, commit `20b0952` on `main`).
+Last updated: **2026-10-24** (Linux cloud agent, commit `d0d62f3` on `main`).
 
 This page summarizes **what we have actually run**, not roadmap intent. For architecture and audit detail see [AUDIT.md](./AUDIT.md).
 
