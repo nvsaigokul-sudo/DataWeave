@@ -31,6 +31,15 @@ git var GIT_AUTHOR_IDENT
 git log -1 --format=fuller
 ```
 
+## Commit signing (GitHub Verified)
+
+Correct **name and email** alone do not produce a green **Verified** badge if the commit is unsigned or signed with a key GitHub does not associate with **nvsaigokul-sudo**.
+
+- Upload an **SSH signing key** or **GPG key** to your GitHub account and enable `commit.gpgsign`.
+- Commits authored as **`nvsaigokul@gmail.com`** but signed with Cursor’s agent key show **`verification.reason: unknown_key`** on the API until your public key is registered.
+
+Full procedure, Cloud Agent limits, and co-author hook notes: **[GIT_SIGNING.md](./GIT_SIGNING.md)**.
+
 ## Cursor Cloud Agents
 
 - Link the project to the **nvsaigokul-sudo** GitHub repo; avoid pushing only via mirrors under other accounts.
