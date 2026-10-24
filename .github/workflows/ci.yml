@@ -65,9 +65,16 @@ jobs:
           DEB="$(find desktop/build/compose/binaries -name '*.deb' -print -quit)"
           if [ -z "$DEB" ]; then echo 'deb not found'; exit 1; fi
           echo "Installing $DEB"
+          # jpackage postinst may fail on GHA (no writable system menu dir); binaries still land under /opt/dataweave.
+          set +e
           sudo dpkg -i "$DEB"
+          dpkg_rc=$?
+          set -e
           DW=/opt/dataweave/bin/DataWeave
-          test -x "$DW"
+          if [ ! -x "$DW" ]; then
+            echo "dpkg exit=$dpkg_rc but $DW is missing"
+            exit 1
+          fi
           "$DW" --diagnose | tee /tmp/dataweave-linux-diagnose.out
           grep -q '=== end diagnostics ===' /tmp/dataweave-linux-diagnose.out
           grep -q 'install.runtime.missing_required_modules=(none)' /tmp/dataweave-linux-diagnose.out
