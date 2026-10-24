@@ -103,6 +103,7 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                                         section = WorkspaceSection.Browse
                                         statusBar = "Connected"
                                     },
+                                    modifier = Modifier.fillMaxSize(),
                                 )
                             WorkspaceSection.Browse ->
                                 if (activeConnectionId != null && selectedTable != null) {

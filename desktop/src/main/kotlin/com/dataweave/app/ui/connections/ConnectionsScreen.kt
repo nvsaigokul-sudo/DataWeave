@@ -6,8 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
@@ -78,7 +78,13 @@ fun ConnectionsScreen(
         timeout = p.connectTimeoutSeconds.toString()
     }
 
-    Column(modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    val scrollState = rememberScrollState()
+    Column(
+        modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
         Text("PostgreSQL connections")
         Text(
             "Save stores profile + vault password. Connect opens a live pool. Test probes without connecting.",
@@ -149,8 +155,8 @@ fun ConnectionsScreen(
                 message?.let { Text(it) }
             }
         }
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(connections, key = { it.id }) { conn ->
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            connections.forEach { conn ->
                 val status = statuses[conn.id]
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
