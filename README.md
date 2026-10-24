@@ -71,7 +71,7 @@ Artifacts under `desktop/build/compose/binaries/`.
 
 Release automation: [.github/workflows/release.yml](.github/workflows/release.yml) (tag `v*`).
 
-Documentation: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [docs/PLATFORMS.md](docs/PLATFORMS.md) · [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
+Documentation: [docs/AUDIT.md](docs/AUDIT.md) · [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [docs/PLATFORMS.md](docs/PLATFORMS.md) · [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
 
 ---
 
