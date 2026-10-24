@@ -1,3 +1,4 @@
-# Linux installers are release-built (>100 MB AppImage); copy from CI artifacts or GitHub Releases when refreshing this folder.
-# v0.2.1 release (.deb) — verify when present in repo:
+# Linux installers — verify when present in repo (release v0.2.4 asset hash for download verification):
+c6623067394a198be5c59a51072f6d5cf4f8dc09046d6efc7d224a11cdc8a334  dataweave_1.2.4_amd64.deb
+# v0.2.1 release (.deb) — historical:
 4e30d1482302f78c43fae3b8d51721b4c00b5190eafc664fe50cd410dcddc0c1  dataweave_1.2.1_amd64.deb

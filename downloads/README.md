@@ -14,7 +14,7 @@ The Windows **MSI** is stored with **Git LFS** (exceeds GitHub’s 100 MB blob l
 
 | File | SHA256 |
 |------|--------|
-| [windows/DataWeave-Setup.msi](windows/DataWeave-Setup.msi) (v0.2.3) | `68eb8524926e26532a2f7345b089fad37380c090c43ed92ef2888d95dfb070f5` |
+| [windows/DataWeave-Setup.msi](windows/DataWeave-Setup.msi) (v0.2.4) | `db19e0c98c6d4efc1b130a6b5333125dba62088afb9f3b7c47e08c6ddfb2d419` |
 
 **Direct download (browser):**
 

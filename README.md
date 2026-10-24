@@ -15,7 +15,7 @@
 
 | Your OS | Download |
 |---------|----------|
-| **Windows** | **[Releases → v0.2.4 `.msi`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.4/windows-DataWeave-Setup.msi)** — PG connection sessions + workspace UI. [LFS/media MSI](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi) matches after `main` refresh. [SHA256SUMS](downloads/SHA256SUMS.txt) |
+| **Windows** | **[Releases → v0.2.4 `.msi`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.4/windows-DataWeave-Setup.msi)** (SHA256 `db19e0c9…`) — PG connection sessions + workspace UI. [LFS/media MSI](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi) matches after `main` refresh. [SHA256SUMS](downloads/SHA256SUMS.txt) |
 | **Linux (x64)** | [`.deb` (v0.2.4)](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.4/linux-dataweave_1.2.4_amd64.deb) · [linux/](downloads/linux/) |
 | **macOS Apple Silicon** | [`.dmg` / `.pkg` (v0.2.4)](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.4) · [macos/](downloads/macos/) |
 | **macOS Intel** | Local build — [downloads/macos/README.md](downloads/macos/README.md) (`macos-13` CI omitted) |

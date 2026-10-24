@@ -46,7 +46,8 @@ Last updated: **2026-10-24** (v0.2.4 publish worker `bc-a8066f98-ca38-5632-8159-
 | `main` @ `ae43fca` PG session + workspace UI | **DONE** |
 | `./gradlew test :desktop:runHeadlessSmoke` | **PASS** (agent 2026-10-24) |
 | Linux package `dataweave_1.2.4_amd64.deb` + packaged headless smoke | **PASS** (agent VM) |
-| Tag `v0.2.4` + publish | **IN PROGRESS** — owner authorized publish |
+| Tag `v0.2.4` + publish | **DONE** — CI [40073615869](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40073615869), Release [40074093471](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40074093471) |
+| LFS MSI SHA256 refresh | **DONE** `db19e0c9…` |
 
 ## Release v0.2.3
 

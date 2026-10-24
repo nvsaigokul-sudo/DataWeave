@@ -2,7 +2,7 @@
 
 | Artifact | Source |
 |----------|--------|
-| `.deb` (x64) | [v0.2.1 release](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/linux-dataweave_1.2.1_amd64.deb) or latest [Releases](https://github.com/nvsaigokul-sudo/DataWeave/releases/latest) |
+| `.deb` (x64) | [v0.2.4 release](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.4/linux-dataweave_1.2.4_amd64.deb) or [Releases latest](https://github.com/nvsaigokul-sudo/DataWeave/releases/latest) |
 | AppImage | Release page when published (often >100 MB — not in Git LFS) |
 
 Build locally:

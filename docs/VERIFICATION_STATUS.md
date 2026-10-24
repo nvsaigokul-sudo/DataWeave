@@ -60,7 +60,8 @@ Prior CI with same Windows GUI matrix: [40061037014](https://github.com/nvsaigok
 
 | Artifact | SHA256 | Size (bytes) | Test evidence |
 |----------|--------|--------------|---------------|
-| LFS + [media.githubusercontent.com MSI](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi) (v0.2.3) | `68eb8524926e26532a2f7345b089fad37380c090c43ed92ef2888d95dfb070f5` | (see release) | CI + release [40070767809](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40070767809) |
+| LFS + [media.githubusercontent.com MSI](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi) (v0.2.4) | `db19e0c98c6d4efc1b130a6b5333125dba62088afb9f3b7c47e08c6ddfb2d419` | (see release) | CI [40073615869](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40073615869) + release [40074093471](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40074093471) |
+| v0.2.3 MSI (superseded) | `68eb8524…` | Preserved on [v0.2.3 release](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.3) | **SUPERSEDED** by v0.2.4 feature release |
 | v0.2.2 MSI | `35333f603bac8180316934b299623227d2ce35dea5dbf767af92fea45a4c5323` | 187727956 | GUI HeadlessException — use v0.2.3 |
 | `raw.githubusercontent.com/.../DataWeave-Setup.msi` | `24f3a23a8d46760578818e9ef2ab62102f558e9d3d9c163247fa454bd3046f17` | 134 | LFS pointer — **invalid installer** |
 | Legacy LFS MSI (user report) | `a9c8ab77e653c6f202f58ebd877c526e5c220a712eb97f045b5457923d0f06fb` | ~167 MB | Pre-reset; superseded by `35333f60…` |

@@ -1,3 +1,3 @@
-# macOS Apple Silicon (macos-14 CI / v0.2.1 release) — verify when present in repo:
-#  (see release SHA256SUMS.txt for exact filenames)
-# Intel (macos-x64): build locally; not stored in repo.
+# macOS Apple Silicon — v0.2.4 release assets (not stored in LFS):
+e461b4a59d360671f1207db4b8b47d33664b46f7e6645c519994fe0070be2959  macos-arm64-DataWeave-1.2.4.dmg
+0211f6b6d82120ecdbd39cf55ae28770020dfa3e95b3a4718e182cb3a6785ff8  macos-arm64-DataWeave-1.2.4.pkg
