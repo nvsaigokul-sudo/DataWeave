@@ -14,6 +14,8 @@ This page summarizes **what we have actually run**, not roadmap intent. For arch
 | `ci.yml` (`downloads-verify`) | `scripts/verify-downloads-checksums.sh` | **PASS** | same run |
 | `release.yml` @ v0.2.1 | Linux/Windows/macOS artifacts | **PASS** (build) | [39998843720](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/39998843720) — **no** Windows GUI install smoke (fixed on `main` for v0.2.2+) |
 | `release.yml` @ v0.2.5 | Linux/Windows/macOS artifacts + publish | **PASS** | [40078734530](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40078734530) |
+| `release.yml` @ v0.2.6 | Linux/Windows/macOS artifacts + publish | **PASS** | [40080836716](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40080836716) |
+| `ci.yml` @ v0.2.6 `main` | test + headless smoke + packages | **PASS** | [40080834895](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40080834895) |
 | Local Gradle (Linux VM) | `./gradlew test :desktop:runHeadlessSmoke` | **PASS** | agent 2026-10-24 |
 | Linux `.deb` install smoke | `/opt/dataweave/bin/DataWeave` CLI modes | **PASS** | packaged `@ baa193c` tree |
 | Linux packaged `--gui-smoke` (Xvfb) | Compose window opens | **PASS** | agent 2026-10-24 — `GUI_SMOKE_OK` |
