@@ -18,9 +18,15 @@ public class TableDataCacheGateway {
     @Cacheable(
             cacheNames = "dataPages",
             key =
-                    "#connectionId + ':' + #table.schema + '.' + #table.name + ':' + #offset + ':' + #limit + ':' + @tableDataCacheGateway.schemaVersion(#connectionId)")
-    public DataPage getPage(UUID connectionId, TableRef table, long offset, int limit) throws Exception {
-        return tableDataService.fetchPage(connectionId, table, offset, limit);
+                    "#connectionId + ':' + #table.schema + '.' + #table.name + ':' + #offset + ':' + #limit + ':' + #options + ':' + @tableDataCacheGateway.schemaVersion(#connectionId)")
+    public DataPage getPage(
+            UUID connectionId,
+            TableRef table,
+            long offset,
+            int limit,
+            com.dataweave.backend.domain.TableBrowseOptions options)
+            throws Exception {
+        return tableDataService.fetchPage(connectionId, table, offset, limit, options);
     }
 
     public long schemaVersion(UUID connectionId) {

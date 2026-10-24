@@ -3,7 +3,9 @@ package com.dataweave.backend;
 import com.dataweave.backend.cache.CacheDiagnosticsService;
 import com.dataweave.backend.domain.SslMode;
 import com.dataweave.backend.domain.TableRef;
+import com.dataweave.backend.domain.TableBrowseOptions;
 import com.dataweave.backend.service.ConnectionProfileService;
+import com.dataweave.backend.service.ConnectionSessionService;
 import com.dataweave.backend.service.TableDataCacheGateway;
 import com.dataweave.backend.support.IntegrationTestBase;
 import java.net.URI;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 class ConnectionAndCacheIntegrationTest extends IntegrationTestBase {
 
     @Autowired ConnectionProfileService connections;
+    @Autowired ConnectionSessionService sessions;
     @Autowired TableDataCacheGateway tablePages;
     @Autowired CacheDiagnosticsService cacheDiagnostics;
 
@@ -35,15 +38,15 @@ class ConnectionAndCacheIntegrationTest extends IntegrationTestBase {
                         SslMode.DISABLE,
                         5);
         UUID id = profile.id();
-        Assertions.assertTrue(connections.test(id, null).success());
+        Assertions.assertTrue(sessions.connect(id).state().name().equals("CONNECTED"));
         var table = new TableRef("public", "dw_sample");
-        var page1 = tablePages.getPage(id, table, 0, 50);
+        var page1 = tablePages.getPage(id, table, 0, 50, TableBrowseOptions.none());
         Assertions.assertEquals(2, page1.rows().size());
-        tablePages.getPage(id, table, 0, 50);
+        tablePages.getPage(id, table, 0, 50, TableBrowseOptions.none());
         var stats = cacheDiagnostics.snapshot().get("dataPages");
         Assertions.assertNotNull(stats);
         connections.refreshSchema(id);
-        var page3 = tablePages.getPage(id, table, 0, 50);
+        var page3 = tablePages.getPage(id, table, 0, 50, TableBrowseOptions.none());
         Assertions.assertEquals(2, page3.rows().size());
     }
 

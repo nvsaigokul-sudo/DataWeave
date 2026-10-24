@@ -1,6 +1,6 @@
 # DataWeave verification status
 
-Last updated: **2026-10-24** (v0.2.3 published; CI [40070764011](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40070764011); Release [40070767809](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40070767809); Windows MSI `68eb8524…`).
+Last updated: **2026-10-24** (v0.2.4-SNAPSHOT PG session + workspace UI on agent branch; v0.2.3 release unchanged).
 
 This page summarizes **what we have actually run**, not roadmap intent. For architecture and audit detail see [AUDIT.md](./AUDIT.md).
 
@@ -41,7 +41,9 @@ Prior CI with same Windows GUI matrix: [40061037014](https://github.com/nvsaigok
 | Embedded PG in integration tests | **PASS** | Zonky; not user production DB |
 | Multi-page + NULLs + types fixture | **PASS** | `PaginationAndTypesIntegrationTest` (120 rows, 50/page, NUMERIC/DATE/BOOLEAN) |
 | Docker PG on agent VM | **BLOCKED** | `docker` not installed |
-| GUI “add connection” flow | **NOT TESTED** | backend path covered by tests + headless smoke |
+| Connection lifecycle (save ≠ connect, bad creds, unreachable) | **PASS** | `ConnectionLifecycleIntegrationTest` |
+| GUI connection-first workspace | **NOT TESTED** on laptop | Compose `WorkspaceShell`; Linux CI GUI not re-run this cycle |
+| GUI “add connection” flow | **PARTIAL** | Separate Save/Test/Connect/Disconnect in UI; laptop **NOT TESTED** |
 
 ## Security / cache (recent fixes)
 

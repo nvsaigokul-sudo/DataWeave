@@ -55,8 +55,15 @@ public class TableDataService {
     }
 
     public CompletableFuture<DataPage> fetchPageAsync(
-            UUID connectionId, TableRef table, long offset, Integer limit, String requestScope) {
+            UUID connectionId,
+            TableRef table,
+            long offset,
+            Integer limit,
+            String requestScope,
+            com.dataweave.backend.domain.TableBrowseOptions options) {
         int pageSize = limit == null || limit <= 0 ? defaultPageSize : Math.min(limit, 500);
+        com.dataweave.backend.domain.TableBrowseOptions browse =
+                options == null ? com.dataweave.backend.domain.TableBrowseOptions.none() : options;
         long requestId = requestSequence.incrementAndGet();
         if (requestScope != null) {
             latestRequestByScope.put(requestScope, requestId);
@@ -64,7 +71,8 @@ public class TableDataService {
         return CompletableFuture.supplyAsync(
                 () -> {
                     try {
-                        DataPage page = tableDataCacheGateway.getPage(connectionId, table, offset, pageSize);
+                        DataPage page =
+                                tableDataCacheGateway.getPage(connectionId, table, offset, pageSize, browse);
                         if (requestScope != null && latestRequestByScope.get(requestScope) != requestId) {
                             throw new StaleResponseException("Superseded by a newer request");
                         }
@@ -77,18 +85,32 @@ public class TableDataService {
     }
 
     public DataPage fetchPage(UUID connectionId, TableRef table, long offset, int limit) throws Exception {
+        return fetchPage(connectionId, table, offset, limit, com.dataweave.backend.domain.TableBrowseOptions.none());
+    }
+
+    public DataPage fetchPage(
+            UUID connectionId,
+            TableRef table,
+            long offset,
+            int limit,
+            com.dataweave.backend.domain.TableBrowseOptions options)
+            throws Exception {
         ConnectionProfile profile = connectionProfileService.require(connectionId);
         List<ColumnMeta> columns = catalogMetadataService.listColumns(connectionId, table.schema(), table.name());
         if (columns.isEmpty()) {
             throw new IllegalArgumentException("Unknown table");
         }
         PrimaryKeyInfo pk = detectPrimaryKey(connectionId, table);
-        String orderBy = pk.orderByClause().orElse("ORDER BY 1");
+        com.dataweave.backend.domain.TableBrowseOptions browse =
+                options == null ? com.dataweave.backend.domain.TableBrowseOptions.none() : options;
+        String orderBy = resolveOrderBy(pk, columns, browse);
+        String whereClause = resolveFilter(columns, browse);
         String sql =
                 "SELECT * FROM "
                         + quoteIdentifier(table.schema())
                         + "."
                         + quoteIdentifier(table.name())
+                        + whereClause
                         + " "
                         + orderBy
                         + " LIMIT ? OFFSET ?";
@@ -96,8 +118,15 @@ public class TableDataService {
         List<Map<String, Object>> rows = new ArrayList<>();
         try (Connection conn = ds.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, limit);
-            ps.setLong(2, offset);
+            int param = 1;
+            if (browse.hasFilter()) {
+                String pattern = "%" + browse.filterText().trim().replace("%", "\\%").replace("_", "\\_") + "%";
+                for (int i = 0; i < columns.size(); i++) {
+                    ps.setString(param++, pattern);
+                }
+            }
+            ps.setInt(param++, limit);
+            ps.setLong(param, offset);
             try (ResultSet rs = ps.executeQuery()) {
                 int columnCount = rs.getMetaData().getColumnCount();
                 while (rs.next()) {
@@ -176,6 +205,36 @@ public class TableDataService {
                 return new PrimaryKeyInfo(true, "Keyset-friendly order: " + String.join(", ", cols), java.util.Optional.of(clause));
             }
         }
+    }
+
+    private static String resolveOrderBy(
+            PrimaryKeyInfo pk, List<ColumnMeta> columns, com.dataweave.backend.domain.TableBrowseOptions browse) {
+        if (browse.hasSort()) {
+            String col = browse.sortColumn().trim();
+            boolean known = columns.stream().anyMatch(c -> c.name().equalsIgnoreCase(col));
+            if (!known) {
+                throw new IllegalArgumentException("Unknown sort column: " + col);
+            }
+            String quoted = quoteIdentifier(columns.stream().filter(c -> c.name().equalsIgnoreCase(col)).findFirst().get().name());
+            return "ORDER BY " + quoted + (browse.sortDescending() ? " DESC" : " ASC");
+        }
+        return pk.orderByClause().orElse("ORDER BY 1");
+    }
+
+    private static String resolveFilter(List<ColumnMeta> columns, com.dataweave.backend.domain.TableBrowseOptions browse) {
+        if (!browse.hasFilter()) {
+            return "";
+        }
+        String text = browse.filterText().trim();
+        if (text.isEmpty()) {
+            return "";
+        }
+        String pattern = "%" + text.replace("%", "\\%").replace("_", "\\_") + "%";
+        List<String> parts = new ArrayList<>();
+        for (ColumnMeta col : columns) {
+            parts.add("CAST(" + quoteIdentifier(col.name()) + " AS TEXT) ILIKE ? ESCAPE '\\'");
+        }
+        return " WHERE (" + String.join(" OR ", parts) + ")";
     }
 
     private static String quoteIdentifier(String identifier) {

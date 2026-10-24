@@ -65,6 +65,25 @@ public class ConnectionProfileRepository {
                 profile.updatedAt().toString());
     }
 
+    public void update(ConnectionProfile profile) {
+        jdbc.update(
+                """
+                UPDATE connection_profiles SET
+                  name = ?, host = ?, port = ?, database_name = ?, username = ?,
+                  ssl_mode = ?, connect_timeout_seconds = ?, updated_at = ?
+                WHERE id = ?
+                """,
+                profile.name(),
+                profile.host(),
+                profile.port(),
+                profile.databaseName(),
+                profile.username(),
+                profile.sslMode().name(),
+                profile.connectTimeoutSeconds(),
+                profile.updatedAt().toString(),
+                profile.id().toString());
+    }
+
     public void delete(UUID id) {
         jdbc.update("DELETE FROM connection_profiles WHERE id = ?", id.toString());
     }

@@ -3,6 +3,7 @@ package com.dataweave.backend;
 import com.dataweave.backend.domain.SslMode;
 import com.dataweave.backend.domain.TableRef;
 import com.dataweave.backend.service.ConnectionProfileService;
+import com.dataweave.backend.service.ConnectionSessionService;
 import com.dataweave.backend.service.JoinPreviewService;
 import com.dataweave.backend.support.IntegrationTestBase;
 import java.net.URI;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 class JoinPreviewServiceTest extends IntegrationTestBase {
 
     @Autowired ConnectionProfileService connections;
+    @Autowired ConnectionSessionService sessions;
     @Autowired JoinPreviewService joins;
 
     @Test
@@ -32,6 +34,7 @@ class JoinPreviewServiceTest extends IntegrationTestBase {
                         "postgres".toCharArray(),
                         SslMode.DISABLE,
                         5);
+        Assertions.assertTrue(sessions.connect(profile.id()).state().name().equals("CONNECTED"));
         var page =
                 joins.previewInnerJoin(
                         profile.id(),

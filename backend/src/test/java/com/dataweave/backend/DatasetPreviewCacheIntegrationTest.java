@@ -4,6 +4,7 @@ import com.dataweave.backend.cache.CacheDiagnosticsService;
 import com.dataweave.backend.domain.SslMode;
 import com.dataweave.backend.domain.TableRef;
 import com.dataweave.backend.service.ConnectionProfileService;
+import com.dataweave.backend.service.ConnectionSessionService;
 import com.dataweave.backend.service.DatasetPreviewCacheGateway;
 import com.dataweave.backend.support.IntegrationTestBase;
 import java.net.URI;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 class DatasetPreviewCacheIntegrationTest extends IntegrationTestBase {
 
     @Autowired ConnectionProfileService connections;
+    @Autowired ConnectionSessionService sessions;
     @Autowired DatasetPreviewCacheGateway previewPages;
     @Autowired CacheDiagnosticsService cacheDiagnostics;
 
@@ -36,6 +38,7 @@ class DatasetPreviewCacheIntegrationTest extends IntegrationTestBase {
                         SslMode.DISABLE,
                         5);
         UUID id = profile.id();
+        Assertions.assertTrue(sessions.connect(id).state().name().equals("CONNECTED"));
         var table = new TableRef("public", "dw_preview");
         String scope = "test-scope";
         long generation = 1L;

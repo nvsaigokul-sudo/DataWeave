@@ -29,6 +29,9 @@ fun runHeadlessSmoke() {
                 )
             val test = facade.testConnection(conn.id, null)
             check(test.success) { test.message }
+            check(!facade.connectionStatus(conn.id).state.name.equals("CONNECTED"))
+            val connected = facade.connectConnection(conn.id)
+            check(connected.state().name == "CONNECTED") { connected.message() }
             val schemas = facade.listSchemas(conn.id)
             check(schemas.isNotEmpty())
             println("HEADLESS_SMOKE_OK project=${project.id} connection=${conn.id} schemas=${schemas.size}")

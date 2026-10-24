@@ -3,17 +3,23 @@ package com.dataweave.backend;
 import com.dataweave.backend.cache.CacheDiagnosticsService;
 import com.dataweave.backend.cache.CacheInvalidationService;
 import com.dataweave.backend.domain.ConnectionProfile;
+import com.dataweave.backend.domain.ConnectionSessionStatus;
 import com.dataweave.backend.domain.ConnectionTestResult;
 import com.dataweave.backend.domain.CsvSource;
 import com.dataweave.backend.domain.DataPage;
 import com.dataweave.backend.domain.SqlQueryHistoryEntry;
 import com.dataweave.backend.domain.SslMode;
+import com.dataweave.backend.domain.TableBrowseOptions;
+import com.dataweave.backend.domain.TableExportResult;
 import com.dataweave.backend.domain.TableRef;
 import com.dataweave.backend.domain.WorkspaceProject;
 import com.dataweave.backend.postgres.PostgresConnectionManager;
 import com.dataweave.backend.service.CatalogMetadataService;
 import com.dataweave.backend.service.ConnectionProfileService;
+import com.dataweave.backend.service.ConnectionSessionService;
+import com.dataweave.backend.domain.DatasetOutputDefinition;
 import com.dataweave.backend.service.CsvIngestService;
+import com.dataweave.backend.service.DatasetOutputDefinitionService;
 import com.dataweave.backend.service.DatasetPreviewService;
 import com.dataweave.backend.service.JoinPreviewService;
 import com.dataweave.backend.service.ReadOnlyQueryService;
@@ -33,12 +39,14 @@ public class ApplicationFacade {
 
     private final WorkspaceProjectService workspaceProjectService;
     private final ConnectionProfileService connectionProfileService;
+    private final ConnectionSessionService connectionSessionService;
     private final CatalogMetadataService catalogMetadataService;
     private final TableDataService tableDataService;
     private final DatasetPreviewService datasetPreviewService;
     private final ReadOnlyQueryService readOnlyQueryService;
     private final SqlEditorService sqlEditorService;
     private final CsvIngestService csvIngestService;
+    private final DatasetOutputDefinitionService datasetOutputDefinitionService;
     private final JoinPreviewService joinPreviewService;
     private final TableExportService tableExportService;
     private final CacheDiagnosticsService cacheDiagnosticsService;
@@ -48,12 +56,14 @@ public class ApplicationFacade {
     public ApplicationFacade(
             WorkspaceProjectService workspaceProjectService,
             ConnectionProfileService connectionProfileService,
+            ConnectionSessionService connectionSessionService,
             CatalogMetadataService catalogMetadataService,
             TableDataService tableDataService,
             DatasetPreviewService datasetPreviewService,
             ReadOnlyQueryService readOnlyQueryService,
             SqlEditorService sqlEditorService,
             CsvIngestService csvIngestService,
+            DatasetOutputDefinitionService datasetOutputDefinitionService,
             JoinPreviewService joinPreviewService,
             TableExportService tableExportService,
             CacheDiagnosticsService cacheDiagnosticsService,
@@ -61,12 +71,14 @@ public class ApplicationFacade {
             PostgresConnectionManager postgresConnectionManager) {
         this.workspaceProjectService = workspaceProjectService;
         this.connectionProfileService = connectionProfileService;
+        this.connectionSessionService = connectionSessionService;
         this.catalogMetadataService = catalogMetadataService;
         this.tableDataService = tableDataService;
         this.datasetPreviewService = datasetPreviewService;
         this.readOnlyQueryService = readOnlyQueryService;
         this.sqlEditorService = sqlEditorService;
         this.csvIngestService = csvIngestService;
+        this.datasetOutputDefinitionService = datasetOutputDefinitionService;
         this.joinPreviewService = joinPreviewService;
         this.tableExportService = tableExportService;
         this.cacheDiagnosticsService = cacheDiagnosticsService;
@@ -98,11 +110,53 @@ public class ApplicationFacade {
         return connectionProfileService.create(name, host, port, database, username, password, sslMode, timeoutSeconds);
     }
 
+    public ConnectionProfile updateConnection(
+            UUID id,
+            String name,
+            String host,
+            int port,
+            String database,
+            String username,
+            char[] passwordOrNull,
+            SslMode sslMode,
+            int timeoutSeconds) {
+        ConnectionProfile updated =
+                connectionProfileService.update(
+                        id, name, host, port, database, username, passwordOrNull, sslMode, timeoutSeconds);
+        connectionSessionService.markDisconnected(id);
+        return updated;
+    }
+
     public ConnectionTestResult testConnection(UUID id, char[] passwordOverride) {
         return connectionProfileService.test(id, passwordOverride);
     }
 
+    public ConnectionSessionStatus connectConnection(UUID id) {
+        return connectionSessionService.connect(id);
+    }
+
+    public ConnectionSessionStatus connectConnection(UUID id, char[] passwordOverride) {
+        return connectionSessionService.connect(id, passwordOverride);
+    }
+
+    public ConnectionSessionStatus disconnectConnection(UUID id) {
+        return connectionSessionService.disconnect(id);
+    }
+
+    public ConnectionSessionStatus reconnectConnection(UUID id) {
+        return connectionSessionService.reconnect(id);
+    }
+
+    public ConnectionSessionStatus connectionStatus(UUID id) {
+        return connectionSessionService.status(id);
+    }
+
+    public List<ConnectionSessionStatus> allConnectionStatuses() {
+        return connectionSessionService.allStatuses();
+    }
+
     public void deleteConnection(UUID id) {
+        connectionSessionService.disconnect(id);
         connectionProfileService.delete(id);
     }
 
@@ -120,7 +174,17 @@ public class ApplicationFacade {
 
     public CompletableFuture<DataPage> fetchTablePage(
             UUID connectionId, TableRef table, long offset, Integer limit, String requestScope) {
-        return tableDataService.fetchPageAsync(connectionId, table, offset, limit, requestScope);
+        return fetchTablePage(connectionId, table, offset, limit, requestScope, TableBrowseOptions.none());
+    }
+
+    public CompletableFuture<DataPage> fetchTablePage(
+            UUID connectionId,
+            TableRef table,
+            long offset,
+            Integer limit,
+            String requestScope,
+            TableBrowseOptions options) {
+        return tableDataService.fetchPageAsync(connectionId, table, offset, limit, requestScope, options);
     }
 
     public long beginDatasetPreview(String scopeKey) {
@@ -152,6 +216,25 @@ public class ApplicationFacade {
         return csvIngestService.listForProject(projectId);
     }
 
+    public List<DatasetOutputDefinition> listDatasetDefinitions(UUID projectId) {
+        return datasetOutputDefinitionService.listForProject(projectId);
+    }
+
+    public DatasetOutputDefinition saveDatasetDefinition(
+            UUID idOrNull,
+            UUID projectId,
+            UUID connectionId,
+            String schema,
+            String table,
+            List<String> outputColumns)
+            throws Exception {
+        return datasetOutputDefinitionService.save(idOrNull, projectId, connectionId, schema, table, outputColumns);
+    }
+
+    public void deleteDatasetDefinition(UUID id) {
+        datasetOutputDefinitionService.delete(id);
+    }
+
     public DataPage previewCsvSource(UUID sourceId, long offset, int limit) throws Exception {
         return csvIngestService.preview(sourceId, offset, limit);
     }
@@ -170,8 +253,13 @@ public class ApplicationFacade {
                 connectionId, left, right, leftKey, rightKey, selectedColumns, offset, limit);
     }
 
+    public TableExportResult exportTableToCsv(
+            UUID connectionId, TableRef table, Path destination, Long maxRows) throws Exception {
+        return tableExportService.exportTableToCsv(connectionId, table, destination, maxRows);
+    }
+
     public long exportTableToCsv(UUID connectionId, TableRef table, Path destination) throws Exception {
-        return tableExportService.exportTableToCsv(connectionId, table, destination);
+        return tableExportService.exportTableToCsv(connectionId, table, destination, null).rowsWritten();
     }
 
     public Map<String, Map<String, Number>> cacheDiagnostics() {

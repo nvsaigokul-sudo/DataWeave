@@ -1,6 +1,6 @@
 # DataWeave completion tracker
 
-Last updated: **2026-10-24** (Windows GUI headless fix worker `bc-324a2265-6c67-5f99-9419-4b804473053d`).
+Last updated: **2026-10-24** (v0.2.4-SNAPSHOT PG session + workspace UI worker `bc-ebf5ffc0-8ca4-5e25-914c-2c11dcf66d39`).
 
 ## Live verification (GitHub vs repo)
 
@@ -16,6 +16,11 @@ Last updated: **2026-10-24** (Windows GUI headless fix worker `bc-324a2265-6c67-
 
 | Item | Evidence | Commit |
 |------|----------|--------|
+| PG connection session (Save/Test/Connect/Disconnect/Reconnect) | `ConnectionLifecycleIntegrationTest`; `PostgresConnectionManager` explicit pools | (this push) |
+| Workspace UI (top bar, tree, themes, status bar) | `WorkspaceShell`, `DatabaseTreeSidebar` | (this push) |
+| Table grid server filter/sort + clipboard copy | `TableBrowseOptions`, `TableDataGrid` | (this push) |
+| CSV export streaming (no silent 100k cap) | `TableExportResult` | (this push) |
+| Dataset output column persist (V3 migration) | `DatasetOutputDefinitionService` | (this push) |
 | **v0.2.3** Spring `headless(false)` for Compose GUI (`startForGui`) | `SpringHeadlessPropertyTest`; user `HeadlessException` root cause | `63b1cfc` |
 | Release publish uses **CI Windows MSI** (not stale LFS swap) | `.github/workflows/release.yml` | (this push) |
 | Normal GUI CI asserts `launch.log` reaches Compose | `windows-packaged-smoke.ps1` | (this push) |
@@ -33,6 +38,13 @@ Last updated: **2026-10-24** (Windows GUI headless fix worker `bc-324a2265-6c67-
 | User Windows/macOS laptop GUI | Owner runs INSTALL checklist; share `launch-error.log` if needed |
 | 20M-row grid / M2 pipeline | Roadmap — not in v0.2.2 scope |
 | Code signing / notarization | Future release hardening |
+
+## Release v0.2.4
+
+| Step | Status |
+|------|--------|
+| `./gradlew test :desktop:runHeadlessSmoke` | **PASS** (agent 2026-10-24) |
+| Tag `v0.2.4` + publish | **NOT DONE** — await owner authorization; **do not** retag v0.2.3 |
 
 ## Release v0.2.3
 

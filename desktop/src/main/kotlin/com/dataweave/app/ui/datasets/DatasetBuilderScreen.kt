@@ -1,5 +1,6 @@
 package com.dataweave.app.ui.datasets
 
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,9 +9,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -59,6 +62,10 @@ fun DatasetBuilderScreen(
     var leftKey by remember { mutableStateOf("id") }
     var rightKey by remember { mutableStateOf("id") }
     var page by remember { mutableStateOf<DataPage?>(null) }
+    var sourceColumns by remember { mutableStateOf<List<String>>(emptyList()) }
+    var outputColumns by remember { mutableStateOf<List<String>>(emptyList()) }
+    var outputRenames by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    var dragIndex by remember { mutableStateOf<Int?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
     var status by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
@@ -89,7 +96,11 @@ fun DatasetBuilderScreen(
     }
 
     Column(modifier.fillMaxSize().padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Dataset builder — column preview, CSV ingest, inner join preview")
+        Text("Dataset builder — map columns, CSV register/import, join preview")
+        Text(
+            "Register CSV stores a path reference; Preview reads file contents without importing into PostgreSQL.",
+            style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+        )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             projects.forEach { p ->
                 Button(onClick = { projectId = p.id }) {
@@ -137,6 +148,8 @@ fun DatasetBuilderScreen(
                         }
                     }.onSuccess {
                         page = it
+                        sourceColumns = it.columns.map { c -> c.name }
+                        if (outputColumns.isEmpty()) outputColumns = sourceColumns
                         status = "Column preview OK"
                     }.onFailure {
                         page = null
@@ -148,7 +161,62 @@ fun DatasetBuilderScreen(
             Text("Preview columns")
         }
 
-        Text("CSV ingest")
+        Text("Output columns (drag to reorder, or ↑/↓; double-click rename via field)")
+        LazyColumn(Modifier.weight(0.15f)) {
+            itemsIndexed(outputColumns) { index, col ->
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier =
+                        Modifier.pointerInput(index) {
+                            detectDragGesturesAfterLongPress(
+                                onDragStart = { dragIndex = index },
+                                onDragEnd = { dragIndex = null },
+                                onDragCancel = { dragIndex = null },
+                                onDrag = { _, _ -> },
+                            )
+                        },
+                ) {
+                    Text(if (dragIndex == index) "⋮⋮" else "▣", modifier = Modifier.padding(end = 4.dp))
+                    OutlinedTextField(
+                        outputRenames[col] ?: col,
+                        { outputRenames = outputRenames + (col to it) },
+                        modifier = Modifier.weight(1f),
+                        label = { Text("Output name") },
+                    )
+                    Button(onClick = { if (index > 0) outputColumns = outputColumns.swap(index, index - 1) }) { Text("↑") }
+                    Button(onClick = {
+                        if (index < outputColumns.lastIndex) outputColumns = outputColumns.swap(index, index + 1)
+                    }) { Text("↓") }
+                    Button(onClick = { outputColumns = outputColumns - col }) { Text("Remove") }
+                }
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            sourceColumns.forEach { col ->
+                if (col !in outputColumns) {
+                    Button(onClick = { outputColumns = outputColumns + col }) { Text("+ $col") }
+                }
+            }
+            Button(
+                enabled = projectId != null && connectionId != null && table != null && outputColumns.isNotEmpty(),
+                onClick = {
+                    val pid = projectId ?: return@Button
+                    val id = connectionId ?: return@Button
+                    val t = table ?: return@Button
+                    val names = outputColumns.map { outputRenames[it] ?: it }
+                    scope.launch {
+                        runCatching {
+                            withContext(Dispatchers.IO) {
+                                facade.saveDatasetDefinition(null, pid, id, t.schema, t.name, names)
+                            }
+                        }.onSuccess { status = "Saved dataset definition ${it.id}" }
+                            .onFailure { error = it.message }
+                    }
+                },
+            ) { Text("Save output definition") }
+        }
+
+        Text("CSV register (path-based, not DB import)")
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedTextField(csvName, { csvName = it }, label = { Text("Name") })
             OutlinedTextField(csvPath, { csvPath = it }, modifier = Modifier.weight(1f), label = { Text("Path") })
@@ -244,6 +312,14 @@ fun DatasetBuilderScreen(
         }
 
         Text(status)
-        ResultDataCard(page, error, Modifier.weight(0.5f))
+        ResultDataCard(page, error, Modifier.weight(0.35f))
     }
+}
+
+private fun <T> List<T>.swap(a: Int, b: Int): List<T> {
+    val m = toMutableList()
+    val tmp = m[a]
+    m[a] = m[b]
+    m[b] = tmp
+    return m
 }

@@ -2,7 +2,9 @@ package com.dataweave.backend;
 
 import com.dataweave.backend.domain.SslMode;
 import com.dataweave.backend.domain.TableRef;
+import com.dataweave.backend.domain.TableBrowseOptions;
 import com.dataweave.backend.service.ConnectionProfileService;
+import com.dataweave.backend.service.ConnectionSessionService;
 import com.dataweave.backend.service.TableDataCacheGateway;
 import com.dataweave.backend.support.IntegrationTestBase;
 import java.math.BigDecimal;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 class PaginationAndTypesIntegrationTest extends IntegrationTestBase {
 
     @Autowired ConnectionProfileService connections;
+    @Autowired ConnectionSessionService sessions;
     @Autowired TableDataCacheGateway tablePages;
 
     @Test
@@ -36,12 +39,12 @@ class PaginationAndTypesIntegrationTest extends IntegrationTestBase {
                         SslMode.DISABLE,
                         5);
         UUID id = profile.id();
-        Assertions.assertTrue(connections.test(id, null).success());
+        Assertions.assertTrue(sessions.connect(id).state().name().equals("CONNECTED"));
 
         var typed = new TableRef("public", "dw_typed");
-        var page0 = tablePages.getPage(id, typed, 0, 50);
-        var page1 = tablePages.getPage(id, typed, 50, 50);
-        var page2 = tablePages.getPage(id, typed, 100, 50);
+        var page0 = tablePages.getPage(id, typed, 0, 50, TableBrowseOptions.none());
+        var page1 = tablePages.getPage(id, typed, 50, 50, TableBrowseOptions.none());
+        var page2 = tablePages.getPage(id, typed, 100, 50, TableBrowseOptions.none());
 
         Assertions.assertEquals(50, page0.rows().size());
         Assertions.assertEquals(50, page1.rows().size());
@@ -51,7 +54,7 @@ class PaginationAndTypesIntegrationTest extends IntegrationTestBase {
         Assertions.assertInstanceOf(Date.class, page0.rows().get(1).get("created_on"));
 
         var other = new TableRef("public", "dw_other");
-        var otherPage = tablePages.getPage(id, other, 0, 50);
+        var otherPage = tablePages.getPage(id, other, 0, 50, TableBrowseOptions.none());
         Assertions.assertEquals(3, otherPage.rows().size());
     }
 

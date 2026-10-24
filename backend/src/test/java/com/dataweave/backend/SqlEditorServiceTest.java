@@ -2,6 +2,7 @@ package com.dataweave.backend;
 
 import com.dataweave.backend.domain.SslMode;
 import com.dataweave.backend.service.ConnectionProfileService;
+import com.dataweave.backend.service.ConnectionSessionService;
 import com.dataweave.backend.service.SqlEditorService;
 import com.dataweave.backend.support.IntegrationTestBase;
 import java.net.URI;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 class SqlEditorServiceTest extends IntegrationTestBase {
 
     @Autowired ConnectionProfileService connections;
+    @Autowired ConnectionSessionService sessions;
     @Autowired SqlEditorService sqlEditor;
 
     @Test
@@ -30,6 +32,7 @@ class SqlEditorServiceTest extends IntegrationTestBase {
                         "postgres".toCharArray(),
                         SslMode.DISABLE,
                         5);
+        Assertions.assertTrue(sessions.connect(profile.id()).state().name().equals("CONNECTED"));
         var page = sqlEditor.executeSelect(profile.id(), "SELECT id FROM dw_sample ORDER BY id");
         Assertions.assertFalse(page.rows().isEmpty());
         Assertions.assertFalse(sqlEditor.history(5).isEmpty());

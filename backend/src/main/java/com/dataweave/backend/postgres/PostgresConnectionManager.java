@@ -26,18 +26,45 @@ public class PostgresConnectionManager {
     }
 
     public ConnectionTestResult test(ConnectionProfile profile, char[] passwordOverride) {
+        return probe(profile, passwordOverride);
+    }
+
+    /** Opens a live pool after a successful probe. Session state is tracked separately. */
+    public ConnectionTestResult connect(ConnectionProfile profile, char[] passwordOverride) {
+        UUID id = profile.id();
+        ConnectionTestResult probe = probe(profile, passwordOverride);
+        if (!probe.success()) {
+            return probe;
+        }
+        disconnect(id);
+        pools.put(id, createPool(profile, passwordOverride, false));
+        return probe;
+    }
+
+    public boolean isConnected(UUID connectionId) {
+        HikariDataSource ds = pools.get(connectionId);
+        return ds != null && !ds.isClosed();
+    }
+
+    public DataSource getDataSource(ConnectionProfile profile) {
+        HikariDataSource ds = pools.get(profile.id());
+        if (ds == null || ds.isClosed()) {
+            throw new IllegalStateException(
+                    "Connection '" + profile.name() + "' is not active. Use Connect before running queries.");
+        }
+        return ds;
+    }
+
+    private ConnectionTestResult probe(ConnectionProfile profile, char[] passwordOverride) {
         try (HikariDataSource ds = createPool(profile, passwordOverride, true)) {
             try (Connection conn = ds.getConnection()) {
                 conn.createStatement().execute("SELECT 1");
-                return ConnectionTestResult.ok("Connected to PostgreSQL " + conn.getMetaData().getDatabaseProductVersion());
+                return ConnectionTestResult.ok(
+                        "Connected to PostgreSQL " + conn.getMetaData().getDatabaseProductVersion());
             }
         } catch (Exception ex) {
             return ConnectionTestResult.fail(classify(ex), sanitizeMessage(ex.getMessage()));
         }
-    }
-
-    public DataSource getDataSource(ConnectionProfile profile) {
-        return pools.computeIfAbsent(profile.id(), id -> createPool(profile, null, false));
     }
 
     public void disconnect(UUID connectionId) {

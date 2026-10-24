@@ -39,6 +39,44 @@ public class ConnectionProfileService {
         return repository.findAll();
     }
 
+    public ConnectionProfile update(
+            UUID id,
+            String name,
+            String host,
+            int port,
+            String database,
+            String username,
+            char[] passwordOrNull,
+            SslMode sslMode,
+            int timeoutSeconds) {
+        ConnectionProfile existing =
+                repository.findById(id).orElseThrow(() -> new IllegalArgumentException("Unknown connection"));
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Connection name is required");
+        }
+        if (passwordOrNull != null && passwordOrNull.length > 0) {
+            vault.store(existing.credentialKey(), passwordOrNull);
+        }
+        connectionManager.disconnect(id);
+        Instant now = Instant.now();
+        ConnectionProfile updated =
+                new ConnectionProfile(
+                        id,
+                        name.trim(),
+                        host.trim(),
+                        port,
+                        database.trim(),
+                        username.trim(),
+                        sslMode,
+                        existing.credentialKey(),
+                        timeoutSeconds,
+                        existing.createdAt(),
+                        now);
+        repository.update(updated);
+        cacheInvalidationService.invalidateConnection(id);
+        return updated;
+    }
+
     public ConnectionProfile create(
             String name,
             String host,
@@ -80,6 +118,10 @@ public class ConnectionProfileService {
 
     public ConnectionTestResult testNew(ConnectionProfile draft, char[] password) {
         return connectionManager.test(draft, password);
+    }
+
+    public boolean hasLivePool(UUID id) {
+        return connectionManager.isConnected(id);
     }
 
     public void delete(UUID id) {

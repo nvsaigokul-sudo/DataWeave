@@ -1,6 +1,7 @@
 package com.dataweave.backend.service;
 
 import com.dataweave.backend.domain.DataPage;
+import com.dataweave.backend.domain.TableExportResult;
 import com.dataweave.backend.domain.TableRef;
 import java.io.BufferedWriter;
 import java.nio.charset.StandardCharsets;
@@ -15,7 +16,6 @@ import org.springframework.stereotype.Service;
 public class TableExportService {
 
     private static final int PAGE_SIZE = 500;
-    private static final long MAX_EXPORT_ROWS = 100_000L;
 
     private final TableDataService tableDataService;
 
@@ -23,14 +23,24 @@ public class TableExportService {
         this.tableDataService = tableDataService;
     }
 
-    public long exportTableToCsv(UUID connectionId, TableRef table, Path destination) throws Exception {
+    /** Streams all rows unless {@code maxRows} is set (explicit cap — never silent truncation). */
+    public TableExportResult exportTableToCsv(UUID connectionId, TableRef table, Path destination, Long maxRows)
+            throws Exception {
         long exported = 0;
         long offset = 0;
+        boolean truncated = false;
         try (BufferedWriter writer = Files.newBufferedWriter(destination, StandardCharsets.UTF_8)) {
             boolean headerWritten = false;
             List<String> columnNames = List.of();
-            while (exported < MAX_EXPORT_ROWS) {
-                DataPage page = tableDataService.fetchPage(connectionId, table, offset, PAGE_SIZE);
+            while (maxRows == null || exported < maxRows) {
+                int pageSize = PAGE_SIZE;
+                if (maxRows != null) {
+                    pageSize = (int) Math.min(PAGE_SIZE, maxRows - exported);
+                    if (pageSize <= 0) {
+                        break;
+                    }
+                }
+                DataPage page = tableDataService.fetchPage(connectionId, table, offset, pageSize);
                 if (!headerWritten) {
                     columnNames = page.columns().stream().map(c -> c.name()).toList();
                     writer.write(toCsvLine(columnNames));
@@ -44,17 +54,22 @@ public class TableExportService {
                     writer.write(toCsvLine(columnNames.stream().map(row::get).toList()));
                     writer.newLine();
                     exported++;
-                    if (exported >= MAX_EXPORT_ROWS) {
+                    if (maxRows != null && exported >= maxRows) {
+                        truncated = page.rows().size() >= pageSize;
                         break;
                     }
                 }
-                if (page.rows().size() < PAGE_SIZE) {
+                if (page.rows().size() < pageSize) {
                     break;
                 }
                 offset += page.rows().size();
             }
         }
-        return exported;
+        return new TableExportResult(exported, truncated, maxRows);
+    }
+
+    public long exportTableToCsv(UUID connectionId, TableRef table, Path destination) throws Exception {
+        return exportTableToCsv(connectionId, table, destination, null).rowsWritten();
     }
 
     public static String toCsvLine(List<?> values) {

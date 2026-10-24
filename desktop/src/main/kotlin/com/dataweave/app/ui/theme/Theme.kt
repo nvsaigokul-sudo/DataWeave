@@ -1,27 +1,38 @@
 package com.dataweave.app.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val LightColors = lightColorScheme(
-    primary = Color(0xFF1B4D72),
-    secondary = Color(0xFF2E7D5A),
-    background = Color(0xFFF7F9FB),
-    surface = Color(0xFFFFFFFF),
-)
+private val LightColors =
+    lightColorScheme(
+        primary = Color(0xFF1565C0),
+        onPrimary = Color.White,
+        secondary = Color(0xFF00897B),
+        background = Color(0xFFF4F6F8),
+        surface = Color(0xFFFFFFFF),
+        surfaceVariant = Color(0xFFE8EDF2),
+        outline = Color(0xFFB0BEC5),
+    )
 
-private val DarkColors = darkColorScheme(
-    primary = Color(0xFF7EB6FF),
-    secondary = Color(0xFF6BCF9A),
-)
+private val DarkColors =
+    darkColorScheme(
+        primary = Color(0xFF90CAF9),
+        onPrimary = Color(0xFF0D2740),
+        secondary = Color(0xFF80CBC4),
+        background = Color(0xFF121820),
+        surface = Color(0xFF1A2330),
+        surfaceVariant = Color(0xFF243040),
+        outline = Color(0xFF546E7A),
+    )
 
 @Composable
-fun DataWeaveTheme(content: @Composable () -> Unit) {
+fun DataWeaveTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = LightColors,
+        colorScheme = if (darkTheme) DarkColors else LightColors,
         content = content,
     )
 }

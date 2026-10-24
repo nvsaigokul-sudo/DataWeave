@@ -2,6 +2,7 @@ package com.dataweave.backend;
 
 import com.dataweave.backend.domain.SslMode;
 import com.dataweave.backend.service.ConnectionProfileService;
+import com.dataweave.backend.service.ConnectionSessionService;
 import com.dataweave.backend.service.ReadOnlyQueryService;
 import com.dataweave.backend.support.IntegrationTestBase;
 import java.net.URI;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 class ReadOnlyQueryServiceTest extends IntegrationTestBase {
 
     @Autowired ConnectionProfileService connections;
+    @Autowired ConnectionSessionService sessions;
     @Autowired ReadOnlyQueryService queries;
 
     @Test
@@ -40,7 +42,7 @@ class ReadOnlyQueryServiceTest extends IntegrationTestBase {
                         SslMode.DISABLE,
                         5);
         UUID id = profile.id();
-        Assertions.assertTrue(connections.test(id, null).success());
+        Assertions.assertTrue(sessions.connect(id).state().name().equals("CONNECTED"));
 
         var first = queries.runSelect(id, "SELECT id FROM dw_sample ORDER BY id", List.of());
         var second = queries.runSelect(id, "SELECT name FROM dw_sample ORDER BY id", List.of());
