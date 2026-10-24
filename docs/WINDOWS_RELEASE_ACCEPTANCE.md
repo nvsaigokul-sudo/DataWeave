@@ -6,10 +6,10 @@
 
 ### Option A — GitHub Actions (recommended)
 
-1. Push to `cursor/dataweave-product-v0.3.0-d9c8`, or run workflow **Windows test installer (no release)** manually (`workflow_dispatch`).
+1. Push to `cursor/dataweave-product-v0.3.0-d9c8`, or run workflow **Windows test installer (no release)** manually (`workflow_dispatch`) **on that branch** (not `main`).
 2. Wait for job **Windows MSI test artifact** on `windows-latest`.
-3. Download artifact **`TEST-windows-msi-<sha>`** (contains `.msi` and `.exe`).
-4. Record the workflow step **Report version and SHA256** values (authoritative for that build).
+3. Download artifact **`TEST-windows-msi-<sha>`** (contains `.msi` and `.exe`). The `<sha>` must match the RC commit you intend (e.g. not `3dbb41c`, which is public **v0.2.9** on `main`).
+4. Record the workflow step **Report version and SHA256** values: Gradle product version (`0.3.0-SNAPSHOT`), jpackage/installer version (`1.3.0`), MSI/EXE file metadata, and SHA256.
 
 Workflow file: `.github/workflows/windows-test-installer.yml`  
 Gradle tasks: `:desktop:packageMsi` `:desktop:packageExe` (see `desktop/build.gradle.kts`).

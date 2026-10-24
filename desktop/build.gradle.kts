@@ -128,3 +128,7 @@ tasks.register<JavaExec>("runHeadlessSmoke") {
     mainClass.set("com.dataweave.app.HeadlessSmokeKt")
     systemProperty("dataweave.test.mode", "true")
 }
+
+tasks.matching { it.name == "packageMsi" || it.name == "packageExe" }.configureEach {
+    dependsOn(":assertProductVersionPrefix")
+}

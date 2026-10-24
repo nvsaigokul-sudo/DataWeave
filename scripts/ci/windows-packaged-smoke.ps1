@@ -28,6 +28,24 @@ $cfgText = Get-Content $cfg -Raw
 if ($cfgText -notmatch 'DataWeaveBootstrapKt') {
   throw 'DataWeave.cfg app.mainclass is not com.dataweave.app.DataWeaveBootstrapKt'
 }
+if ($cfgText -match 'app\.version=([^\r\n]+)') {
+  Write-Host "Packaged app.version=$($Matches[1])"
+}
+
+$expectedJpackage = $env:DATAWEAVE_EXPECT_JPACKAGE_VERSION
+if ($expectedJpackage) {
+  $gradleOut = & ./gradlew printProductVersion --no-daemon -q 2>&1 | Out-String
+  if ($gradleOut -notmatch 'dataweave\.jpackageVersion=([^\r\n]+)') {
+    throw 'Could not read jpackage version from printProductVersion'
+  }
+  $built = $Matches[1].Trim()
+  if ($built -ne $expectedJpackage) {
+    throw "Built jpackage version '$built' != expected '$expectedJpackage'"
+  }
+  if ($msi.Name -notlike "*$expectedJpackage*") {
+    throw "MSI name '$($msi.Name)' does not include expected jpackage version '$expectedJpackage'"
+  }
+}
 
 $release = Join-Path $installRoot 'runtime/release'
 $releaseText = Get-Content $release -Raw
