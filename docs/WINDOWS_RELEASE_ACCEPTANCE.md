@@ -1,58 +1,60 @@
-# Windows release acceptance (v0.3.0 RC)
+# Windows release acceptance (v0.3.0)
 
-**Not a published release.** Use this checklist after building installers from commit **`3126f14`** or later on branch **`cursor/dataweave-product-v0.3.0-d9c8`**.
+**Publication gate:** Owner manual scenarios **#1–#9** below must be recorded **PASS** (or approved **PARTIAL** with written waiver) before **`v0.3.0`** GitHub Release. Automated CI smoke alone is **not** sufficient.
 
-## Build MSI/EXE (Windows or GitHub Actions)
+## Version convention
 
-### Option A — GitHub Actions (recommended)
+- Gradle / GitHub product: **`0.3.0`**
+- Windows installer files: **`DataWeave-1.3.0.msi`**, **`DataWeave-1.3.0.exe`**
+- Apps & Settings display: **1.3.0** (jpackage mapping — see [VERSIONING.md](./VERSIONING.md))
 
-1. Push to `cursor/dataweave-product-v0.3.0-d9c8`, or run workflow **Windows test installer (no release)** manually (`workflow_dispatch`) **on that branch** (not `main`).
-2. Wait for job **Windows MSI test artifact** on `windows-latest`.
-3. Download artifact **`TEST-windows-msi-<sha>`** (contains `.msi` and `.exe`). The `<sha>` must match the RC commit you intend (e.g. not `3dbb41c`, which is public **v0.2.9** on `main`).
-4. Record the workflow step **Report version and SHA256** values: Gradle product version (`0.3.0-SNAPSHOT`), jpackage/installer version (`1.3.0`), MSI/EXE file metadata, and SHA256.
+## Build MSI/EXE
 
-Workflow file: `.github/workflows/windows-test-installer.yml`  
-Gradle tasks: `:desktop:packageMsi` `:desktop:packageExe` (see `desktop/build.gradle.kts`).
+### GitHub Actions (recommended)
 
-Automated install/GUI smoke on CI: `scripts/ci/windows-packaged-smoke.ps1` (15s alive + Compose launch log).
+1. Use commit on **`main`** (after merge) or **`cursor/dataweave-product-v0.3.0-d9c8`** with Gradle **`0.3.0`** — **not** `main` @ `3dbb41c` (v0.2.9 / **1.2.9** installers).
+2. Workflow **Windows test installer (no release)** or **Release** (on `v0.3.0` tag).
+3. Download **`TEST-windows-msi-<sha>`** or release assets; `<sha>` must match the intended commit.
+4. Record **Report version and SHA256** (Gradle, jpackage, MSI/EXE metadata, SHA256).
 
-### Option B — Local Windows machine
+### Local Windows
 
 ```bash
 ./gradlew test :desktop:runHeadlessSmoke --no-daemon
-./gradlew :desktop:packageMsi :desktop:packageExe --no-daemon
+./gradlew :desktop:packageMsi :desktop:packageExe -PrequireProductVersionPrefix=0.3.0 --no-daemon
 ```
 
-Artifacts under: `desktop/build/compose/binaries/main/msi/` and `.../exe/`.
+## Automated CI smoke (Windows runner)
 
-Compute checksum:
+Script: `scripts/ci/windows-packaged-smoke.ps1`
 
-```powershell
-Get-FileHash -Algorithm SHA256 (Get-ChildItem -Recurse desktop/build/compose/binaries -Filter *.msi | Select-Object -First 1).FullName
-```
+| Check | Evidence |
+|-------|----------|
+| MSI install + file layout | CI |
+| `--diagnose`, `--headless-smoke`, `--gui-smoke` | CI |
+| Normal GUI alive 15s + Compose launch log | CI |
+| jpackage `1.3.0` when Gradle `0.3.0` | Run **40112573212** @ `dd07d22` (RC); **re-run on final release commit** before publish |
 
-## Owner manual acceptance (record PASS / PARTIAL / FAIL / NOT TESTED)
+## Owner manual acceptance (required for publish)
 
-| # | Scenario | Notes |
-|---|----------|--------|
-| 1 | Install MSI, launch packaged app | No HeadlessException |
-| 2 | Restart app; Settings Light/Dark/System persist | |
-| 3 | Connections: scroll, save password, reconnect after restart | Credential recovery if vault empty |
-| 4 | Explorer: DB → schema → table; PK/FK/index sections; Retry on error | |
-| 5 | Data grid: paging, filter, row/col selection, Ctrl+C / Ctrl+Shift+C, NULL vs empty | Keyboard focus |
-| 6 | Dataset Builder: drag tables, join lines, key pickers, preview, invalid graph keeps last preview, save/reopen | |
-| 7 | SQL: SELECT ok; write statements rejected; Cancel long query | |
-| 8 | Projects: link dataset/query, reorder, unsaved dialog, Open in Datasets / Open in SQL | |
-| 9 | Clean exit; no hung PG pools | |
+| # | Scenario | Outcome | Evidence |
+|---|----------|---------|----------|
+| 1 | Install MSI, launch packaged app | **NOT TESTED** | |
+| 2 | Restart; Settings theme persists | **NOT TESTED** | |
+| 3 | Connections scroll, password, reconnect | **NOT TESTED** | |
+| 4 | Explorer hierarchy + PK/FK/index | **NOT TESTED** | |
+| 5 | Grid paging, focus, selection, clipboard | **NOT TESTED** | |
+| 6 | Dataset Builder DnD, joins, preview, save/reopen | **NOT TESTED** | |
+| 7 | SQL SELECT, write rejected, cancel | **NOT TESTED** | |
+| 8 | Projects links, reorder, unsaved, open | **NOT TESTED** | |
+| 9 | Clean exit | **NOT TESTED** | |
 
-Do **not** publish `v0.3.0` or create a GitHub Release until this checklist is complete and you explicitly authorize publish.
+Update this table after testing the **release-tag** MSI (not an older TEST artifact).
 
-## Linux cloud agent limitations
-
-Linux CI/agents **cannot** produce Windows MSI or perform interactive GUI acceptance. Linux verification is limited to:
+## Linux agent limits
 
 ```bash
 ./gradlew test :desktop:runHeadlessSmoke :desktop:packageDeb
 ```
 
-That does **not** satisfy Windows release gates.
+Does **not** replace Windows owner acceptance.

@@ -61,5 +61,5 @@ DS-JOIN-TYPES,Datasets,Buttons,Join type per edge,INNER/LEFT/RIGHT/FULL,Join row
 GRID-SHIFT-SEL,Data,Keyboard,Shift+arrows,Rectangular selection,Grid focused,GridSelectionLogic.arrowKey,GridSelectionLogicTest,PASS
 GRID-CTRL-C,Data,Keyboard,Ctrl+C,Copy selection TSV,Selection active,GridSelectionLogic.formatSelectionTsv,GridSelectionLogicTest,PARTIAL
 WIN-MSI-BUILD,Release,CI,packageMsi/packageExe,Windows installers,windows-latest,.github/workflows/windows-test-installer.yml,manual,BLOCKED
-WIN-MSI-SMOKE,Release,Script,windows-packaged-smoke.ps1,Install MSI + 15s GUI alive,CI Windows job,scripts/ci/windows-packaged-smoke.ps1,manual,NOT TESTED
+WIN-MSI-SMOKE,Release,Script,windows-packaged-smoke.ps1,Install MSI + GUI smoke on windows-latest,CI Windows job,scripts/ci/windows-packaged-smoke.ps1,GitHub Actions run 40112573212 @ dd07d22 (RC; re-verify on release tag),PARTIAL
 WIN-OWNER-CHECK,Release,Manual,Owner acceptance,Full product checklist,Packaged MSI,docs/WINDOWS_RELEASE_ACCEPTANCE.md,manual,NOT TESTED
