@@ -95,8 +95,14 @@ jobs:
           $exe = Join-Path $installRoot 'DataWeave.exe'
           $jvmDll = Join-Path $installRoot 'runtime/bin/server/jvm.dll'
           $cfg = Join-Path $installRoot 'app/DataWeave.cfg'
-          foreach ($path in @($exe, $jvmDll, $cfg)) {
+          $javaExe = Join-Path $installRoot 'runtime/bin/java.exe'
+          foreach ($path in @($exe, $jvmDll, $cfg, $javaExe)) {
             if (-not (Test-Path $path)) { throw "Missing expected install artifact: $path" }
+          }
+
+          $cfgText = Get-Content $cfg -Raw
+          if ($cfgText -notmatch 'DataWeaveBootstrapKt') {
+            throw 'DataWeave.cfg app.mainclass is not com.dataweave.app.DataWeaveBootstrapKt'
           }
 
           $release = Join-Path $installRoot 'runtime/release'

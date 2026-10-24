@@ -1,4 +1,6 @@
+import org.gradle.api.provider.Property
 import org.gradle.internal.os.OperatingSystem
+import org.jetbrains.compose.desktop.application.tasks.AbstractJLinkTask
 
 /** jpackage/macOS require MAJOR version >= 1 (0.2.0 is invalid). */
 fun jpackageVersion(raw: String): String {
@@ -108,6 +110,14 @@ tasks.withType<JavaExec>().configureEach {
     if (OperatingSystem.current().isMacOsX) {
         jvmArgs("-XstartOnFirstThread")
     }
+}
+
+// Keep runtime/bin/java.exe for DataWeave-JvmDebug.cmd (Compose jlink defaults to --strip-native-commands).
+tasks.withType<AbstractJLinkTask>().configureEach {
+    val field = AbstractJLinkTask::class.java.getDeclaredField("stripNativeCommands")
+    field.isAccessible = true
+    @Suppress("UNCHECKED_CAST")
+    (field.get(this) as Property<Boolean>).set(false)
 }
 
 tasks.register<JavaExec>("runHeadlessSmoke") {

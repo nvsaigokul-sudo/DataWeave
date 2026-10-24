@@ -106,6 +106,7 @@ object LaunchDiagnostics {
         val appDir = installRoot.resolve("app")
         val runtimeDir = installRoot.resolve("runtime")
         val jvmDll = runtimeDir.resolve("bin/server/jvm.dll")
+        val javaExe = runtimeDir.resolve("bin/java.exe")
         val cfg = appDir.resolve("DataWeave.cfg")
         val release = runtimeDir.resolve("release")
         line("install.exe.exists", exe.exists())
@@ -114,6 +115,10 @@ object LaunchDiagnostics {
         line("install.runtime.dir.exists", runtimeDir.isDirectory())
         line("install.jvm.dll.exists", jvmDll.isRegularFile())
         line("install.jvm.dll.path", jvmDll)
+        if (System.getProperty("os.name").lowercase().contains("win")) {
+            line("install.java.exe.exists", javaExe.isRegularFile())
+            line("install.java.exe.path", javaExe)
+        }
         line("install.cfg.exists", cfg.isRegularFile())
         if (cfg.isRegularFile()) {
             val cfgText = cfg.readText()
