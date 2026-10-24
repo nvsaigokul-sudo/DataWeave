@@ -20,7 +20,8 @@ public class DatasetPreviewCacheGateway {
 
     @Cacheable(
             cacheNames = "datasetPreview",
-            key = "#scopeKey + ':' + #generation + ':' + #connectionId + ':' + #table.qualifiedName() + ':' + #selectedColumns")
+            key =
+                    "#scopeKey + ':' + #generation + ':' + #connectionId + ':' + #table.qualifiedName() + ':' + #selectedColumns + ':' + #offset + ':' + #limit")
     public DataPage preview(
             String scopeKey,
             long generation,

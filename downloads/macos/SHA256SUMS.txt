@@ -1,0 +1,3 @@
+# macOS Apple Silicon (macos-14 CI / v0.2.1 release) — verify when present in repo:
+#  (see release SHA256SUMS.txt for exact filenames)
+# Intel (macos-x64): build locally; not stored in repo.

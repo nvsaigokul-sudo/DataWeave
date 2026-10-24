@@ -22,6 +22,8 @@ This page is the user-facing audit snapshot (2026-10-24). A longer prioritized r
 ## Fixes in this audit cycle
 
 - **Query result cache keys** now include SQL and params (avoids rare `Objects.hash` collision returning wrong rows). Regression test: `ReadOnlyQueryServiceTest`.
+- **Dataset preview cache keys** include offset/limit (avoids wrong page on cache hit). Regression test: `DatasetPreviewCacheIntegrationTest`.
+- **Downloads** reorganized under `downloads/windows|linux|macos/`; CI runs `scripts/verify-downloads-checksums.sh`.
 
 ## Not implemented / deferred
 

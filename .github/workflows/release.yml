@@ -46,6 +46,7 @@ jobs:
         shell: bash
         run: ./gradlew :desktop:packageAppImage :desktop:packageDeb --no-daemon
 
+      # Windows GUI install smoke lives in ci.yml only (MSI install + 15s alive). Release tags build artifacts without that matrix.
       - name: Package (Windows)
         if: runner.os == 'Windows'
         shell: bash

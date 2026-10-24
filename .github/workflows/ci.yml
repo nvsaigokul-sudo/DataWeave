@@ -10,6 +10,18 @@ permissions:
   contents: read
 
 jobs:
+  downloads-verify:
+    name: Verify download checksums
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Check SHA256SUMS against files in downloads/
+        shell: bash
+        run: ./scripts/verify-downloads-checksums.sh
+
   build-test:
     name: Build & test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}

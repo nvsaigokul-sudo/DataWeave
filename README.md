@@ -15,12 +15,12 @@
 
 | Your OS | Download |
 |---------|----------|
-| **Windows** | **[DataWeave-Setup.msi](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/DataWeave-Setup.msi)** (Git LFS; SHA256 in [downloads/SHA256SUMS.txt](downloads/SHA256SUMS.txt)) — CI-tested build with `java.desktop` + GUI smoke. Alternate: [v0.2.1 release `.msi`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/windows-DataWeave-1.2.1.msi) / [`.exe`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/windows-DataWeave-1.2.1.exe) |
-| **Linux (x64)** | [`.deb`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/linux-dataweave_1.2.1_amd64.deb) (AppImage when present on the [release page](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.1)) |
-| **macOS Apple Silicon** | [`.dmg`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/macos-arm64-DataWeave-1.2.1.dmg) · [`.pkg`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/macos-arm64-DataWeave-1.2.1.pkg) |
-| **macOS Intel** | Build on an Intel Mac: `./gradlew :desktop:packageDmg :desktop:packagePkg` (GitHub `macos-13` job omitted due to runner queue) |
+| **Windows** | **[downloads/windows/DataWeave-Setup.msi](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi)** (Git LFS; [SHA256SUMS](downloads/windows/SHA256SUMS.txt)) — CI-tested `java.desktop` + GUI smoke. Alternate: [v0.2.1 release `.msi`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/windows-DataWeave-1.2.1.msi) / [`.exe`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/windows-DataWeave-1.2.1.exe) |
+| **Linux (x64)** | [`.deb`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/linux-dataweave_1.2.1_amd64.deb) · [linux/](downloads/linux/) |
+| **macOS Apple Silicon** | [`.dmg`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/macos-arm64-DataWeave-1.2.1.dmg) · [`.pkg`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/macos-arm64-DataWeave-1.2.1.pkg) · [macos/](downloads/macos/) |
+| **macOS Intel** | Local build — [downloads/macos/README.md](downloads/macos/README.md) (`macos-13` CI omitted) |
 
-Verify Windows with [downloads/SHA256SUMS.txt](downloads/SHA256SUMS.txt); Linux/macOS with [`SHA256SUMS.txt` on v0.2.1](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/SHA256SUMS.txt). Details: [downloads/README.md](downloads/README.md).
+Verify with `./scripts/verify-downloads-checksums.sh` and per-platform [downloads/SHA256SUMS.txt](downloads/SHA256SUMS.txt); release bundles use [`SHA256SUMS.txt` on v0.2.1](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/SHA256SUMS.txt). Details: [downloads/README.md](downloads/README.md).
 
 | Step | Action |
 |------|--------|

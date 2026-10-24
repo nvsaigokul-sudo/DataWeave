@@ -1,4 +1,3 @@
-# DataWeave Windows installer (built on GitHub Actions windows-latest)
-# CI: https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/39996985661
-# Commit: 2ac8c22 — java.desktop + jdk.accessibility jlink; normal GUI alive 15s on CI
-b613ec64d2c30abe613ac2ec821cc0c4443c70c539023b481b33118666dd886e  DataWeave-Setup.msi
+# Index — per-platform sums live in subfolders. CI verifies files present in the checkout.
+# Windows (in repo, Git LFS):
+b613ec64d2c30abe613ac2ec821cc0c4443c70c539023b481b33118666dd886e  windows/DataWeave-Setup.msi

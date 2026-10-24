@@ -1,2 +1,4 @@
-downloads/*.msi filter=lfs diff=lfs merge=lfs -text
-downloads/*.exe filter=lfs diff=lfs merge=lfs -text
+downloads/**/*.msi filter=lfs diff=lfs merge=lfs -text
+downloads/**/*.exe filter=lfs diff=lfs merge=lfs -text
+downloads/**/*.AppImage filter=lfs diff=lfs merge=lfs -text
+downloads/**/*.deb filter=lfs diff=lfs merge=lfs -text
