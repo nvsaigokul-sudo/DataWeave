@@ -15,9 +15,9 @@
 
 | Your OS | Download |
 |---------|----------|
-| **Windows** | **[downloads/windows/DataWeave-Setup.msi](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi)** (Git LFS; SHA256 `35333f60…` — [SHA256SUMS](downloads/windows/SHA256SUMS.txt)) — **recommended**; CI GUI smoke. **Not** `raw.githubusercontent.com` (LFS pointer). [Releases → Latest](https://github.com/nvsaigokul-sudo/DataWeave/releases/latest) serves a **different** `.msi` (`6716b5ae…` on v0.2.1). Alternate portable: [v0.2.1 `.exe`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/windows-DataWeave-1.2.1.exe) |
-| **Linux (x64)** | [`.deb`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/linux-dataweave_1.2.1_amd64.deb) · [linux/](downloads/linux/) |
-| **macOS Apple Silicon** | [`.dmg`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/macos-arm64-DataWeave-1.2.1.dmg) · [`.pkg`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/macos-arm64-DataWeave-1.2.1.pkg) · [macos/](downloads/macos/) |
+| **Windows** | **[Releases → Latest `.msi`](https://github.com/nvsaigokul-sudo/DataWeave/releases/latest)** (v0.2.2+, SHA256 `35333f60…`) or [LFS/media MSI](https://media.githubusercontent.com/media/nvsaigokul-sudo/DataWeave/main/downloads/windows/DataWeave-Setup.msi) — same CI-smoked bytes. **Not** `raw.githubusercontent.com` (LFS pointer). [SHA256SUMS](downloads/windows/SHA256SUMS.txt) |
+| **Linux (x64)** | [`.deb` (v0.2.2)](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.2/linux-dataweave_1.2.2_amd64.deb) · [linux/](downloads/linux/) |
+| **macOS Apple Silicon** | [`.dmg` (v0.2.2)](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.2/macos-arm64-DataWeave-1.2.2.dmg) · [`.pkg`](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.2/macos-arm64-DataWeave-1.2.2.pkg) · [macos/](downloads/macos/) |
 | **macOS Intel** | Local build — [downloads/macos/README.md](downloads/macos/README.md) (`macos-13` CI omitted) |
 
 Verify with `./scripts/verify-downloads-checksums.sh` and per-platform [downloads/SHA256SUMS.txt](downloads/SHA256SUMS.txt); release bundles use [`SHA256SUMS.txt` on v0.2.1](https://github.com/nvsaigokul-sudo/DataWeave/releases/download/v0.2.1/SHA256SUMS.txt). Details: [downloads/README.md](downloads/README.md).

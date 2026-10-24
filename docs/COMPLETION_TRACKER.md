@@ -20,7 +20,7 @@ Last updated: **2026-10-24** (release repair worker `bc-e7452cf8-f5ad-574a-b6ed-
 | Release publish aligns Windows `.msi` with LFS canonical bytes | Publish job `lfs: true` + copy step | (this push) |
 | Gradle test + headless smoke | `./gradlew test :desktop:runHeadlessSmoke` PASS | `626372e` baseline |
 | M0 features (SQL, CSV, join preview, export) | Integration tests + Compose UI | `32b887c`, `d2d4938` |
-| v0.2.2 tag + GitHub Release | See **Release** row below | (after tag push) |
+| v0.2.2 tag + GitHub Release | [Release v0.2.2](https://github.com/nvsaigokul-sudo/DataWeave/releases/tag/v0.2.2); Windows MSI SHA256 `35333f60…` verified | `4bbcf00` + tag `v0.2.2` |
 
 ## Blockers / not verified
 
@@ -35,8 +35,8 @@ Last updated: **2026-10-24** (release repair worker `bc-e7452cf8-f5ad-574a-b6ed-
 | Step | Status |
 |------|--------|
 | Preconditions (tests, checksums) | **PASS** on agent |
-| Tag `v0.2.2` on `main` | **Pending** → updated after push |
-| `release.yml` workflow | **Pending** → CI run URL after tag |
+| Tag `v0.2.2` on `main` | **DONE** @ `4bbcf00` |
+| `release.yml` workflow | **PASS** [40069176332](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40069176332) |
 | v0.2.1 release | **Preserved** (no delete/retag) |
 
 ### Publish steps (if tag blocked)
@@ -54,7 +54,8 @@ git push github v0.2.2
 
 | Run | Branch / trigger | Notes |
 |-----|------------------|-------|
-| (filled after push) | `main` / `v0.2.2` | Update this table when green |
+| [40069173014](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40069173014) | `main` @ `4bbcf00` | ubuntu/windows/macos + downloads-verify **PASS** |
+| [40069176332](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40069176332) | tag `v0.2.2` | Release matrix + publish **PASS** |
 
 ## Laptop acceptance (Windows)
 

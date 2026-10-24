@@ -1,6 +1,6 @@
 # DataWeave verification status
 
-Last updated: **2026-10-24** (product completion: Flyway v2, SQL/CSV/join/export + Compose screens; `./gradlew test :desktop:runHeadlessSmoke` **PASS** on agent; prior CI [40067692708](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40067692708)).
+Last updated: **2026-10-24** (v0.2.2 published; CI [40069173014](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40069173014); Release [40069176332](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40069176332); release Windows MSI matches LFS `35333f60…`).
 
 This page summarizes **what we have actually run**, not roadmap intent. For architecture and audit detail see [AUDIT.md](./AUDIT.md).
 
