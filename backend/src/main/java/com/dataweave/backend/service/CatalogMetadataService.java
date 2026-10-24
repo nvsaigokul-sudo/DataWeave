@@ -3,6 +3,8 @@ package com.dataweave.backend.service;
 import com.dataweave.backend.domain.ColumnMeta;
 import com.dataweave.backend.domain.ConnectionProfile;
 import com.dataweave.backend.domain.ForeignKeyRef;
+import com.dataweave.backend.domain.TableIndexMeta;
+import com.dataweave.backend.domain.TablePrimaryKeyMeta;
 import com.dataweave.backend.domain.TableRef;
 import com.dataweave.backend.persistence.SchemaVersionRepository;
 import com.dataweave.backend.postgres.PostgresConnectionManager;
@@ -156,6 +158,78 @@ public class CatalogMetadataService {
                 return columns;
             }
         }
+    }
+
+    @Cacheable(
+            cacheNames = "metadata",
+            key =
+                    "#connectionId + ':pk:' + #schema + ':' + #table + ':' + @catalogMetadataService.schemaVersion(#connectionId)")
+    public TablePrimaryKeyMeta getPrimaryKey(UUID connectionId, String schema, String table) throws Exception {
+        ConnectionProfile profile = connectionProfileService.require(connectionId);
+        DataSource ds = connectionManager.getDataSource(profile);
+        String sql =
+                """
+                SELECT kcu.column_name
+                FROM information_schema.table_constraints tc
+                JOIN information_schema.key_column_usage kcu
+                  ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema
+                WHERE tc.constraint_type = 'PRIMARY KEY'
+                  AND tc.table_schema = ? AND tc.table_name = ?
+                ORDER BY kcu.ordinal_position
+                """;
+        try (Connection conn = ds.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, schema);
+            ps.setString(2, table);
+            try (ResultSet rs = ps.executeQuery()) {
+                List<String> cols = new ArrayList<>();
+                while (rs.next()) {
+                    cols.add(rs.getString(1));
+                }
+                return new TablePrimaryKeyMeta(schema, table, cols);
+            }
+        }
+    }
+
+    @Cacheable(
+            cacheNames = "metadata",
+            key =
+                    "#connectionId + ':idx:' + #schema + ':' + #table + ':' + @catalogMetadataService.schemaVersion(#connectionId)")
+    public List<TableIndexMeta> listIndexes(UUID connectionId, String schema, String table) throws Exception {
+        ConnectionProfile profile = connectionProfileService.require(connectionId);
+        DataSource ds = connectionManager.getDataSource(profile);
+        String sql =
+                """
+                SELECT indexname, indexdef
+                FROM pg_indexes
+                WHERE schemaname = ? AND tablename = ?
+                ORDER BY indexname
+                """;
+        try (Connection conn = ds.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, schema);
+            ps.setString(2, table);
+            try (ResultSet rs = ps.executeQuery()) {
+                List<TableIndexMeta> indexes = new ArrayList<>();
+                while (rs.next()) {
+                    String name = rs.getString(1);
+                    String def = rs.getString(2);
+                    boolean unique = def != null && def.toUpperCase().contains("UNIQUE");
+                    indexes.add(new TableIndexMeta(schema, table, name, unique, List.of()));
+                }
+                return indexes;
+            }
+        }
+    }
+
+    @Cacheable(
+            cacheNames = "metadata",
+            key =
+                    "#connectionId + ':fks-table:' + #schema + ':' + #table + ':' + @catalogMetadataService.schemaVersion(#connectionId)")
+    public List<ForeignKeyRef> listForeignKeysForTable(UUID connectionId, String schema, String table) throws Exception {
+        return listForeignKeys(connectionId, schema).stream()
+                .filter(fk -> fk.table().equals(table))
+                .toList();
     }
 
     @Cacheable(

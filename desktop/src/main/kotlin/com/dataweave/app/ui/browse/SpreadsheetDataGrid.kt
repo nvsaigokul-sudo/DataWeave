@@ -3,6 +3,7 @@ package com.dataweave.app.ui.browse
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +37,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import kotlin.math.roundToInt
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -244,6 +247,17 @@ fun SpreadsheetDataGrid(
                             style = MaterialTheme.typography.labelMedium,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
+                        )
+                        Box(
+                            Modifier
+                                .width(8.dp)
+                                .height(48.dp)
+                                .pointerInput(col.name) {
+                                    detectHorizontalDragGestures { _, drag ->
+                                        val w = columnWidths[col.name] ?: 120
+                                        columnWidths = columnWidths + (col.name to (w + drag.roundToInt()).coerceIn(60, 400))
+                                    }
+                                },
                         )
                         DropdownMenu(expanded = columnMenuFor == col.name, onDismissRequest = { columnMenuFor = null }) {
                             DropdownMenuItem(

@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class DatasetGraphSqlGenerator {
 
-    public String toSelectSql(DatasetGraphDefinition graph, int limit, long offset) {
+    public record GeneratedSql(String sql, java.util.List<Object> params) {}
+
+    public GeneratedSql toSelectSql(DatasetGraphDefinition graph, int limit, long offset) {
         if (graph.sourceTables().isEmpty()) {
             throw new IllegalArgumentException("Add at least one source table");
         }
@@ -63,11 +65,31 @@ public class DatasetGraphSqlGenerator {
                 selectParts.add(expr + " AS " + SqlIdentifiers.quote(label));
             }
         }
+        java.util.List<Object> params = new java.util.ArrayList<>();
         StringBuilder sql =
                 new StringBuilder("SELECT ")
                         .append(String.join(", ", selectParts))
                         .append(" FROM ")
                         .append(from);
+        if (graph.filterText() != null && !graph.filterText().isBlank()) {
+            String col = graph.filterColumn();
+            if (col == null || col.isBlank()) {
+                throw new IllegalArgumentException("Filter column required when filter text is set");
+            }
+            String filterExpr;
+            if (col.contains(".")) {
+                String[] parts = col.split("\\.", 2);
+                filterExpr = parts[0] + "." + SqlIdentifiers.quote(parts[1]);
+            } else {
+                filterExpr = root.alias() + "." + SqlIdentifiers.quote(col);
+            }
+            sql.append(" WHERE CAST(").append(filterExpr).append(" AS TEXT) ILIKE ? ESCAPE '\\'");
+            String pattern =
+                    "%"
+                            + graph.filterText().trim().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+                            + "%";
+            params.add(pattern);
+        }
         if (graph.sortColumn() != null && !graph.sortColumn().isBlank()) {
             sql.append(" ORDER BY ")
                     .append(SqlIdentifiers.quote(graph.sortColumn()))
@@ -75,6 +97,6 @@ public class DatasetGraphSqlGenerator {
         }
         sql.append(" LIMIT ").append(Math.min(Math.max(limit, 1), 500));
         sql.append(" OFFSET ").append(Math.max(offset, 0));
-        return sql.toString();
+        return new GeneratedSql(sql.toString(), params);
     }
 }

@@ -32,9 +32,13 @@ public class DatasetGraphService {
         return JSON.readValue(json, DatasetGraphDefinition.class);
     }
 
+    public String generateSql(DatasetGraphDefinition graph, int limit, long offset) throws Exception {
+        return sqlGenerator.toSelectSql(graph, limit, offset).sql();
+    }
+
     public DataPage preview(UUID connectionId, DatasetGraphDefinition graph, long offset, int limit) throws Exception {
-        String sql = sqlGenerator.toSelectSql(graph, limit, offset);
-        List<Map<String, Object>> rows = readOnlyQueryService.runSelect(connectionId, sql, List.of());
+        var generated = sqlGenerator.toSelectSql(graph, limit, offset);
+        List<Map<String, Object>> rows = readOnlyQueryService.runSelect(connectionId, generated.sql(), generated.params());
         var columns =
                 rows.isEmpty()
                         ? List.<com.dataweave.backend.domain.ColumnMeta>of()

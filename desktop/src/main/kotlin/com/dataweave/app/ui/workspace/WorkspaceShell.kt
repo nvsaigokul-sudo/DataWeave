@@ -13,6 +13,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +33,8 @@ import com.dataweave.app.ui.theme.DataWeaveTheme
 import com.dataweave.app.ui.theme.DwSpacing
 import com.dataweave.backend.ApplicationFacade
 import java.util.UUID
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 enum class WorkspaceSection {
     Welcome,
@@ -45,6 +48,16 @@ enum class WorkspaceSection {
 @Composable
 fun WorkspaceShell(facade: ApplicationFacade) {
     val workspace = remember { WorkspaceContext() }
+
+    LaunchedEffect(workspace.activeConnectionId) {
+        val id = workspace.activeConnectionId ?: return@LaunchedEffect
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val profile = facade.listConnections().firstOrNull { it.id == id }
+                workspace.updateActiveDatabase(profile?.databaseName)
+            }
+        }
+    }
     var themeMode by remember { mutableStateOf(UserPreferences.loadThemeMode()) }
     var section by remember { mutableStateOf(WorkspaceSection.Welcome) }
     var pendingEditConnectionId by remember { mutableStateOf<UUID?>(null) }
@@ -83,6 +96,7 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                                 workspace.setActiveConnection(id)
                                 workspace.updateStatus("Connected")
                             },
+                            onDatabaseChanged = { workspace.updateActiveDatabase(it) },
                             modifier = Modifier.padding(DwSpacing.xs).fillMaxHeight(),
                         )
                     }
@@ -140,6 +154,7 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                                     facade,
                                     workspace.activeConnectionId,
                                     workspace.selectedSchema,
+                                    workspace = workspace,
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             WorkspaceSection.Projects ->

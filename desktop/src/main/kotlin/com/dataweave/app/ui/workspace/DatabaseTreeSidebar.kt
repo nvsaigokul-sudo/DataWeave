@@ -39,6 +39,9 @@ import com.dataweave.app.ui.connections.CredentialRecoveryPanel
 import com.dataweave.app.ui.theme.DwSpacing
 import com.dataweave.backend.ApplicationFacade
 import com.dataweave.backend.domain.ColumnMeta
+import com.dataweave.backend.domain.ForeignKeyRef
+import com.dataweave.backend.domain.TableIndexMeta
+import com.dataweave.backend.domain.TablePrimaryKeyMeta
 import com.dataweave.backend.domain.ConnectionLifecycleState
 import com.dataweave.backend.domain.ConnectionProfile
 import com.dataweave.backend.domain.TableRef
@@ -74,6 +77,7 @@ fun DatabaseTreeSidebar(
     onOpenConnections: () -> Unit,
     onEditConnection: (UUID) -> Unit,
     onConnectionEstablished: (UUID) -> Unit,
+    onDatabaseChanged: (String?) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -87,6 +91,9 @@ fun DatabaseTreeSidebar(
     val tableSlices = remember { mutableStateMapOf<String, ExplorerSlice<TableRef>>() }
     val viewSlices = remember { mutableStateMapOf<String, ExplorerSlice<TableRef>>() }
     val columnSlices = remember { mutableStateMapOf<String, ExplorerSlice<ColumnMeta>>() }
+    val pkSlices = remember { mutableStateMapOf<String, ExplorerSlice<TablePrimaryKeyMeta>>() }
+    val fkTableSlices = remember { mutableStateMapOf<String, ExplorerSlice<ForeignKeyRef>>() }
+    val indexSlices = remember { mutableStateMapOf<String, ExplorerSlice<TableIndexMeta>>() }
     val expandedSchemas = remember { mutableStateMapOf<String, Boolean>() }
     val expandedTables = remember { mutableStateMapOf<String, Boolean>() }
     var loadGeneration by remember { mutableStateOf(0) }
@@ -99,6 +106,9 @@ fun DatabaseTreeSidebar(
         tableSlices.clear()
         viewSlices.clear()
         columnSlices.clear()
+        pkSlices.clear()
+        fkTableSlices.clear()
+        indexSlices.clear()
         expandedDbs.clear()
         expandedSchemas.clear()
         expandedTables.clear()
@@ -186,6 +196,25 @@ fun DatabaseTreeSidebar(
                 columnSlices[key] ?: ExplorerSlice(),
                 { facade.listColumns(id, schema, table) },
             ) { columnSlices[key] = it }
+        }
+        scope.launch {
+            loadSlice(gen, pkSlices[key] ?: ExplorerSlice(), { listOf(facade.getTablePrimaryKey(id, schema, table)) }) {
+                pkSlices[key] = it
+            }
+        }
+        scope.launch {
+            loadSlice(
+                gen,
+                fkTableSlices[key] ?: ExplorerSlice(),
+                { facade.listForeignKeysForTable(id, schema, table) },
+            ) { fkTableSlices[key] = it }
+        }
+        scope.launch {
+            loadSlice(
+                gen,
+                indexSlices[key] ?: ExplorerSlice(),
+                { facade.listTableIndexes(id, schema, table) },
+            ) { indexSlices[key] = it }
         }
     }
 
@@ -432,6 +461,7 @@ fun DatabaseTreeSidebar(
                                             connectionPhase = "${st.state()}: ${st.message()}"
                                             if (st.state() == ConnectionLifecycleState.CONNECTED) {
                                                 profile = facade.listConnections().firstOrNull { it.id == id }
+                                                onDatabaseChanged(profile?.databaseName)
                                                 refreshAll()
                                             }
                                         }
@@ -447,6 +477,9 @@ fun DatabaseTreeSidebar(
                                 tableSlices = tableSlices,
                                 viewSlices = viewSlices,
                                 columnSlices = columnSlices,
+                                pkSlices = pkSlices,
+                                fkTableSlices = fkTableSlices,
+                                indexSlices = indexSlices,
                                 expandedSchemas = expandedSchemas,
                                 expandedTables = expandedTables,
                                 onExpandSchema = { schema, expand ->
@@ -478,6 +511,9 @@ private fun DatabaseSchemasSection(
     tableSlices: MutableMap<String, ExplorerSlice<TableRef>>,
     viewSlices: MutableMap<String, ExplorerSlice<TableRef>>,
     columnSlices: MutableMap<String, ExplorerSlice<ColumnMeta>>,
+    pkSlices: MutableMap<String, ExplorerSlice<TablePrimaryKeyMeta>>,
+    fkTableSlices: MutableMap<String, ExplorerSlice<ForeignKeyRef>>,
+    indexSlices: MutableMap<String, ExplorerSlice<TableIndexMeta>>,
     expandedSchemas: MutableMap<String, Boolean>,
     expandedTables: MutableMap<String, Boolean>,
     onExpandSchema: (String, Boolean) -> Unit,
@@ -557,6 +593,30 @@ private fun DatabaseSchemasSection(
                                                         modifier = Modifier.padding(start = 48.dp, top = 2.dp, bottom = 2.dp),
                                                     )
                                                 }
+                                    }
+                                    val metaKey = "db:$database:schema:$schema:table:${table.name}"
+                                    pkSlices[metaKey]?.items?.firstOrNull()?.let { pk ->
+                                        if (pk.columnNames().isNotEmpty()) {
+                                            Text(
+                                                "PK: ${pk.columnNames().joinToString(", ")}",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                modifier = Modifier.padding(start = 48.dp),
+                                            )
+                                        }
+                                    }
+                                    fkTableSlices[metaKey]?.items?.forEach { fk ->
+                                        Text(
+                                            "FK → ${fk.referencedTable()}.${fk.referencedColumn()}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            modifier = Modifier.padding(start = 48.dp),
+                                        )
+                                    }
+                                    indexSlices[metaKey]?.items?.forEach { idx ->
+                                        Text(
+                                            "Index ${idx.indexName()}${if (idx.unique()) " (unique)" else ""}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            modifier = Modifier.padding(start = 48.dp),
+                                        )
                                     }
                                 }
                             }

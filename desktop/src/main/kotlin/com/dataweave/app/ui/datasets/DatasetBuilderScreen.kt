@@ -44,8 +44,13 @@ fun DatasetBuilderScreen(
     facade: ApplicationFacade,
     activeConnectionId: UUID?,
     initialSchema: String = "public",
+    workspace: com.dataweave.app.ui.workspace.WorkspaceContext? = null,
     modifier: Modifier = Modifier,
 ) {
+    if (workspace != null) {
+        VisualDatasetBuilderScreen(facade, workspace, modifier)
+        return
+    }
     var projects by remember { mutableStateOf<List<WorkspaceProject>>(emptyList()) }
     var projectId by remember { mutableStateOf<UUID?>(null) }
     var connections by remember { mutableStateOf<List<ConnectionProfile>>(emptyList()) }

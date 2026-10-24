@@ -28,8 +28,9 @@ class DatasetGraphSqlGeneratorTest {
                                         "a", "a", "id", "order_id")),
                         null,
                         null,
+                        null,
                         false);
-        String sql = generator.toSelectSql(graph, 100, 0);
+        String sql = generator.toSelectSql(graph, 100, 0).sql();
         Assertions.assertTrue(sql.contains("INNER JOIN"));
         Assertions.assertTrue(sql.contains("\"orders\""));
         Assertions.assertTrue(sql.contains("\"customer_id\""));

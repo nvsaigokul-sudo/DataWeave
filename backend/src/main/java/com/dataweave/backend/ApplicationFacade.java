@@ -20,6 +20,8 @@ import com.dataweave.backend.service.ConnectionSessionService;
 import com.dataweave.backend.domain.DatasetOutputDefinition;
 import com.dataweave.backend.domain.ForeignKeyRef;
 import com.dataweave.backend.domain.JoinType;
+import com.dataweave.backend.domain.TableIndexMeta;
+import com.dataweave.backend.domain.TablePrimaryKeyMeta;
 import com.dataweave.backend.service.CsvIngestService;
 import com.dataweave.backend.domain.DatasetGraphDefinition;
 import com.dataweave.backend.service.DatasetGraphService;
@@ -288,6 +290,31 @@ public class ApplicationFacade {
 
     public List<ForeignKeyRef> listForeignKeys(UUID connectionId, String schema) throws Exception {
         return catalogMetadataService.listForeignKeys(connectionId, schema);
+    }
+
+    public List<ForeignKeyRef> listForeignKeysForTable(UUID connectionId, String schema, String table)
+            throws Exception {
+        return catalogMetadataService.listForeignKeysForTable(connectionId, schema, table);
+    }
+
+    public TablePrimaryKeyMeta getTablePrimaryKey(UUID connectionId, String schema, String table) throws Exception {
+        return catalogMetadataService.getPrimaryKey(connectionId, schema, table);
+    }
+
+    public List<TableIndexMeta> listTableIndexes(UUID connectionId, String schema, String table) throws Exception {
+        return catalogMetadataService.listIndexes(connectionId, schema, table);
+    }
+
+    public DatasetOutputDefinition getDatasetDefinition(UUID id) {
+        return datasetOutputDefinitionService.get(id);
+    }
+
+    public DatasetOutputDefinition duplicateDatasetDefinition(UUID id) throws Exception {
+        return datasetOutputDefinitionService.duplicate(id);
+    }
+
+    public String generateDatasetGraphSql(DatasetGraphDefinition graph, int limit, long offset) throws Exception {
+        return datasetGraphService.generateSql(graph, limit, offset);
     }
 
     public void deleteDatasetDefinition(UUID id) {

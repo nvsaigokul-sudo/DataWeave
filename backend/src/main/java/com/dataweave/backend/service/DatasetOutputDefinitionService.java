@@ -58,4 +58,20 @@ public class DatasetOutputDefinitionService {
     public void delete(UUID id) {
         repository.delete(id);
     }
+
+    public DatasetOutputDefinition get(UUID id) {
+        return repository.findById(id).orElseThrow(() -> new IllegalArgumentException("Dataset not found: " + id));
+    }
+
+    public DatasetOutputDefinition duplicate(UUID id) throws Exception {
+        DatasetOutputDefinition source = get(id);
+        return save(
+                null,
+                source.projectId(),
+                source.connectionId(),
+                source.sourceSchema(),
+                source.sourceTable(),
+                source.outputColumns(),
+                source.definitionJson());
+    }
 }

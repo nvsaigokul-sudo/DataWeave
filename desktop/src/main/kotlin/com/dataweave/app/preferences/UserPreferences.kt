@@ -40,6 +40,17 @@ object UserPreferences {
         return loadProps().getProperty("lastConnectionId")?.takeIf { it.isNotBlank() }
     }
 
+    fun loadDataTabs(): String? {
+        if (!Files.exists(preferencesFile())) return null
+        return loadProps().getProperty("dataTabs")?.takeIf { it.isNotBlank() }
+    }
+
+    fun saveDataTabs(json: String?) {
+        val props = loadProps()
+        if (json.isNullOrBlank()) props.remove("dataTabs") else props.setProperty("dataTabs", json)
+        store(props)
+    }
+
     fun saveLastConnectionId(id: String?) {
         val props = loadProps()
         if (id.isNullOrBlank()) {

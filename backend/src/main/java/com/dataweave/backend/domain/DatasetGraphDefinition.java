@@ -10,11 +10,12 @@ public record DatasetGraphDefinition(
         List<DatasetJoinEdge> joins,
         List<DatasetOutputColumn> outputColumns,
         String filterText,
+        String filterColumn,
         String sortColumn,
         boolean sortDescending) {
 
     public static DatasetGraphDefinition empty(String schema) {
-        return new DatasetGraphDefinition(1, schema, List.of(), List.of(), List.of(), null, null, false);
+        return new DatasetGraphDefinition(1, schema, List.of(), List.of(), List.of(), null, null, null, false);
     }
 
     public record DatasetSourceTable(String alias, String tableName, double canvasX, double canvasY) {}

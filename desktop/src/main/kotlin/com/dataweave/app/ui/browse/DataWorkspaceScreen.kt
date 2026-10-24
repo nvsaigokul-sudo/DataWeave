@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.dataweave.app.preferences.UserPreferences
 import com.dataweave.backend.ApplicationFacade
 import com.dataweave.backend.domain.TableRef
 import java.util.UUID
@@ -32,6 +33,21 @@ fun DataWorkspaceScreen(
 ) {
     val tabs = remember { mutableStateListOf<DataTab>() }
     var selectedTab by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        UserPreferences.loadDataTabs()?.split('|')?.filter { it.contains('.') }?.forEach { qual ->
+            val parts = qual.split('.', limit = 2)
+            if (parts.size == 2) {
+                tabs.add(DataTab(qual, TableRef(parts[0], parts[1])))
+            }
+        }
+    }
+
+    LaunchedEffect(tabs.toList()) {
+        if (tabs.isNotEmpty()) {
+            UserPreferences.saveDataTabs(tabs.joinToString("|") { "${it.table.schema}.${it.table.name}" })
+        }
+    }
 
     LaunchedEffect(selectedTable, connectionId) {
         val table = selectedTable ?: return@LaunchedEffect
