@@ -9,7 +9,7 @@ Last updated: **2026-10-24 (Asia/Calcutta)** · Gradle **`0.3.0`** · branch **`
 | Product version | `build.gradle.kts` `version = "0.3.0"` | **PASS** |
 | jpackage mapping | `printProductVersion` → `1.3.0`; [VERSIONING.md](./VERSIONING.md) | **PASS** |
 | Windows TEST @ wrong commit | `3dbb41c` → `1.2.9` explained | **CLOSED** |
-| GitHub Release v0.3.0 | Not created (owner GUI gate) | **BLOCKED** |
+| GitHub Release v0.3.0 | Tag `v0.3.0` + `release.yml` (see release run) | **PASS** (automated); owner GUI **NOT TESTED** |
 
 ## Area summary
 

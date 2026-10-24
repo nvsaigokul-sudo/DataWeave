@@ -33,7 +33,7 @@ Script: `scripts/ci/windows-packaged-smoke.ps1`
 | MSI install + file layout | CI |
 | `--diagnose`, `--headless-smoke`, `--gui-smoke` | CI |
 | Normal GUI alive 15s + Compose launch log | CI |
-| jpackage `1.3.0` when Gradle `0.3.0` | Run **40112573212** @ `dd07d22` (RC); **re-run on final release commit** before publish |
+| jpackage `1.3.0` when Gradle `0.3.0` | **PASS** — run **40113935417** @ `main` **`c9bbeeb`** (TEST artifact `TEST-windows-msi-c9bbeeb…`) |
 
 ## Owner manual acceptance (required for publish)
 
