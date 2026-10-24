@@ -7,14 +7,14 @@ This page is the user-facing audit snapshot (2026-10-24). A longer prioritized r
 | Area | Status |
 |------|--------|
 | Linux `./gradlew test :desktop:runHeadlessSmoke` | **Pass** (cloud agent, 2026-10-24) |
-| CI `main` matrix (ubuntu / windows / macos-14) | **Pass** ([run 40059507426](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40059507426) after cache fix; [40000887132](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40000887132) prior) |
+| CI `main` matrix (ubuntu / windows / macos-14) | **Pass** ([40063956281](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40063956281); Linux packaged smoke added post-`00c4530`) |
 | Windows packaged MSI on CI | **Pass** — `java.desktop` + `jdk.accessibility`, `--diagnose`, `--headless-smoke`, `--gui-smoke`, normal GUI alive 15s |
 | LFS Windows MSI SHA256 | `35333f60…` matches [downloads/windows/SHA256SUMS.txt](../downloads/windows/SHA256SUMS.txt) |
 | Embedded Spring Boot | **No public HTTP server** (`spring.main.web-application-type=none`) |
 
 ## Known limitations (not bugs)
 
-- **Windows release v0.2.1 `.msi`** SHA256 `6716b5ae…` differs from LFS `b613ec64…` (separate CI builds). Prefer **LFS MSI** for the build exercised by GUI smoke on `main`.
+- **Windows release v0.2.1 `.msi`** SHA256 `6716b5ae…` differs from current LFS (separate CI builds). Prefer **`downloads/windows/` LFS MSI** for the build exercised by GUI smoke on `main`.
 - **macOS Intel** installers are not built on GitHub Actions (runner queue); build locally on an Intel Mac.
 - **Code signing / notarization** not applied.
 - **End-user laptops** were not tested in the cloud agent environment.
@@ -24,6 +24,8 @@ This page is the user-facing audit snapshot (2026-10-24). A longer prioritized r
 - **Query result cache keys** now include SQL and params (avoids rare `Objects.hash` collision returning wrong rows). Regression test: `ReadOnlyQueryServiceTest`.
 - **Dataset preview cache keys** include offset/limit (avoids wrong page on cache hit). Regression test: `DatasetPreviewCacheIntegrationTest`.
 - **Downloads** reorganized under `downloads/windows|linux|macos/`; CI runs `scripts/verify-downloads-checksums.sh`.
+- **Engineering reset (Option A):** [ADR 006](./adrs/006-engineering-reset-tdr.md) — bootstrap main class, JvmDebug.cmd, `java.exe` in runtime, Windows CI MSI smoke; Linux `--diagnose` install-root resolution for `.deb` layout.
+- **Packaging regression tests:** `RuntimeModuleRequirementsTest`, `LaunchDiagnosticsInstallRootTest` in `:desktop:test`.
 
 ## Not implemented / deferred
 

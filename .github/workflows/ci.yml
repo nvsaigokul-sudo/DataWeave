@@ -56,6 +56,29 @@ jobs:
         shell: bash
         run: ./gradlew :desktop:packageAppImage :desktop:packageDeb --no-daemon
 
+      - name: Linux packaged app launch smoke
+        if: runner.os == 'Linux'
+        shell: bash
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          DEB="$(find desktop/build/compose/binaries -name '*.deb' -print -quit)"
+          if [ -z "$DEB" ]; then echo 'deb not found'; exit 1; fi
+          echo "Installing $DEB"
+          sudo dpkg -i "$DEB"
+          DW=/opt/dataweave/bin/DataWeave
+          test -x "$DW"
+          "$DW" --diagnose | tee /tmp/dataweave-linux-diagnose.out
+          grep -q '=== end diagnostics ===' /tmp/dataweave-linux-diagnose.out
+          grep -q 'install.runtime.missing_required_modules=(none)' /tmp/dataweave-linux-diagnose.out
+          "$DW" --headless-smoke | tee /tmp/dataweave-linux-headless.out
+          grep -q 'HEADLESS_SMOKE_OK' /tmp/dataweave-linux-headless.out
+          sudo apt-get install -y xvfb
+          xvfb-run -a "$DW" --gui-smoke
+          LAUNCH_LOG="${HOME}/.dataweave/logs/launch.log"
+          test -f "$LAUNCH_LOG"
+          grep -q 'GUI_SMOKE_OK' "$LAUNCH_LOG"
+
       - name: Package (Windows)
         if: runner.os == 'Windows'
         shell: bash

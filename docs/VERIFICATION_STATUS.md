@@ -1,6 +1,6 @@
 # DataWeave verification status
 
-Last updated: **2026-10-24** (`a48746f` on `main`; CI [40063956281](https://github.com/nvsaigokul-sudo/DataWeave/actions/runs/40063956281)).
+Last updated: **2026-10-24** (engineering-reset pass; CI run URL updated after push to `github/main`).
 
 This page summarizes **what we have actually run**, not roadmap intent. For architecture and audit detail see [AUDIT.md](./AUDIT.md).
 
@@ -28,9 +28,9 @@ Prior CI with same Windows GUI matrix: [40061037014](https://github.com/nvsaigok
 | `./gradlew test` | **PASS** | **PASS** | **PASS** |
 | `:desktop:runHeadlessSmoke` (source tree) | **PASS** | **PASS** | **PASS** |
 | Native installer build | `.deb` + AppImage **PASS** | `.msi` + `.exe` **PASS** | `.dmg` + `.pkg` **PASS** |
-| Packaged `--diagnose` | **NOT TESTED** in CI | **PASS** | **NOT TESTED** in CI |
-| Packaged `--headless-smoke` | **NOT TESTED** in CI | **PASS** | **NOT TESTED** in CI |
-| Packaged `--gui-smoke` | **NOT TESTED** in CI | **PASS** (Access Bridge + bad CWD) | **NOT TESTED** in CI |
+| Packaged `--diagnose` | **PASS** (`.deb` install smoke) | **PASS** | **NOT TESTED** in CI |
+| Packaged `--headless-smoke` | **PASS** | **PASS** | **NOT TESTED** in CI |
+| Packaged `--gui-smoke` | **PASS** (Xvfb) | **PASS** (Access Bridge + bad CWD) | **NOT TESTED** in CI |
 | Normal GUI alive 15s (no smoke flags) | **NOT TESTED** in CI | **PASS** (install root, `%USERPROFILE%`, Start Menu CWD) | **NOT TESTED** in CI |
 | Pixel / manual connection UX | **NOT TESTED** | **NOT TESTED** | **NOT TESTED** |
 

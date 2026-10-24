@@ -76,25 +76,30 @@ object LaunchDiagnostics {
         }
     }
 
-    private fun resolveInstallRoot(appPath: String?): Path? {
+    internal fun resolveInstallRoot(appPath: String?): Path? {
         if (appPath.isNullOrBlank()) {
             return null
         }
-        var dir =
+        var current =
             when {
                 Path.of(appPath).isRegularFile() -> Path.of(appPath).parent
                 Path.of(appPath).isDirectory() -> Path.of(appPath)
                 else -> Path.of(appPath).parent
             } ?: return null
-        // jpackage.app-path usually points at .../app; install root holds DataWeave.exe + runtime/.
-        var current = dir
-        for (unused in 0..2) {
-            if (current.resolve("DataWeave.exe").isRegularFile() || current.resolve("runtime").isDirectory()) {
+        // Windows MSI: installRoot/{DataWeave.exe,runtime,app}. Linux .deb: installRoot/{bin,lib/runtime,lib/app}.
+        for (unused in 0..4) {
+            if (current.resolve("DataWeave.exe").isRegularFile()) {
+                return current
+            }
+            if (current.resolve("runtime").isDirectory() && current.resolve("app").isDirectory()) {
+                return current
+            }
+            if (current.resolve("lib/runtime").isDirectory() && current.resolve("lib/app").isDirectory()) {
                 return current
             }
             current = current.parent ?: return null
         }
-        return current
+        return null
     }
 
     private fun describeLayout(installRoot: Path): String {
@@ -102,9 +107,11 @@ object LaunchDiagnostics {
         fun line(key: String, value: Any?) {
             sb.appendLine("$key=$value")
         }
-        val exe = installRoot.resolve("DataWeave.exe")
-        val appDir = installRoot.resolve("app")
-        val runtimeDir = installRoot.resolve("runtime")
+        val linuxLayout = installRoot.resolve("lib/app").isDirectory()
+        val exe =
+            if (linuxLayout) installRoot.resolve("bin/DataWeave") else installRoot.resolve("DataWeave.exe")
+        val appDir = if (linuxLayout) installRoot.resolve("lib/app") else installRoot.resolve("app")
+        val runtimeDir = if (linuxLayout) installRoot.resolve("lib/runtime") else installRoot.resolve("runtime")
         val jvmDll = runtimeDir.resolve("bin/server/jvm.dll")
         val javaExe = runtimeDir.resolve("bin/java.exe")
         val cfg = appDir.resolve("DataWeave.cfg")

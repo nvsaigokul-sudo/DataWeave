@@ -23,6 +23,11 @@ DataWeave is a **desktop application**. You do **not** need Java, Gradle, Git, o
 3. Click **Test & browse** — DataWeave connects to **your** database (no demo/fake data).
 4. Use **Browse data** to list schemas, tables, and paginated rows.
 
+Launch diagnostics and smoke logs (when using `--diagnose`, `--gui-smoke`, or startup failures):
+
+- Windows: `%LOCALAPPDATA%\DataWeave\` (`launch.log`, `launch-error.log`, `jvm-debug.log` from JvmDebug.cmd)
+- Linux/macOS: `~/.dataweave/logs/` (`launch.log`, `launch-error.log`)
+
 Local app data (saved connection names, workspace projects) is stored in:
 
 - `~/.dataweave/metadata.db` (Linux/macOS)
