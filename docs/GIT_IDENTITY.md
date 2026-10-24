@@ -47,4 +47,6 @@ Workflows in this repo do not create commits today. If you add commit steps, set
 
 ## Existing history
 
-Past commits may show **Co-authored-by: ruthwikuniversity** from Cursor’s agent hook, or **kakumani Ruthwik** on the initial commit. Fixing that requires an explicit history rewrite (not done automatically). See the internal audit notes or ask before any force-push.
+Past commits may show **Co-authored-by: ruthwikuniversity** from Cursor’s agent hook, or **kakumani Ruthwik** on the initial commit. Fixing that requires an explicit history rewrite (not done automatically).
+
+For a step-by-step procedure (backup, tags, LFS, verification, rollback), see **[HISTORY_REWRITE_PLAN.md](./HISTORY_REWRITE_PLAN.md)** — **do not execute** that plan without owner approval.
