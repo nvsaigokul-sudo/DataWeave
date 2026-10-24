@@ -384,6 +384,10 @@ public class ApplicationFacade {
         return datasetGraphService.deserialize(json);
     }
 
+    public List<String> validateDatasetGraph(DatasetGraphDefinition graph) {
+        return datasetGraphService.validateGraph(graph);
+    }
+
     public TableExportResult exportTableToCsv(
             UUID connectionId, TableRef table, Path destination, Long maxRows) throws Exception {
         return tableExportService.exportTableToCsv(connectionId, table, destination, maxRows);

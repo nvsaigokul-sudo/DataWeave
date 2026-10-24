@@ -46,3 +46,9 @@ PROJ-DEL,Projects,Button,Delete,Remove project with confirm,Project exists,facad
 PROJ-LINK-DS,Projects,Button,Link dataset,Add dataset ref to project,Saved dataset in project,facade.addDatasetProjectItem,ProjectDatasetLinkIntegrationTest,PASS
 PROJ-UNLINK,Projects,Button,Remove link,Delete project_items row,Link exists,facade.removeProjectItem,ProjectDatasetLinkIntegrationTest,PARTIAL
 PROJ-SHOW-ITEMS,Projects,Button,Show items,Load linked items list,Project exists,facade.listProjectItems,ProjectDatasetLinkIntegrationTest,PARTIAL
+PROJ-OPEN-DS,Projects,Button,Open in Datasets,Navigate and restore graph,Linked dataset,facade.getDatasetDefinition+WorkspaceContext,ProjectDatasetNavigationIntegrationTest,PARTIAL
+DS-VALIDATE,Datasets,Preview gate,Graph validation,Block invalid preview,Graph edited,facade.validateDatasetGraph,DatasetGraphValidatorTest,PASS
+DS-DRAG-TABLE,Datasets,Drag,Table to canvas,Long-press sidebar table,Connected,VisualDatasetBuilderScreen,manual,NOT TESTED
+DS-JOIN-TYPES,Datasets,Buttons,Join type per edge,INNER/LEFT/RIGHT/FULL,Join row,VisualDatasetBuilderScreen,DatasetGraphSqlGeneratorTest,PASS
+GRID-SHIFT-SEL,Data,Keyboard,Shift+arrows,Rectangular selection,Grid focused,GridSelectionLogic.arrowKey,GridSelectionLogicTest,PASS
+GRID-CTRL-C,Data,Keyboard,Ctrl+C,Copy selection TSV,Selection active,GridSelectionLogic.formatSelectionTsv,GridSelectionLogicTest,PARTIAL

@@ -28,6 +28,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.dataweave.app.ui.workspace.WorkspaceContext
 import com.dataweave.backend.ApplicationFacade
 import com.dataweave.backend.domain.DatasetOutputDefinition
 import com.dataweave.backend.domain.ProjectItem
@@ -39,7 +40,12 @@ import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProjectWorkspace(facade: ApplicationFacade, modifier: Modifier = Modifier) {
+fun ProjectWorkspace(
+    facade: ApplicationFacade,
+    workspace: WorkspaceContext,
+    onNavigateToDatasets: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     var projects by remember { mutableStateOf<List<WorkspaceProject>>(emptyList()) }
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -153,6 +159,16 @@ fun ProjectWorkspace(facade: ApplicationFacade, modifier: Modifier = Modifier) {
                                             .onFailure { error = it.message }
                                     }
                                 },
+                                onOpenDataset = { item ->
+                                    scope.launch {
+                                        runCatching { withContext(Dispatchers.IO) { facade.getDatasetDefinition(item.refId()) } }
+                                            .onSuccess { def ->
+                                                workspace.openDatasetInEditor(project.id, def.id, def.connectionId)
+                                                onNavigateToDatasets()
+                                            }
+                                            .onFailure { error = "Cannot open dataset: ${it.message}" }
+                                    }
+                                },
                             )
                         }
                     }
@@ -226,6 +242,7 @@ private fun ProjectItemsPanel(
     datasets: List<DatasetOutputDefinition>,
     onLink: (UUID, String) -> Unit,
     onRemove: (UUID) -> Unit,
+    onOpenDataset: (ProjectItem) -> Unit,
 ) {
     var linkExpanded by remember { mutableStateOf(false) }
     var selectedDataset by remember { mutableStateOf<DatasetOutputDefinition?>(null) }
@@ -238,6 +255,9 @@ private fun ProjectItemsPanel(
             items.forEach { item ->
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("${item.label()} (${item.itemType()})", modifier = Modifier.weight(1f))
+                    if (item.itemType() == ProjectItem.TYPE_DATASET) {
+                        Button(onClick = { onOpenDataset(item) }) { Text("Open in Datasets") }
+                    }
                     Button(onClick = { onRemove(item.id()) }) { Text("Remove link") }
                 }
             }

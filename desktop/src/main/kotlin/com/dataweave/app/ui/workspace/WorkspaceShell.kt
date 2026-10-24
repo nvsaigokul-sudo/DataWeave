@@ -158,7 +158,12 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             WorkspaceSection.Projects ->
-                                ProjectWorkspace(facade, Modifier.fillMaxSize())
+                                ProjectWorkspace(
+                                    facade = facade,
+                                    workspace = workspace,
+                                    onNavigateToDatasets = { section = WorkspaceSection.Datasets },
+                                    modifier = Modifier.fillMaxSize(),
+                                )
                         }
                     }
                 }

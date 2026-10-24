@@ -94,8 +94,7 @@ fun SpreadsheetDataGrid(
     var columnWidths by remember { mutableStateOf(mapOf<String, Int>()) }
     var columnMenuFor by remember { mutableStateOf<String?>(null) }
     var longValue by remember { mutableStateOf<String?>(null) }
-    var selectedRow by remember { mutableIntStateOf(0) }
-    var selectedCol by remember { mutableIntStateOf(0) }
+    var selection by remember { mutableStateOf(GridSelectionLogic.SelectionState()) }
     val gridFocus = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
     val scopeKey = remember(table) { "sheet-${table.schema}.${table.name}" }
@@ -144,18 +143,21 @@ fun SpreadsheetDataGrid(
 
     LaunchedEffect(connectionId, table, sortColumn, sortDesc, globalFilter, columnFilter, columnFilterText, pageSize) {
         offset = 0
-        selectedRow = 0
-        selectedCol = 0
+        selection = GridSelectionLogic.SelectionState()
         load(0)
     }
 
-    LaunchedEffect(page?.rows?.size) {
+    LaunchedEffect(page?.rows?.size, columnOrder, hiddenColumns) {
         val rows = page?.rows?.size ?: 0
-        if (rows == 0) {
-            selectedRow = 0
-            selectedCol = 0
-        } else if (selectedRow >= rows) {
-            selectedRow = rows - 1
+        val cols = page?.let { visibleColumns(it.columns).size } ?: 0
+        if (rows == 0 || cols == 0) {
+            selection = GridSelectionLogic.SelectionState()
+        } else if (selection.focus.row >= rows || selection.focus.col >= cols) {
+            selection =
+                GridSelectionLogic.SelectionState(
+                    anchor = GridSelectionLogic.CellRef(selection.focus.row.coerceIn(0, rows - 1), selection.focus.col.coerceIn(0, cols - 1)),
+                    focus = GridSelectionLogic.CellRef(selection.focus.row.coerceIn(0, rows - 1), selection.focus.col.coerceIn(0, cols - 1)),
+                )
         }
     }
 
@@ -255,12 +257,12 @@ fun SpreadsheetDataGrid(
         Box(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant)) {
             Row(Modifier.horizontalScroll(hScrollHeader)) {
                 Text("#", Modifier.width(48.dp).padding(8.dp), style = MaterialTheme.typography.labelMedium)
-                columns.forEach { col ->
-                    val selected = sortColumn == col.name
+                columns.forEachIndexed { colIndex, col ->
+                    val sorted = sortColumn == col.name
                     Box {
                         Text(
                             "${col.name}\n${col.dataType}${if (col.nullable) "?" else ""}" +
-                                (if (selected) if (sortDesc) " ↓" else " ↑" else ""),
+                                (if (sorted) if (sortDesc) " ↓" else " ↑" else ""),
                             Modifier
                                 .width((columnWidths[col.name] ?: 120).dp)
                                 .combinedClickable(
@@ -270,7 +272,15 @@ fun SpreadsheetDataGrid(
                                             sortDesc = false
                                         }
                                     },
-                                    onLongClick = { columnMenuFor = col.name },
+                                    onLongClick = {
+                                        columnMenuFor = col.name
+                                        selection =
+                                            GridSelectionLogic.selectColumn(
+                                                colIndex,
+                                                page?.rows?.size ?: 0,
+                                            )
+                                        gridFocus.requestFocus()
+                                    },
                                 )
                                 .padding(8.dp),
                             style = MaterialTheme.typography.labelMedium,
@@ -357,36 +367,52 @@ fun SpreadsheetDataGrid(
                     val rowCount = page?.rows?.size ?: 0
                     val colCount = columns.size
                     if (rowCount == 0 || colCount == 0) return@onPreviewKeyEvent false
+                    val extend = event.isShiftPressed
                     when (event.key) {
                         Key.DirectionDown ->
-                            selectedRow = GridSelectionLogic.moveSelection(selectedRow, selectedCol, rowCount, colCount, 1, 0).first
+                            selection = GridSelectionLogic.arrowKey(selection, 1, 0, rowCount, colCount, extend)
                         Key.DirectionUp ->
-                            selectedRow = GridSelectionLogic.moveSelection(selectedRow, selectedCol, rowCount, colCount, -1, 0).first
+                            selection = GridSelectionLogic.arrowKey(selection, -1, 0, rowCount, colCount, extend)
                         Key.DirectionRight ->
-                            selectedCol = GridSelectionLogic.moveSelection(selectedRow, selectedCol, rowCount, colCount, 0, 1).second
+                            selection = GridSelectionLogic.arrowKey(selection, 0, 1, rowCount, colCount, extend)
                         Key.DirectionLeft ->
-                            selectedCol = GridSelectionLogic.moveSelection(selectedRow, selectedCol, rowCount, colCount, 0, -1).second
-                        Key.MoveHome ->
-                            selectedCol = GridSelectionLogic.columnIndexAfterHome(selectedCol)
-                        Key.MoveEnd ->
-                            selectedCol = GridSelectionLogic.columnIndexAfterEnd(selectedCol, colCount)
+                            selection = GridSelectionLogic.arrowKey(selection, 0, -1, rowCount, colCount, extend)
+                        Key.MoveHome -> {
+                            val col = GridSelectionLogic.columnIndexAfterHome(selection.focus.col)
+                            selection =
+                                if (extend) {
+                                    selection.copy(kind = GridSelectionLogic.SelectionKind.RECT, focus = GridSelectionLogic.CellRef(selection.focus.row, col))
+                                } else {
+                                    GridSelectionLogic.SelectionState(focus = GridSelectionLogic.CellRef(selection.focus.row, col), anchor = GridSelectionLogic.CellRef(selection.focus.row, col))
+                                }
+                        }
+                        Key.MoveEnd -> {
+                            val col = GridSelectionLogic.columnIndexAfterEnd(selection.focus.col, colCount)
+                            selection =
+                                if (extend) {
+                                    selection.copy(kind = GridSelectionLogic.SelectionKind.RECT, focus = GridSelectionLogic.CellRef(selection.focus.row, col))
+                                } else {
+                                    GridSelectionLogic.SelectionState(focus = GridSelectionLogic.CellRef(selection.focus.row, col), anchor = GridSelectionLogic.CellRef(selection.focus.row, col))
+                                }
+                        }
                         Key.PageDown -> if (offset + pageSize < (page?.totalRowsEstimate ?: Long.MAX_VALUE)) load(offset + pageSize)
                         Key.PageUp -> if (offset >= pageSize) load(offset - pageSize)
-                        Key.Enter, Key.C -> {
-                            if (event.isCtrlPressed || event.key == Key.Enter) {
-                                val row = page?.rows?.getOrNull(selectedRow) ?: return@onPreviewKeyEvent false
-                                val colName = columns.getOrNull(selectedCol)?.name ?: return@onPreviewKeyEvent false
-                                val raw = row[colName]
-                                val text = GridSelectionLogic.formatCell(raw, GridSelectionLogic.isSqlNull(raw))
-                                if (text.length > 120) longValue = text else copyToClipboard(text)
-                                return@onPreviewKeyEvent true
-                            }
-                            if (event.isShiftPressed && event.key == Key.C) {
-                                val colName = columns.getOrNull(selectedCol)?.name ?: return@onPreviewKeyEvent false
-                                copyToClipboard(GridSelectionLogic.formatColumnValues(page?.rows.orEmpty(), colName))
+                        Key.C -> {
+                            if (event.isCtrlPressed) {
+                                val names = columns.map { it.name }
+                                copyToClipboard(GridSelectionLogic.formatSelectionTsv(page?.rows.orEmpty(), names, selection))
+                                exportMessage = "Copied selection (TSV)"
                                 return@onPreviewKeyEvent true
                             }
                             return@onPreviewKeyEvent false
+                        }
+                        Key.Enter -> {
+                            val row = page?.rows?.getOrNull(selection.focus.row) ?: return@onPreviewKeyEvent false
+                            val colName = columns.getOrNull(selection.focus.col)?.name ?: return@onPreviewKeyEvent false
+                            val raw = row[colName]
+                            val text = GridSelectionLogic.formatCell(raw, GridSelectionLogic.isSqlNull(raw))
+                            if (text.length > 120) longValue = text else copyToClipboard(text)
+                            return@onPreviewKeyEvent true
                         }
                         else -> return@onPreviewKeyEvent false
                     }
@@ -397,7 +423,18 @@ fun SpreadsheetDataGrid(
                 Row(Modifier.horizontalScroll(hScrollBody).fillMaxWidth()) {
                     Text(
                         "${offset + rowIndex + 1}",
-                        Modifier.width(48.dp).padding(8.dp),
+                        Modifier
+                            .width(48.dp)
+                            .combinedClickable(
+                                onClick = {
+                                    selection = GridSelectionLogic.selectRow(rowIndex, columns.size)
+                                    gridFocus.requestFocus()
+                                },
+                                onLongClick = {
+                                    copyToClipboard(GridSelectionLogic.formatRowTsv(row, columns.map { it.name }))
+                                },
+                            )
+                            .padding(8.dp),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.outline,
                     )
@@ -405,7 +442,14 @@ fun SpreadsheetDataGrid(
                         val raw = row[col.name]
                         val isNull = GridSelectionLogic.isSqlNull(raw)
                         val display = if (isNull) "NULL" else raw.toString()
-                        val selected = rowIndex == selectedRow && colIndex == selectedCol
+                        val selected =
+                            GridSelectionLogic.isCellSelected(
+                                selection,
+                                rowIndex,
+                                colIndex,
+                                page?.rows?.size ?: 0,
+                                columns.size,
+                            )
                         Text(
                             display,
                             Modifier
@@ -419,8 +463,11 @@ fun SpreadsheetDataGrid(
                                 )
                                 .combinedClickable(
                                     onClick = {
-                                        selectedRow = rowIndex
-                                        selectedCol = colIndex
+                                        selection =
+                                            GridSelectionLogic.SelectionState(
+                                                anchor = GridSelectionLogic.CellRef(rowIndex, colIndex),
+                                                focus = GridSelectionLogic.CellRef(rowIndex, colIndex),
+                                            )
                                         gridFocus.requestFocus()
                                         if (display.length > 120) {
                                             longValue = display
@@ -429,8 +476,6 @@ fun SpreadsheetDataGrid(
                                         }
                                     },
                                     onLongClick = {
-                                        selectedRow = rowIndex
-                                        selectedCol = colIndex
                                         copyToClipboard(GridSelectionLogic.formatRowTsv(row, columns.map { it.name }))
                                     },
                                 )

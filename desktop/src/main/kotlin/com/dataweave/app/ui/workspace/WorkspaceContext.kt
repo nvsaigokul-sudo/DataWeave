@@ -7,6 +7,12 @@ import com.dataweave.app.preferences.UserPreferences
 import com.dataweave.backend.domain.TableRef
 import java.util.UUID
 
+data class PendingDatasetEditor(
+    val projectId: UUID,
+    val definitionId: UUID,
+    val connectionId: UUID?,
+)
+
 /** Shared workspace selection state (FR-021) for explorer, Data, SQL, and Datasets. */
 class WorkspaceContext {
     var activeConnectionId by mutableStateOf(
@@ -24,6 +30,12 @@ class WorkspaceContext {
         private set
 
     var statusMessage by mutableStateOf("Ready")
+        private set
+
+    var pendingDatasetEditor by mutableStateOf<PendingDatasetEditor?>(null)
+        private set
+
+    var datasetEditorDirty by mutableStateOf(false)
         private set
 
     fun setActiveConnection(id: UUID?) {
@@ -46,5 +58,18 @@ class WorkspaceContext {
 
     fun updateStatus(message: String) {
         statusMessage = message
+    }
+
+    fun openDatasetInEditor(projectId: UUID, definitionId: UUID, connectionId: UUID?) {
+        pendingDatasetEditor = PendingDatasetEditor(projectId, definitionId, connectionId)
+        statusMessage = "Opening dataset in editor…"
+    }
+
+    fun clearPendingDatasetEditor() {
+        pendingDatasetEditor = null
+    }
+
+    fun markDatasetEditorDirty(dirty: Boolean) {
+        datasetEditorDirty = dirty
     }
 }

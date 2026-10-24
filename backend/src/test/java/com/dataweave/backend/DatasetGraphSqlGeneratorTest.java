@@ -36,4 +36,28 @@ class DatasetGraphSqlGeneratorTest {
         Assertions.assertTrue(sql.contains("\"customer_id\""));
         Assertions.assertTrue(sql.contains("LIMIT 100"));
     }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.EnumSource(JoinType.class)
+    void generatesSqlForEachJoinType(JoinType joinType) {
+        var graph =
+                new DatasetGraphDefinition(
+                        1,
+                        "public",
+                        List.of(
+                                new DatasetGraphDefinition.DatasetSourceTable("a", "orders", 0, 0),
+                                new DatasetGraphDefinition.DatasetSourceTable("b", "customers", 0, 0)),
+                        List.of(
+                                new DatasetGraphDefinition.DatasetJoinEdge(
+                                        "a", "customer_id", joinType, "b", "id")),
+                        List.of(
+                                new DatasetGraphDefinition.DatasetOutputColumn(
+                                        "a", "a", "id", "order_id")),
+                        null,
+                        null,
+                        null,
+                        false);
+        String sql = generator.toSelectSql(graph, 50, 0).sql();
+        Assertions.assertTrue(sql.contains(joinType.sqlKeyword()), () -> sql);
+    }
 }

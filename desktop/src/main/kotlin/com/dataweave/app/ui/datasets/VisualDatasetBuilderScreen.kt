@@ -3,6 +3,7 @@ package com.dataweave.app.ui.datasets
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,7 +34,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.dataweave.app.ui.common.ResultDataCard
@@ -96,9 +100,17 @@ fun VisualDatasetBuilderScreen(
             sortDesc,
         )
 
+    var draggingTable by remember { mutableStateOf<TableRef?>(null) }
+    var dragPointer by remember { mutableStateOf<Offset?>(null) }
+    var canvasBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
+    var outputDropActive by remember { mutableStateOf(false) }
+    var outputPanelBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
+    var draggingColumn by remember { mutableStateOf<Pair<String, String>?>(null) }
+
     fun markStale() {
         previewStale = true
         previewPage = null
+        workspace.markDatasetEditorDirty(true)
     }
 
     LaunchedEffect(Unit) {
@@ -164,10 +176,47 @@ fun VisualDatasetBuilderScreen(
                     sortColumn = g.sortColumn() ?: ""
                     sortDesc = g.sortDescending()
                     markStale()
+                    workspace.markDatasetEditorDirty(false)
                     status = "Loaded ${def.id}"
                 }
                 .onFailure { error = it.message }
         }
+    }
+
+    fun addSourceTable(t: TableRef, x: Double, y: Double) {
+        loadColumns(t.name)
+        val alias = nextAlias(sourceTables, t.name)
+        sourceTables = sourceTables + DatasetGraphDefinition.DatasetSourceTable(alias, t.name, x, y)
+        markStale()
+    }
+
+    fun addOutputColumn(tableName: String, col: String) {
+        val alias = sourceTables.find { it.tableName() == tableName }?.alias()
+        if (alias == null) {
+            error = "Add $tableName to the canvas before selecting columns"
+            return
+        }
+        if (outputCols.any { it.sourceAlias() == alias && it.columnName() == col }) {
+            error = "Column already in output list"
+            return
+        }
+        val key = "$alias.$col"
+        outputCols = outputCols + DatasetGraphDefinition.DatasetOutputColumn(key, alias, col, col)
+        markStale()
+    }
+
+    LaunchedEffect(workspace.pendingDatasetEditor) {
+        val pending = workspace.pendingDatasetEditor ?: return@LaunchedEffect
+        projectId = pending.projectId
+        pending.connectionId?.let { connectionId = it }
+        runCatching { withContext(Dispatchers.IO) { facade.getDatasetDefinition(pending.definitionId) } }
+            .onSuccess { def ->
+                restoreGraph(def)
+                status = "Opened linked dataset ${def.sourceSchema}.${def.sourceTable}"
+                workspace.markDatasetEditorDirty(false)
+            }
+            .onFailure { error = "Failed to open dataset: ${it.message}" }
+        workspace.clearPendingDatasetEditor()
     }
 
     Row(modifier.fillMaxSize().padding(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -181,26 +230,60 @@ fun VisualDatasetBuilderScreen(
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
             Text("Tables ($schema)", style = MaterialTheme.typography.titleSmall)
             tables.forEach { t ->
-                Button(
-                    onClick = {
-                        loadColumns(t.name)
-                        val alias = nextAlias(sourceTables, t.name)
-                        sourceTables = sourceTables + DatasetGraphDefinition.DatasetSourceTable(alias, t.name, 40.0, 40.0 + sourceTables.size * 90)
-                        markStale()
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                ) { Text("+ ${t.name}") }
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .pointerInput(t.name) {
+                            detectDragGesturesAfterLongPress(
+                                onDragStart = {
+                                    draggingTable = t
+                                    loadColumns(t.name)
+                                },
+                                onDragEnd = {
+                                    val drop = dragPointer
+                                    val canvas = canvasBounds
+                                    if (draggingTable == t && drop != null && canvas != null && canvas.contains(drop)) {
+                                        addSourceTable(t, (drop.x - canvas.left).toDouble(), (drop.y - canvas.top).toDouble())
+                                    } else if (draggingTable == t) {
+                                        addSourceTable(t, 40.0, 40.0 + sourceTables.size * 90.0)
+                                    }
+                                    draggingTable = null
+                                    dragPointer = null
+                                },
+                                onDrag = { change, _ ->
+                                    change.consume()
+                                    dragPointer = change.position
+                                },
+                            )
+                        },
+                ) {
+                    Button(
+                        onClick = { addSourceTable(t, 40.0, 40.0 + sourceTables.size * 90.0) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text("+ ${t.name} (drag to canvas)") }
+                }
                 columnsByTable[t.name]?.forEach { col ->
                     OutlinedButton(
-                        onClick = {
-                            val alias = sourceTables.find { it.tableName() == t.name }?.alias() ?: return@OutlinedButton
-                            val key = "$alias.$col"
-                            if (outputCols.none { it.sourceAlias() == alias && it.columnName() == col }) {
-                                outputCols = outputCols + DatasetGraphDefinition.DatasetOutputColumn(key, alias, col, col)
-                                markStale()
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { addOutputColumn(t.name, col) },
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .pointerInput("$t.$col") {
+                                    detectDragGesturesAfterLongPress(
+                                        onDragStart = { draggingColumn = t.name to col },
+                                        onDragEnd = {
+                                            if (draggingColumn?.first == t.name && draggingColumn?.second == col && outputDropActive) {
+                                                addOutputColumn(t.name, col)
+                                            }
+                                            draggingColumn = null
+                                            outputDropActive = false
+                                        },
+                                        onDrag = { change, _ ->
+                                            change.consume()
+                                            dragPointer = change.position
+                                        },
+                                    )
+                                },
                     ) { Text("→ $col") }
                 }
             }
@@ -243,9 +326,17 @@ fun VisualDatasetBuilderScreen(
                 Modifier
                     .weight(1f)
                     .fillMaxWidth()
+                    .onGloballyPositioned { canvasBounds = it.boundsInRoot() }
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
                     .border(1.dp, MaterialTheme.colorScheme.outline),
             ) {
+                if (draggingTable != null) {
+                    Text(
+                        "Drop ${draggingTable!!.name} on canvas",
+                        modifier = Modifier.padding(8.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
                 sourceTables.forEach { st ->
                     var dragOffset by remember(st.alias()) { mutableStateOf(IntOffset(st.canvasX().roundToInt(), st.canvasY().roundToInt())) }
                     Card(
@@ -290,7 +381,37 @@ fun VisualDatasetBuilderScreen(
             joins.forEachIndexed { i, j ->
                 Column(Modifier.fillMaxWidth().padding(bottom = 4.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth()) {
-                        Text("${j.joinType()}", style = MaterialTheme.typography.labelSmall)
+                        JoinType.entries.forEach { jt ->
+                            OutlinedButton(
+                                onClick = {
+                                    joins =
+                                        joins.mapIndexed { idx, edge ->
+                                            if (idx == i) {
+                                                DatasetGraphDefinition.DatasetJoinEdge(
+                                                    edge.leftAlias(),
+                                                    edge.leftColumn(),
+                                                    jt,
+                                                    edge.rightAlias(),
+                                                    edge.rightColumn(),
+                                                )
+                                            } else {
+                                                edge
+                                            }
+                                        }
+                                    markStale()
+                                },
+                            ) {
+                                Text(
+                                    jt.name,
+                                    color =
+                                        if (j.joinType() == jt) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurface
+                                        },
+                                )
+                            }
+                        }
                         OutlinedButton(onClick = { joins = joins.filterIndexed { idx, _ -> idx != i }; markStale() }) { Text("×") }
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -367,8 +488,21 @@ fun VisualDatasetBuilderScreen(
             }
         }
 
-        Column(Modifier.weight(0.45f).fillMaxHeight().verticalScroll(rememberScrollState())) {
-            Text("Output columns", style = MaterialTheme.typography.titleSmall)
+        Column(
+            Modifier
+                .weight(0.45f)
+                .fillMaxHeight()
+                .onGloballyPositioned {
+                    outputPanelBounds = it.boundsInRoot()
+                    outputDropActive = draggingColumn != null && outputPanelBounds?.contains(dragPointer ?: Offset.Zero) == true
+                }
+                .verticalScroll(rememberScrollState())
+                .border(
+                    if (outputDropActive) 2.dp else 0.dp,
+                    if (outputDropActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                ),
+        ) {
+            Text("Output columns (drop here)", style = MaterialTheme.typography.titleSmall)
             outputCols.forEachIndexed { i, col ->
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
@@ -427,6 +561,10 @@ fun VisualDatasetBuilderScreen(
                         scope.launch {
                             runCatching {
                                 withContext(Dispatchers.IO) {
+                                    val issues = facade.validateDatasetGraph(graph())
+                                    if (issues.isNotEmpty()) {
+                                        throw IllegalArgumentException(issues.joinToString("; "))
+                                    }
                                     generatedSql = facade.generateDatasetGraphSql(graph(), 100, 0)
                                     facade.previewDatasetGraph(id, graph(), 0, 100)
                                 }
@@ -464,6 +602,7 @@ fun VisualDatasetBuilderScreen(
                             }.onSuccess {
                                 editingId = it.id
                                 savedDefs = withContext(Dispatchers.IO) { facade.listDatasetDefinitions(pid) }
+                                workspace.markDatasetEditorDirty(false)
                                 status = "Saved ${it.id}"
                             }.onFailure { error = it.message }
                         }
