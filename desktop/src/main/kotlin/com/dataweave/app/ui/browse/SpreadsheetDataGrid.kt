@@ -147,6 +147,12 @@ fun SpreadsheetDataGrid(
         load(0)
     }
 
+    LaunchedEffect(offset) {
+        val rows = page?.rows?.size ?: 0
+        val cols = page?.let { visibleColumns(it.columns).size } ?: 0
+        selection = GridSelectionLogic.clampSelection(selection, rows, cols)
+    }
+
     LaunchedEffect(page?.rows?.size, columnOrder, hiddenColumns) {
         val rows = page?.rows?.size ?: 0
         val cols = page?.let { visibleColumns(it.columns).size } ?: 0
@@ -398,6 +404,12 @@ fun SpreadsheetDataGrid(
                         Key.PageDown -> if (offset + pageSize < (page?.totalRowsEstimate ?: Long.MAX_VALUE)) load(offset + pageSize)
                         Key.PageUp -> if (offset >= pageSize) load(offset - pageSize)
                         Key.C -> {
+                            if (event.isCtrlPressed && event.isShiftPressed) {
+                                val names = columns.map { it.name }
+                                copyToClipboard(GridSelectionLogic.formatSelectionCsv(page?.rows.orEmpty(), names, selection))
+                                exportMessage = "Copied selection (CSV)"
+                                return@onPreviewKeyEvent true
+                            }
                             if (event.isCtrlPressed) {
                                 val names = columns.map { it.name }
                                 copyToClipboard(GridSelectionLogic.formatSelectionTsv(page?.rows.orEmpty(), names, selection))

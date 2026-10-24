@@ -1,5 +1,6 @@
 package com.dataweave.app.ui.datasets
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -36,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntOffset
@@ -106,6 +108,13 @@ fun VisualDatasetBuilderScreen(
     var outputDropActive by remember { mutableStateOf(false) }
     var outputPanelBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
     var draggingColumn by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var validationMessages by remember { mutableStateOf<List<String>>(emptyList()) }
+    val density = LocalDensity.current
+
+    fun columnsForAlias(alias: String): List<String> {
+        val table = sourceTables.find { it.alias() == alias }?.tableName() ?: return emptyList()
+        return columnsByTable[table].orEmpty()
+    }
 
     fun markStale() {
         previewStale = true
@@ -330,11 +339,31 @@ fun VisualDatasetBuilderScreen(
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
                     .border(1.dp, MaterialTheme.colorScheme.outline),
             ) {
+                val cardW = with(density) { 160.dp.toPx() }
+                val cardH = with(density) { 88.dp.toPx() }
+                val edgeColor = MaterialTheme.colorScheme.primary
+                Canvas(Modifier.fillMaxSize()) {
+                    DatasetJoinEdgeLayout.segments(sourceTables, joins, cardW, cardH).forEach { seg ->
+                        drawLine(
+                            color = edgeColor,
+                            start = Offset(seg.from.x, seg.from.y),
+                            end = Offset(seg.to.x, seg.to.y),
+                            strokeWidth = 3f,
+                        )
+                    }
+                }
                 if (draggingTable != null) {
                     Text(
                         "Drop ${draggingTable!!.name} on canvas",
                         modifier = Modifier.padding(8.dp),
                         style = MaterialTheme.typography.labelSmall,
+                    )
+                }
+                if (sourceTables.isEmpty()) {
+                    Text(
+                        "Drag tables from the left panel onto the canvas",
+                        modifier = Modifier.align(androidx.compose.ui.Alignment.Center),
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
                 sourceTables.forEach { st ->
@@ -415,50 +444,66 @@ fun VisualDatasetBuilderScreen(
                         OutlinedButton(onClick = { joins = joins.filterIndexed { idx, _ -> idx != i }; markStale() }) { Text("×") }
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        OutlinedTextField(
-                            j.leftColumn(),
-                            { v ->
-                                joins =
-                                    joins.mapIndexed { idx, edge ->
-                                        if (idx == i) {
-                                            DatasetGraphDefinition.DatasetJoinEdge(
-                                                edge.leftAlias(),
-                                                v,
-                                                edge.joinType(),
-                                                edge.rightAlias(),
-                                                edge.rightColumn(),
-                                            )
-                                        } else {
-                                            edge
-                                        }
-                                    }
-                                markStale()
-                            },
-                            label = { Text("${j.leftAlias()} key") },
-                            modifier = Modifier.weight(1f),
-                        )
-                        OutlinedTextField(
-                            j.rightColumn(),
-                            { v ->
-                                joins =
-                                    joins.mapIndexed { idx, edge ->
-                                        if (idx == i) {
-                                            DatasetGraphDefinition.DatasetJoinEdge(
-                                                edge.leftAlias(),
-                                                edge.leftColumn(),
-                                                edge.joinType(),
-                                                edge.rightAlias(),
-                                                v,
-                                            )
-                                        } else {
-                                            edge
-                                        }
-                                    }
-                                markStale()
-                            },
-                            label = { Text("${j.rightAlias()} key") },
-                            modifier = Modifier.weight(1f),
-                        )
+                        Column(Modifier.weight(1f)) {
+                            Text("${j.leftAlias()} key", style = MaterialTheme.typography.labelSmall)
+                            columnsForAlias(j.leftAlias()).forEach { colName ->
+                                OutlinedButton(
+                                    onClick = {
+                                        joins =
+                                            joins.mapIndexed { idx, edge ->
+                                                if (idx == i) {
+                                                    DatasetGraphDefinition.DatasetJoinEdge(
+                                                        edge.leftAlias(),
+                                                        colName,
+                                                        edge.joinType(),
+                                                        edge.rightAlias(),
+                                                        edge.rightColumn(),
+                                                    )
+                                                } else {
+                                                    edge
+                                                }
+                                            }
+                                        markStale()
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    Text(
+                                        colName,
+                                        color = if (j.leftColumn() == colName) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                    )
+                                }
+                            }
+                        }
+                        Column(Modifier.weight(1f)) {
+                            Text("${j.rightAlias()} key", style = MaterialTheme.typography.labelSmall)
+                            columnsForAlias(j.rightAlias()).forEach { colName ->
+                                OutlinedButton(
+                                    onClick = {
+                                        joins =
+                                            joins.mapIndexed { idx, edge ->
+                                                if (idx == i) {
+                                                    DatasetGraphDefinition.DatasetJoinEdge(
+                                                        edge.leftAlias(),
+                                                        edge.leftColumn(),
+                                                        edge.joinType(),
+                                                        edge.rightAlias(),
+                                                        colName,
+                                                    )
+                                                } else {
+                                                    edge
+                                                }
+                                            }
+                                        markStale()
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    Text(
+                                        colName,
+                                        color = if (j.rightColumn() == colName) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -572,9 +617,15 @@ fun VisualDatasetBuilderScreen(
                                 previewPage = it
                                 previewStale = false
                                 error = null
+                                validationMessages = emptyList()
                                 status = "Preview OK"
                             }.onFailure {
-                                error = it.message
+                                validationMessages = facade.validateDatasetGraph(graph())
+                                error =
+                                    buildString {
+                                        append(it.message ?: "Preview failed")
+                                        if (previewPage != null) append(" — previous preview retained")
+                                    }
                             }
                         }
                     },
@@ -663,6 +714,10 @@ fun VisualDatasetBuilderScreen(
                         }
                     }) { Text("Dup") }
                 }
+            }
+            validationMessages.takeIf { it.isNotEmpty() }?.let { msgs ->
+                Text("Validation:", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.error)
+                msgs.forEach { Text("• $it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
             }
             Text(status, style = MaterialTheme.typography.labelSmall)
             ResultDataCard(previewPage, error, Modifier.fillMaxWidth())

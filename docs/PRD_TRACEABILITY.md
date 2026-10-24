@@ -1,6 +1,6 @@
 # PRD v0.3.0 traceability (evidence-based)
 
-Last updated: **2026-10-24 (UTC)** · Branch **`cursor/dataweave-product-v0.3.0-d9c8`**
+Last updated: **2026-10-24 (Asia/Calcutta)** · Branch **`cursor/dataweave-product-v0.3.0-d9c8`**
 
 ## Area summary (Must / Partial / Open)
 
@@ -10,8 +10,8 @@ Last updated: **2026-10-24 (UTC)** · Branch **`cursor/dataweave-product-v0.3.0-
 | **B** Explorer | DB→schema→table/view→columns; PK/FK/index | `DatabaseTreeSidebar.kt`, `CatalogMetadataService` | `MetadataExplorerIntegrationTest`, `ForeignKeyMetadataIntegrationTest`, `ExplorerTableMetadataIntegrationTest` | **PARTIAL** (Columns/PK/FK/Indexes as expandable tree sections; errors per section) |
 | **C** Data grid | Spreadsheet read-only, paging, filter, export | `SpreadsheetDataGrid.kt`, `GridSelectionLogic.kt`, `DataWorkspaceScreen.kt` | `PaginationAndTypesIntegrationTest`, `LargeTablePagingIntegrationTest`, `GridSelectionLogicTest` (shift-rect, row/col, Ctrl+C TSV) | **PARTIAL** (matrix improved; manual GUI verify for focus ring) |
 | **D** SQL | Read-only SELECT, history, cancel | `SqlEditorScreen.kt`, `ReadOnlyQueryService` | `ReadOnlyQueryServiceTest`, `SqlEditorServiceTest.rejectsNonSelectStatements` | **PARTIAL** (cancel UI; no automated cancel timing test) |
-| **E** Datasets | Visual builder + graph persist | `VisualDatasetBuilderScreen.kt`, `DatasetGraphService` | `DatasetGraphPreviewIntegrationTest`, `DatasetGraphSqlGeneratorTest`, `JoinPreviewServiceTest` | **PARTIAL** (join keys editable; drag DnD limited to buttons + canvas move) |
-| **F** Projects | CRUD + dataset links | `ProjectWorkspace.kt`, `ProjectItemService`, Flyway V5 | `WorkspaceProjectServiceTest`, `ProjectDatasetLinkIntegrationTest` | **PARTIAL** (link/list/remove dataset refs; reopen-from-project UI not wired to Datasets tab) |
+| **E** Datasets | Visual builder + graph persist | `VisualDatasetBuilderScreen.kt`, `DatasetGraphValidator`, `DatasetGraphService` | `DatasetGraphValidatorTest`, `DatasetGraphPersistenceIntegrationTest`, `DatasetGraphSqlGeneratorTest` (all join types), `DatasetGraphPreviewIntegrationTest` | **PARTIAL** (drag long-press tables/columns; per-join type; validation before preview; manual DnD polish) |
+| **F** Projects | CRUD + open linked dataset | `ProjectWorkspace.kt`, `WorkspaceContext.pendingDatasetEditor` | `ProjectDatasetLinkIntegrationTest`, `ProjectDatasetNavigationIntegrationTest` | **PARTIAL** (Open in Datasets navigates + restores graph JSON; unsaved-changes dialog manual) |
 | **G** Settings / theme | Light/Dark/System | `SettingsDialog.kt`, `UserPreferences` | `UserPreferencesTest.themeModeRoundTrip` | **PASS** |
 | **H** Reliability | GUI launch, migrations, secrets | `DataWeaveApp.kt` `startForGui`, `SqliteFlywayBackupConfiguration` | `SpringHeadlessPropertyTest`, headless smoke Flyway V5 | **PASS** (Linux); packaged Windows **NOT TESTED** |
 | **I** Release | MSI/EXE, checksums, owner sign-off | `release.yml`, Gradle `0.3.0-SNAPSHOT` | `:desktop:packageDeb` **PASS** (Linux deb only this run) | **BLOCKED** (no v0.3.0 tag; no Windows MSI from this commit) |

@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.dataweave.app.ui.common.ResultDataCard
+import com.dataweave.app.ui.workspace.WorkspaceContext
 import com.dataweave.backend.ApplicationFacade
 import com.dataweave.backend.domain.ConnectionProfile
 import com.dataweave.backend.domain.DataPage
@@ -38,6 +39,7 @@ fun SqlEditorScreen(
     facade: ApplicationFacade,
     activeConnectionId: UUID?,
     onSelectConnection: (UUID) -> Unit,
+    workspace: WorkspaceContext? = null,
     modifier: Modifier = Modifier,
 ) {
     var connections by remember { mutableStateOf<List<ConnectionProfile>>(emptyList()) }
@@ -72,6 +74,14 @@ fun SqlEditorScreen(
 
     LaunchedEffect(connectionId) {
         connectionId?.let { onSelectConnection(it) }
+    }
+
+    LaunchedEffect(workspace?.pendingSqlEditor) {
+        val pending = workspace?.pendingSqlEditor ?: return@LaunchedEffect
+        sql = pending.sqlText
+        pending.connectionId?.let { connectionId = it }
+        status = "Loaded query from project link"
+        workspace.clearPendingSqlEditor()
     }
 
     Column(modifier.fillMaxSize().padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

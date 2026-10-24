@@ -147,6 +147,7 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                                     facade,
                                     workspace.activeConnectionId,
                                     onSelectConnection = { workspace.setActiveConnection(it) },
+                                    workspace = workspace,
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             WorkspaceSection.Datasets ->
@@ -162,6 +163,7 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                                     facade = facade,
                                     workspace = workspace,
                                     onNavigateToDatasets = { section = WorkspaceSection.Datasets },
+                                    onNavigateToSql = { section = WorkspaceSection.Sql },
                                     modifier = Modifier.fillMaxSize(),
                                 )
                         }

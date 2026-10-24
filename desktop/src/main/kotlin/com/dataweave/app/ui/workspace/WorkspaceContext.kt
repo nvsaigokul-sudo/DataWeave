@@ -13,6 +13,12 @@ data class PendingDatasetEditor(
     val connectionId: UUID?,
 )
 
+data class PendingSqlEditor(
+    val historyEntryId: UUID,
+    val sqlText: String,
+    val connectionId: UUID?,
+)
+
 /** Shared workspace selection state (FR-021) for explorer, Data, SQL, and Datasets. */
 class WorkspaceContext {
     var activeConnectionId by mutableStateOf(
@@ -33,6 +39,9 @@ class WorkspaceContext {
         private set
 
     var pendingDatasetEditor by mutableStateOf<PendingDatasetEditor?>(null)
+        private set
+
+    var pendingSqlEditor by mutableStateOf<PendingSqlEditor?>(null)
         private set
 
     var datasetEditorDirty by mutableStateOf(false)
@@ -71,5 +80,14 @@ class WorkspaceContext {
 
     fun markDatasetEditorDirty(dirty: Boolean) {
         datasetEditorDirty = dirty
+    }
+
+    fun openSqlInEditor(historyEntryId: UUID, sqlText: String, connectionId: UUID?) {
+        pendingSqlEditor = PendingSqlEditor(historyEntryId, sqlText, connectionId)
+        statusMessage = "Opening query in SQL editor…"
+    }
+
+    fun clearPendingSqlEditor() {
+        pendingSqlEditor = null
     }
 }

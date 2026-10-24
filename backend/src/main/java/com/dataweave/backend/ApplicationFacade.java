@@ -132,6 +132,21 @@ public class ApplicationFacade {
         projectItemService.removeItem(itemId);
     }
 
+    public ProjectItem addQueryProjectItem(UUID projectId, UUID historyEntryId, String label) {
+        return projectItemService.addQueryReference(projectId, historyEntryId, label);
+    }
+
+    public void reorderProjectItems(UUID projectId, List<UUID> itemIdsInOrder) {
+        projectItemService.reorderItems(projectId, itemIdsInOrder);
+    }
+
+    public SqlQueryHistoryEntry getSqlHistoryEntry(UUID id) {
+        return sqlEditorService.history(500).stream()
+                .filter(e -> e.id().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Query history entry not found: " + id));
+    }
+
     public List<ConnectionProfile> listConnections() {
         return connectionProfileService.list();
     }

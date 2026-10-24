@@ -46,6 +46,10 @@ public class ProjectItemRepository {
         jdbc.update("DELETE FROM project_items WHERE id = ?", id.toString());
     }
 
+    public void updateSortOrder(UUID id, int sortOrder) {
+        jdbc.update("UPDATE project_items SET sort_order = ? WHERE id = ?", sortOrder, id.toString());
+    }
+
     private static ProjectItem map(ResultSet rs) throws java.sql.SQLException {
         return new ProjectItem(
                 UUID.fromString(rs.getString("id")),

@@ -101,6 +101,19 @@ object GridSelectionLogic {
         rows: List<Map<String, Any?>>,
         columnNames: List<String>,
         selection: SelectionState,
+    ): String = formatSelectionDelimited(rows, columnNames, selection, '\t')
+
+    fun formatSelectionCsv(
+        rows: List<Map<String, Any?>>,
+        columnNames: List<String>,
+        selection: SelectionState,
+    ): String = formatSelectionDelimited(rows, columnNames, selection, ',')
+
+    private fun formatSelectionDelimited(
+        rows: List<Map<String, Any?>>,
+        columnNames: List<String>,
+        selection: SelectionState,
+        delimiter: Char,
     ): String {
         if (rows.isEmpty() || columnNames.isEmpty()) return ""
         val (rowRange, colRange) = selection.normalizedRect(rows.size, columnNames.size)
@@ -108,13 +121,23 @@ object GridSelectionLogic {
             for (r in rowRange) {
                 val row = rows[r]
                 for (c in colRange) {
-                    if (c > colRange.first) append('\t')
+                    if (c > colRange.first) append(delimiter)
                     val name = columnNames[c]
                     append(formatCell(row[name], isSqlNull(row[name])))
                 }
                 if (r < rowRange.last) append('\n')
             }
         }
+    }
+
+    /** After page change, clamp selection to new row/col counts. */
+    fun clampSelection(selection: SelectionState, rowCount: Int, colCount: Int): SelectionState {
+        if (rowCount <= 0 || colCount <= 0) return SelectionState()
+        val (rows, cols) = selection.normalizedRect(rowCount, colCount)
+        return selection.copy(
+            anchor = CellRef(rows.first, cols.first),
+            focus = CellRef(rows.last, cols.last),
+        )
     }
 
     fun reorderColumn(order: List<String>, fromIndex: Int, toIndex: Int): List<String> {

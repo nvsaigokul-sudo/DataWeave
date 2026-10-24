@@ -64,4 +64,28 @@ class GridSelectionLogicTest {
     fun reorderColumnMovesItem() {
         assertEquals(listOf("b", "a", "c"), GridSelectionLogic.reorderColumn(listOf("a", "b", "c"), 0, 1))
     }
+
+    @Test
+    fun formatSelectionCsvUsesCommas() {
+        val rows = listOf(mapOf("a" to 1, "b" to 2))
+        val sel =
+            GridSelectionLogic.SelectionState(
+                anchor = GridSelectionLogic.CellRef(0, 0),
+                focus = GridSelectionLogic.CellRef(0, 1),
+            )
+        assertEquals("1,2", GridSelectionLogic.formatSelectionCsv(rows, listOf("a", "b"), sel))
+    }
+
+    @Test
+    fun clampSelectionAfterPageResize() {
+        val sel =
+            GridSelectionLogic.SelectionState(
+                kind = GridSelectionLogic.SelectionKind.RECT,
+                anchor = GridSelectionLogic.CellRef(5, 3),
+                focus = GridSelectionLogic.CellRef(8, 4),
+            )
+        val clamped = GridSelectionLogic.clampSelection(sel, 3, 2)
+        assertEquals(2, clamped.focus.row)
+        assertEquals(1, clamped.focus.col)
+    }
 }

@@ -13,4 +13,5 @@ public record ProjectItem(
         Instant createdAt) {
 
     public static final String TYPE_DATASET = "dataset";
+    public static final String TYPE_QUERY = "query";
 }

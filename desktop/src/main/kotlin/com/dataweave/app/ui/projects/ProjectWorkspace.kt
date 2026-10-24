@@ -32,6 +32,7 @@ import com.dataweave.app.ui.workspace.WorkspaceContext
 import com.dataweave.backend.ApplicationFacade
 import com.dataweave.backend.domain.DatasetOutputDefinition
 import com.dataweave.backend.domain.ProjectItem
+import com.dataweave.backend.domain.SqlQueryHistoryEntry
 import com.dataweave.backend.domain.WorkspaceProject
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +45,7 @@ fun ProjectWorkspace(
     facade: ApplicationFacade,
     workspace: WorkspaceContext,
     onNavigateToDatasets: () -> Unit,
+    onNavigateToSql: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var projects by remember { mutableStateOf<List<WorkspaceProject>>(emptyList()) }
@@ -57,7 +59,17 @@ fun ProjectWorkspace(
     val expandedProjects = remember { mutableStateMapOf<UUID, Boolean>() }
     val projectItems = remember { mutableStateMapOf<UUID, List<ProjectItem>>() }
     val projectDatasets = remember { mutableStateMapOf<UUID, List<DatasetOutputDefinition>>() }
+    val recentQueries = remember { mutableStateMapOf<UUID, List<SqlQueryHistoryEntry>>() }
+    var unsavedAction by remember { mutableStateOf<(() -> Unit)?>(null) }
     val scope = rememberCoroutineScope()
+
+    fun runOrConfirmUnsaved(action: () -> Unit) {
+        if (workspace.datasetEditorDirty) {
+            unsavedAction = action
+        } else {
+            action()
+        }
+    }
 
     fun refresh() {
         scope.launch {
@@ -77,6 +89,8 @@ fun ProjectWorkspace(
                 projectItems[projectId] = items
                 projectDatasets[projectId] = datasets
             }.onFailure { error = it.message }
+            runCatching { withContext(Dispatchers.IO) { facade.sqlQueryHistory(25) } }
+                .onSuccess { recentQueries[projectId] = it }
         }
     }
 
@@ -142,6 +156,7 @@ fun ProjectWorkspace(
                                 project = project,
                                 items = projectItems[project.id].orEmpty(),
                                 datasets = projectDatasets[project.id].orEmpty(),
+                                queries = recentQueries[project.id].orEmpty(),
                                 onLink = { datasetId, label ->
                                     scope.launch {
                                         runCatching {
@@ -160,13 +175,49 @@ fun ProjectWorkspace(
                                     }
                                 },
                                 onOpenDataset = { item ->
+                                    runOrConfirmUnsaved {
+                                        scope.launch {
+                                            runCatching { withContext(Dispatchers.IO) { facade.getDatasetDefinition(item.refId()) } }
+                                                .onSuccess { def ->
+                                                    workspace.openDatasetInEditor(project.id, def.id, def.connectionId)
+                                                    onNavigateToDatasets()
+                                                }
+                                                .onFailure { error = "Cannot open dataset: ${it.message}" }
+                                        }
+                                    }
+                                },
+                                onOpenQuery = { item ->
                                     scope.launch {
-                                        runCatching { withContext(Dispatchers.IO) { facade.getDatasetDefinition(item.refId()) } }
-                                            .onSuccess { def ->
-                                                workspace.openDatasetInEditor(project.id, def.id, def.connectionId)
-                                                onNavigateToDatasets()
+                                        runCatching { withContext(Dispatchers.IO) { facade.getSqlHistoryEntry(item.refId()) } }
+                                            .onSuccess { entry ->
+                                                workspace.openSqlInEditor(
+                                                    entry.id,
+                                                    entry.sqlText,
+                                                    entry.connectionId.orElse(null),
+                                                )
+                                                onNavigateToSql()
                                             }
-                                            .onFailure { error = "Cannot open dataset: ${it.message}" }
+                                            .onFailure { error = "Cannot open query: ${it.message}" }
+                                    }
+                                },
+                                onLinkQuery = { historyId, label ->
+                                    scope.launch {
+                                        runCatching {
+                                            withContext(Dispatchers.IO) {
+                                                facade.addQueryProjectItem(project.id, historyId, label)
+                                            }
+                                        }.onSuccess { loadProjectDetails(project.id) }
+                                            .onFailure { error = it.message }
+                                    }
+                                },
+                                onReorder = { orderedIds ->
+                                    scope.launch {
+                                        runCatching {
+                                            withContext(Dispatchers.IO) {
+                                                facade.reorderProjectItems(project.id, orderedIds)
+                                            }
+                                        }.onSuccess { loadProjectDetails(project.id) }
+                                            .onFailure { error = it.message }
                                     }
                                 },
                             )
@@ -208,6 +259,24 @@ fun ProjectWorkspace(
         )
     }
 
+    unsavedAction?.let {
+        AlertDialog(
+            onDismissRequest = { unsavedAction = null },
+            title = { Text("Unsaved dataset changes") },
+            text = { Text("Opening another item will discard unsaved edits in the dataset editor. Continue?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        workspace.markDatasetEditorDirty(false)
+                        unsavedAction?.invoke()
+                        unsavedAction = null
+                    },
+                ) { Text("Discard and continue") }
+            },
+            dismissButton = { TextButton(onClick = { unsavedAction = null }) { Text("Cancel") } },
+        )
+    }
+
     deleteConfirm?.let { project ->
         AlertDialog(
             onDismissRequest = { deleteConfirm = null },
@@ -240,23 +309,52 @@ private fun ProjectItemsPanel(
     project: WorkspaceProject,
     items: List<ProjectItem>,
     datasets: List<DatasetOutputDefinition>,
+    queries: List<SqlQueryHistoryEntry>,
     onLink: (UUID, String) -> Unit,
     onRemove: (UUID) -> Unit,
     onOpenDataset: (ProjectItem) -> Unit,
+    onOpenQuery: (ProjectItem) -> Unit,
+    onLinkQuery: (UUID, String) -> Unit,
+    onReorder: (List<UUID>) -> Unit,
 ) {
     var linkExpanded by remember { mutableStateOf(false) }
+    var queryLinkExpanded by remember { mutableStateOf(false) }
     var selectedDataset by remember { mutableStateOf<DatasetOutputDefinition?>(null) }
+    var selectedQuery by remember { mutableStateOf<SqlQueryHistoryEntry?>(null) }
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("Linked items", style = MaterialTheme.typography.titleSmall)
         if (items.isEmpty()) {
-            Text("No linked datasets yet.", style = MaterialTheme.typography.bodySmall)
+            Text("No linked items yet.", style = MaterialTheme.typography.bodySmall)
         } else {
-            items.forEach { item ->
+            items.forEachIndexed { index, item ->
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("${item.label()} (${item.itemType()})", modifier = Modifier.weight(1f))
+                    Button(
+                        onClick = {
+                            if (index > 0) {
+                                val ids = items.map { it.id() }.toMutableList()
+                                ids[index - 1] = ids[index].also { ids[index] = ids[index - 1] }
+                                onReorder(ids)
+                            }
+                        },
+                        enabled = index > 0,
+                    ) { Text("↑") }
+                    Button(
+                        onClick = {
+                            if (index < items.lastIndex) {
+                                val ids = items.map { it.id() }.toMutableList()
+                                ids[index + 1] = ids[index].also { ids[index] = ids[index + 1] }
+                                onReorder(ids)
+                            }
+                        },
+                        enabled = index < items.lastIndex,
+                    ) { Text("↓") }
                     if (item.itemType() == ProjectItem.TYPE_DATASET) {
                         Button(onClick = { onOpenDataset(item) }) { Text("Open in Datasets") }
+                    }
+                    if (item.itemType() == ProjectItem.TYPE_QUERY) {
+                        Button(onClick = { onOpenQuery(item) }) { Text("Open in SQL") }
                     }
                     Button(onClick = { onRemove(item.id()) }) { Text("Remove link") }
                 }
@@ -288,6 +386,34 @@ private fun ProjectItemsPanel(
                     },
                     enabled = selectedDataset != null,
                 ) { Text("Link dataset") }
+            }
+        }
+        if (queries.isEmpty()) {
+            Text("Run a SELECT in SQL to link a query from history.", style = MaterialTheme.typography.bodySmall)
+        } else {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = { queryLinkExpanded = true }) {
+                    Text(selectedQuery?.sqlText?.take(40) ?: "Choose query…")
+                }
+                DropdownMenu(expanded = queryLinkExpanded, onDismissRequest = { queryLinkExpanded = false }) {
+                    queries.forEach { q ->
+                        DropdownMenuItem(
+                            text = { Text(q.sqlText.take(80)) },
+                            onClick = {
+                                selectedQuery = q
+                                queryLinkExpanded = false
+                            },
+                        )
+                    }
+                }
+                Button(
+                    onClick = {
+                        val q = selectedQuery ?: return@Button
+                        onLinkQuery(q.id, q.sqlText.take(40))
+                        selectedQuery = null
+                    },
+                    enabled = selectedQuery != null,
+                ) { Text("Link query") }
             }
         }
     }
