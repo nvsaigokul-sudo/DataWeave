@@ -1,10 +1,11 @@
 package com.dataweave.backend.domain;
 
 /** Optional server-side sort/filter for paginated table reads. */
-public record TableBrowseOptions(String sortColumn, boolean sortDescending, String filterText) {
+public record TableBrowseOptions(
+        String sortColumn, boolean sortDescending, String filterText, String filterColumn) {
 
     public static TableBrowseOptions none() {
-        return new TableBrowseOptions(null, false, null);
+        return new TableBrowseOptions(null, false, null, null);
     }
 
     public boolean hasSort() {
@@ -13,5 +14,9 @@ public record TableBrowseOptions(String sortColumn, boolean sortDescending, Stri
 
     public boolean hasFilter() {
         return filterText != null && !filterText.isBlank();
+    }
+
+    public boolean hasColumnFilter() {
+        return filterColumn != null && !filterColumn.isBlank();
     }
 }

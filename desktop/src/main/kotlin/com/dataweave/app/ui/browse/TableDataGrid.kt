@@ -56,7 +56,7 @@ fun TableDataGrid(facade: ApplicationFacade, connectionId: UUID, table: TableRef
     val scopeKey = remember(table) { "grid-${table.schema}.${table.name}" }
 
     fun browseOptions(): TableBrowseOptions =
-        TableBrowseOptions(sortColumn, sortDesc, filterText.ifBlank { null })
+        TableBrowseOptions(sortColumn, sortDesc, filterText.ifBlank { null }, null)
 
     fun load(nextOffset: Long) {
         scope.launch {

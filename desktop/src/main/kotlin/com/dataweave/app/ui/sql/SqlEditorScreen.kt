@@ -29,6 +29,7 @@ import com.dataweave.backend.domain.DataPage
 import com.dataweave.backend.domain.SqlQueryHistoryEntry
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -47,6 +48,7 @@ fun SqlEditorScreen(
     var history by remember { mutableStateOf<List<SqlQueryHistoryEntry>>(emptyList()) }
     var status by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
+    var runJob by remember { mutableStateOf<Job?>(null) }
 
     fun refreshHistory() {
         scope.launch {
@@ -93,25 +95,40 @@ fun SqlEditorScreen(
                 enabled = connectionId != null && status != "Running…",
                 onClick = {
                     val id = connectionId ?: return@Button
-                    scope.launch {
-                        status = "Running…"
-                        error = null
-                        runCatching {
-                            withContext(Dispatchers.IO) { facade.runSqlEditorQuery(id, sql) }
-                        }.onSuccess {
-                            page = it
-                            status = "OK (${it.rows.size} rows)"
-                            refreshHistory()
-                        }.onFailure {
-                            page = null
-                            error = it.message
-                            status = "Failed"
-                            refreshHistory()
+                    runJob?.cancel()
+                    runJob =
+                        scope.launch {
+                            status = "Running…"
+                            error = null
+                            runCatching {
+                                withContext(Dispatchers.IO) { facade.runSqlEditorQuery(id, sql) }
+                            }.onSuccess {
+                                page = it
+                                status = "OK (${it.rows.size} rows)"
+                                refreshHistory()
+                            }.onFailure {
+                                if (it.message?.contains("cancel", ignoreCase = true) != true) {
+                                    page = null
+                                    error = it.message
+                                    status = "Failed"
+                                } else {
+                                    status = "Cancelled"
+                                }
+                                refreshHistory()
+                            }
                         }
-                    }
                 },
             ) {
                 Text("Run")
+            }
+            OutlinedButton(
+                enabled = status == "Running…",
+                onClick = {
+                    runJob?.cancel()
+                    status = "Cancelled"
+                },
+            ) {
+                Text("Cancel")
             }
             OutlinedButton(
                 onClick = {

@@ -85,6 +85,7 @@ fun DatabaseTreeSidebar(
     val expandedDbs = remember { mutableStateMapOf<String, Boolean>() }
     val schemaSlices = remember { mutableStateMapOf<String, ExplorerSlice<String>>() }
     val tableSlices = remember { mutableStateMapOf<String, ExplorerSlice<TableRef>>() }
+    val viewSlices = remember { mutableStateMapOf<String, ExplorerSlice<TableRef>>() }
     val columnSlices = remember { mutableStateMapOf<String, ExplorerSlice<ColumnMeta>>() }
     val expandedSchemas = remember { mutableStateMapOf<String, Boolean>() }
     val expandedTables = remember { mutableStateMapOf<String, Boolean>() }
@@ -96,6 +97,7 @@ fun DatabaseTreeSidebar(
         rootState = ExplorerSlice()
         schemaSlices.clear()
         tableSlices.clear()
+        viewSlices.clear()
         columnSlices.clear()
         expandedDbs.clear()
         expandedSchemas.clear()
@@ -165,6 +167,13 @@ fun DatabaseTreeSidebar(
                 tableSlices[key] ?: ExplorerSlice(),
                 { facade.listTables(id, schema) },
             ) { tableSlices[key] = it }
+        }
+        scope.launch {
+            loadSlice(
+                gen,
+                viewSlices[key] ?: ExplorerSlice(),
+                { facade.listViews(id, schema) },
+            ) { viewSlices[key] = it }
         }
     }
 
@@ -436,6 +445,7 @@ fun DatabaseTreeSidebar(
                                 filter = filter,
                                 schemaSlice = schemaSlices["db:$db"] ?: ExplorerSlice(),
                                 tableSlices = tableSlices,
+                                viewSlices = viewSlices,
                                 columnSlices = columnSlices,
                                 expandedSchemas = expandedSchemas,
                                 expandedTables = expandedTables,
@@ -466,6 +476,7 @@ private fun DatabaseSchemasSection(
     filter: String,
     schemaSlice: ExplorerSlice<String>,
     tableSlices: MutableMap<String, ExplorerSlice<TableRef>>,
+    viewSlices: MutableMap<String, ExplorerSlice<TableRef>>,
     columnSlices: MutableMap<String, ExplorerSlice<ColumnMeta>>,
     expandedSchemas: MutableMap<String, Boolean>,
     expandedTables: MutableMap<String, Boolean>,
@@ -509,6 +520,7 @@ private fun DatabaseSchemasSection(
                                         it.name.contains(filter, ignoreCase = true) ||
                                         it.schema.contains(filter, ignoreCase = true)
                                 }
+                            Text("Tables", style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(start = 32.dp, top = 4.dp))
                             tables.forEach { table ->
                                 val tableKey = "${schema}.${table.name}"
                                 val tableExpanded = expandedTables[tableKey] == true
@@ -547,6 +559,30 @@ private fun DatabaseSchemasSection(
                                                 }
                                     }
                                 }
+                            }
+                            val vKey = "db:$database:schema:$schema"
+                            val viewSlice = viewSlices[vKey] ?: ExplorerSlice()
+                            when (viewSlice.state) {
+                                ExplorerLoadState.Loading, ExplorerLoadState.Refreshing ->
+                                    Text("Loading views…", modifier = Modifier.padding(start = 32.dp))
+                                ExplorerLoadState.Loaded, ExplorerLoadState.Idle -> {
+                                    val views =
+                                        viewSlice.items.filter {
+                                            filter.isBlank() || it.name.contains(filter, ignoreCase = true)
+                                        }
+                                    if (views.isNotEmpty()) {
+                                        Text("Views", style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(start = 32.dp, top = 8.dp))
+                                        views.forEach { view ->
+                                            TreeRow(
+                                                label = view.name,
+                                                prefix = "◇",
+                                                indent = 2,
+                                                onClick = { onSelectTable(view) },
+                                            )
+                                        }
+                                    }
+                                }
+                                else -> Unit
                             }
                         }
                     }

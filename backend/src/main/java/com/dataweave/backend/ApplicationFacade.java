@@ -21,6 +21,8 @@ import com.dataweave.backend.domain.DatasetOutputDefinition;
 import com.dataweave.backend.domain.ForeignKeyRef;
 import com.dataweave.backend.domain.JoinType;
 import com.dataweave.backend.service.CsvIngestService;
+import com.dataweave.backend.domain.DatasetGraphDefinition;
+import com.dataweave.backend.service.DatasetGraphService;
 import com.dataweave.backend.service.DatasetOutputDefinitionService;
 import com.dataweave.backend.service.DatasetPreviewService;
 import com.dataweave.backend.service.JoinPreviewService;
@@ -49,6 +51,7 @@ public class ApplicationFacade {
     private final SqlEditorService sqlEditorService;
     private final CsvIngestService csvIngestService;
     private final DatasetOutputDefinitionService datasetOutputDefinitionService;
+    private final DatasetGraphService datasetGraphService;
     private final JoinPreviewService joinPreviewService;
     private final TableExportService tableExportService;
     private final CacheDiagnosticsService cacheDiagnosticsService;
@@ -66,6 +69,7 @@ public class ApplicationFacade {
             SqlEditorService sqlEditorService,
             CsvIngestService csvIngestService,
             DatasetOutputDefinitionService datasetOutputDefinitionService,
+            DatasetGraphService datasetGraphService,
             JoinPreviewService joinPreviewService,
             TableExportService tableExportService,
             CacheDiagnosticsService cacheDiagnosticsService,
@@ -81,6 +85,7 @@ public class ApplicationFacade {
         this.sqlEditorService = sqlEditorService;
         this.csvIngestService = csvIngestService;
         this.datasetOutputDefinitionService = datasetOutputDefinitionService;
+        this.datasetGraphService = datasetGraphService;
         this.joinPreviewService = joinPreviewService;
         this.tableExportService = tableExportService;
         this.cacheDiagnosticsService = cacheDiagnosticsService;
@@ -200,6 +205,10 @@ public class ApplicationFacade {
         return catalogMetadataService.listTables(connectionId, schema);
     }
 
+    public List<TableRef> listViews(UUID connectionId, String schema) throws Exception {
+        return catalogMetadataService.listViews(connectionId, schema);
+    }
+
     public List<com.dataweave.backend.domain.ColumnMeta> listColumns(UUID connectionId, String schema, String table)
             throws Exception {
         return catalogMetadataService.listColumns(connectionId, schema, table);
@@ -316,6 +325,19 @@ public class ApplicationFacade {
             throws Exception {
         return joinPreviewService.previewJoin(
                 connectionId, left, right, leftKey, rightKey, joinType, selectedColumns, offset, limit);
+    }
+
+    public DataPage previewDatasetGraph(UUID connectionId, DatasetGraphDefinition graph, long offset, int limit)
+            throws Exception {
+        return datasetGraphService.preview(connectionId, graph, offset, limit);
+    }
+
+    public String serializeDatasetGraph(DatasetGraphDefinition graph) throws Exception {
+        return datasetGraphService.serialize(graph);
+    }
+
+    public DatasetGraphDefinition deserializeDatasetGraph(String json) throws Exception {
+        return datasetGraphService.deserialize(json);
     }
 
     public TableExportResult exportTableToCsv(

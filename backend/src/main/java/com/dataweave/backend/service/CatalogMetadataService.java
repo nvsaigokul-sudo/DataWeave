@@ -101,6 +101,32 @@ public class CatalogMetadataService {
 
     @Cacheable(
             cacheNames = "metadata",
+            key = "#connectionId + ':views:' + #schema + ':' + @catalogMetadataService.schemaVersion(#connectionId)")
+    public List<TableRef> listViews(UUID connectionId, String schema) throws Exception {
+        ConnectionProfile profile = connectionProfileService.require(connectionId);
+        DataSource ds = connectionManager.getDataSource(profile);
+        try (Connection conn = ds.getConnection();
+                PreparedStatement ps =
+                        conn.prepareStatement(
+                                """
+                                SELECT table_schema, table_name
+                                FROM information_schema.tables
+                                WHERE table_schema = ? AND table_type = 'VIEW'
+                                ORDER BY table_name
+                                """)) {
+            ps.setString(1, schema);
+            try (ResultSet rs = ps.executeQuery()) {
+                List<TableRef> views = new ArrayList<>();
+                while (rs.next()) {
+                    views.add(new TableRef(rs.getString(1), rs.getString(2)));
+                }
+                return views;
+            }
+        }
+    }
+
+    @Cacheable(
+            cacheNames = "metadata",
             key =
                     "#connectionId + ':columns:' + #schema + ':' + #table + ':' + @catalogMetadataService.schemaVersion(#connectionId)")
     public List<ColumnMeta> listColumns(UUID connectionId, String schema, String table) throws Exception {

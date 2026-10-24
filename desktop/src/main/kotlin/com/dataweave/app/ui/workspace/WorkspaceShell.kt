@@ -22,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.dataweave.app.preferences.ThemeMode
 import com.dataweave.app.preferences.UserPreferences
-import com.dataweave.app.ui.browse.TableDataGrid
+import com.dataweave.app.ui.browse.DataWorkspaceScreen
 import com.dataweave.app.ui.connections.ConnectionsScreen
 import com.dataweave.app.ui.datasets.DatasetBuilderScreen
 import com.dataweave.app.ui.projects.ProjectWorkspace
@@ -122,19 +122,12 @@ fun WorkspaceShell(facade: ApplicationFacade) {
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             WorkspaceSection.Browse ->
-                                if (workspace.activeConnectionId != null && workspace.selectedTable != null) {
-                                    TableDataGrid(
-                                        facade,
-                                        workspace.activeConnectionId!!,
-                                        workspace.selectedTable!!,
-                                        Modifier.fillMaxSize(),
-                                    )
-                                } else {
-                                    Text(
-                                        "Connect and pick a table from the explorer sidebar, or open Connections.",
-                                        modifier = Modifier.align(Alignment.Center),
-                                    )
-                                }
+                                DataWorkspaceScreen(
+                                    facade = facade,
+                                    connectionId = workspace.activeConnectionId,
+                                    selectedTable = workspace.selectedTable,
+                                    modifier = Modifier.fillMaxSize(),
+                                )
                             WorkspaceSection.Sql ->
                                 SqlEditorScreen(
                                     facade,
